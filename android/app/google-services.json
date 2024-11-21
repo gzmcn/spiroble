@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "221500400769",
+    "firebase_url": "https://spiromatik-9feb6-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "spiromatik-9feb6",
+    "storage_bucket": "spiromatik-9feb6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221500400769:android:b4b40e8d2cb728bd489980",
+        "android_client_info": {
+          "package_name": "com.spiro.spiroble"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0LuaRZaBtuVoyvbTas1NeG0E2PqXW-Rw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
