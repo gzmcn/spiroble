@@ -186,7 +186,7 @@ class RegisterScreen extends StatelessWidget {
             ),
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'E-posta'),
+              decoration: const InputDecoration(labelText: 'E-posta'),
               keyboardType: TextInputType.emailAddress,
             ),
             TextField(
