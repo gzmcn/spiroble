@@ -34,6 +34,8 @@ class BleController {
 
   // Update device list
   void _updateDeviceList(DiscoveredDevice device) {
+    // If the device is not already in the list, add it
+    if (!_deviceStreamController.hasListener) return; // Check if stream is closed
     _deviceStreamController.add([device]);
   }
 
@@ -50,20 +52,10 @@ class BleController {
     }
   }
 
-  void disconnectFromDevice(DiscoveredDevice device) {
-    try {
-      // Check if there is an active connection and cancel it
-      _connectionSubscription?.cancel();
-      print('Disconnected from ${device.id}');
-    } catch (e) {
-      print('Error disconnecting: $e');
-    }
-  }
-
-
   // Dispose of resources
   void dispose() {
     _scanSubscription?.cancel();
     _deviceStreamController.close();
+    _connectionSubscription?.cancel();
   }
 }

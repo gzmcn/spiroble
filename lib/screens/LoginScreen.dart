@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/screens/bluetoothScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
 import 'package:spiroble/screens/registerScreen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
@@ -30,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Başarılı giriş sonrası HomeScreen'e geçiş yap
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => BluetoothScreen()),
       );
     } catch (error) {
       print('Sign-in error: ${error.toString()}');
