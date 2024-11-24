@@ -30,12 +30,21 @@ class _NavigationMenuState extends State<NavigationMenu> {
           label: '',
         ),
         NavigationDestination(
-          icon: Icon(Icons.medical_information,
+          icon: Icon(Icons.account_circle,
               color: theme.colorScheme.onSurface), // Blog icon
           label: '',
         ),
         NavigationDestination(
-          icon: Icon(Icons.account_circle, color: theme.colorScheme.onSurface),
+          icon:
+              Icon(Icons.medical_services, color: theme.colorScheme.onSurface),
+          label: '',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.checklist, color: theme.colorScheme.onSurface),
+          label: '',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.bluetooth, color: theme.colorScheme.onSurface),
           label: '',
         ),
       ],

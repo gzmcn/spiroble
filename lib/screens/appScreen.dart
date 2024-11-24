@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:spiroble/screens/ResultScreen.dart';
+import 'package:spiroble/screens/bluetoothScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
 import 'package:spiroble/screens/user_screen.dart';
+import 'package:spiroble/screens/testScreen.dart';
+
 import 'package:spiroble/widgets/bottom_navigationMenu.dart';
 
 class AppScreen extends StatefulWidget {
@@ -25,6 +29,15 @@ class _HomeScreenState extends State<AppScreen> {
       //    return BosScreen();
       case 1:
         return ProfileScreen();
+
+      case 2:
+        return TestScreen();
+
+      case 3:
+        return ResultScreen();
+
+      case 4:
+        return BluetoothScreen();
       default:
         return Center(child: Text('Varsayılan Ekran')); // Varsayılan ekran
     }
