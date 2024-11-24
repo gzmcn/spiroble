@@ -9,7 +9,7 @@ import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/splashScreen.dart';
 import 'firebase_options.dart';
 
-void main() async {  
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
                   if (snapshot.hasData) {
                     return AppScreen();
                   }
-                  return  LoginScreen();
+                  return LoginScreen();
                 }),
             theme: themeState.themeData,
           );
