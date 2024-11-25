@@ -118,7 +118,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     if (loading) {
@@ -157,7 +156,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: EdgeInsets.all(16),
               height: 130,
               decoration: BoxDecoration(
-                color: Color(0xFFA0BAFD),
+                gradient: LinearGradient(
+                  colors: [const Color(0xFFA0BAFD), Colors.deepOrange.shade700],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
@@ -167,12 +170,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     radius: 35,
                   ),
                   SizedBox(width: 20), // Spacing between avatar and text
-                  Expanded( // Ensures the text gets enough space
+                  Expanded(
+                    // Ensures the text gets enough space
                     child: FutureBuilder<String>(
                       future: fetchUserName(), // Call the async function here
-                      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center( // Center the loading indicator
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            // Center the loading indicator
                             child: CircularProgressIndicator(),
                           );
                         } else if (snapshot.hasError) {
@@ -182,7 +189,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           );
                         } else if (snapshot.hasData) {
                           return Text(
-                            snapshot.data ?? "Unknown User", // Display the username once fetched
+                            snapshot.data ??
+                                "Unknown User", // Display the username once fetched
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -207,53 +215,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
             InputFields(
               controller: adController,
               placeholder: 'Ad',
-              icon: Icon(Icons.person, color: Color(0xFFA0BAFD),),
-
+              icon: Icon(
+                Icons.person,
+                color: Color(0xFFA0BAFD),
+              ),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: soyadController,
               placeholder: 'Soyad',
-              icon: Icon(Icons.person_outline, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.person_outline,
+                color: Color(0xFFA0BAFD),
+              ),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: dogumTarihiController,
               placeholder: 'Doğum Tarihi (YYYY-MM-DD)',
-              icon: Icon(Icons.calendar_today, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.calendar_today,
+                color: Color(0xFFA0BAFD),
+              ),
               keyboardType: TextInputType.datetime,
             ),
             SizedBox(height: 16),
             InputFields(
               controller: kiloController,
               placeholder: 'Kilo (kg)',
-              icon: Icon(Icons.monitor_weight, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.monitor_weight,
+                color: Color(0xFFA0BAFD),
+              ),
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 16),
             InputFields(
               controller: boyController,
               placeholder: 'Boy (cm)',
-              icon: Icon(Icons.height, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.height,
+                color: Color(0xFFA0BAFD),
+              ),
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 16),
             InputFields(
               controller: uyrukController,
               placeholder: 'Uyruk',
-              icon: Icon(Icons.flag, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.flag,
+                color: Color(0xFFA0BAFD),
+              ),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: emailController,
               placeholder: 'E-posta',
-              icon: Icon(Icons.mail, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.mail,
+                color: Color(0xFFA0BAFD),
+              ),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: passwordController,
               placeholder: 'Sifre',
-              icon: Icon(Icons.lock, color: Color(0xFFA0BAFD),),
+              icon: Icon(
+                Icons.lock,
+                color: Color(0xFFA0BAFD),
+              ),
               secureTextEntry: true,
             ),
             SizedBox(height: 24),
@@ -262,26 +293,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: FancyButton(
-
-                  onClick: saveUserData,
-                  button_text: "Kaydet",
-                  button_height: 50,
-                  button_width: 300,
-                  button_radius: 50,
-
-                  button_outline_width: 0,
-                  button_outline_color: Colors.pink[50],
-
-                  button_text_size: 22,
-
-                  button_color: Color(0xFFA0BAFD),
-
+                onClick: saveUserData,
+                button_text: "Kaydet",
+                button_height: 50,
+                button_width: 300,
+                button_radius: 50,
+                button_outline_width: 0,
+                button_outline_color: Colors.pink[50],
+                button_text_size: 22,
+                button_color: Color(0xFFA0BAFD),
               ),
             )
           ],
         ),
       ),
     );
-
   }
 }
