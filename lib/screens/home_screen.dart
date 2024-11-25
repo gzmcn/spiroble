@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:spiroble/screens/testScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,11 +13,11 @@ class _HomeScreen extends State<HomeScreen> {
   String getGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return "Günaydın!";
+      return "günaydın!";
     } else if (hour < 18) {
-      return "İyi Günler!";
+      return "iyi günler!";
     } else {
-      return "İyi Akşamlar!";
+      return "iyi akşamlar!";
     }
   }
 
@@ -53,7 +55,9 @@ class _HomeScreen extends State<HomeScreen> {
               SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
-                  // Butona basıldığında yapılacak işlemi buraya ekleyebilirsiniz
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => TestScreen(),
+                  ));
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),

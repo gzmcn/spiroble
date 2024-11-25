@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spiroble/screens/spiroScreen.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -50,7 +51,9 @@ class _TestScreen extends State<TestScreen>
                 scale: _animation.value, // Büyüklük animasyonu
                 child: ElevatedButton(
                   onPressed: () {
-                    // Butona tıklanma işlevi
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => SpiroScreen(),
+                    ));
                     print("Teste Başla butonuna tıklandı.");
                   },
                   style: ElevatedButton.styleFrom(
