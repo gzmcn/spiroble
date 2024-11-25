@@ -42,6 +42,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       body: StreamBuilder<List<DiscoveredDevice>>(
         stream: _bleController.deviceStream,
         builder: (context, snapshot) {
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -57,8 +58,8 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             itemBuilder: (context, index) {
               final device = devices[index];
               return ListTile(
-                title: Text(device.name.isNotEmpty ? device.name : 'Bilinmeyen Cihaz'),
-                subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'), // RSSI ekledik
+                title: Text(device.name.isNotEmpty ? device.name : 'Cihaz: ${device.id.substring(0, 5)}'),
+                subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
                 trailing: ElevatedButton(
                   onPressed: () {
                     _bleController.connectToDevice(device.id);
