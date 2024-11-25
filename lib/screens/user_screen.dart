@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
+import 'package:fancy_button_flutter/fancy_button_flutter.dart';
 
 class ProfileScreen extends StatefulWidget {
   ProfileScreen({super.key});
@@ -93,6 +94,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<String> fetchUserName() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      // Reference to the users' data
+      final database = FirebaseDatabase.instance.ref();
+      final snapshot = await database.child('users/${currentUser.uid}').get();
+
+      // Check if data exists
+      if (snapshot.exists) {
+        final userName = snapshot.child('ad').value;
+
+        // Safely return the username as a string or a fallback if null
+        return userName != null ? userName.toString() : "No name available";
+      } else {
+        print("No user data available");
+        return "No name available";
+      }
+    } else {
+      print("No current user found.");
+      return "No name available";
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     if (loading) {
@@ -100,80 +126,162 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Profilim')),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Profilim',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 30,
+            color: Colors.black,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await auth.signOut();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (ctx) => LoginScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
+            // Updated Profile Section
+            Container(
+              padding: EdgeInsets.all(16),
+              height: 130,
+              decoration: BoxDecoration(
+                color: Color(0xFFA0BAFD),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: AssetImage("assets/user-logo.png"),
+                    radius: 35,
+                  ),
+                  SizedBox(width: 20), // Spacing between avatar and text
+                  Expanded( // Ensures the text gets enough space
+                    child: FutureBuilder<String>(
+                      future: fetchUserName(), // Call the async function here
+                      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center( // Center the loading indicator
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text(
+                            "Error loading name",
+                            style: TextStyle(color: Colors.white, fontSize: 22),
+                          );
+                        } else if (snapshot.hasData) {
+                          return Text(
+                            snapshot.data ?? "Unknown User", // Display the username once fetched
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
+                          );
+                        } else {
+                          return Text(
+                            "No name available",
+                            style: TextStyle(color: Colors.white, fontSize: 22),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 24),
+
+            // Input Fields
             InputFields(
               controller: adController,
               placeholder: 'Ad',
-              icon: Icons.person,
+              icon: Icon(Icons.person, color: Color(0xFFA0BAFD),),
+
             ),
             SizedBox(height: 16),
             InputFields(
               controller: soyadController,
               placeholder: 'Soyad',
-              icon: Icons.person_outline,
+              icon: Icon(Icons.person_outline, color: Color(0xFFA0BAFD),),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: dogumTarihiController,
               placeholder: 'Doğum Tarihi (YYYY-MM-DD)',
-              icon: Icons.calendar_today,
+              icon: Icon(Icons.calendar_today, color: Color(0xFFA0BAFD),),
               keyboardType: TextInputType.datetime,
             ),
             SizedBox(height: 16),
             InputFields(
               controller: kiloController,
               placeholder: 'Kilo (kg)',
-              icon: Icons.monitor_weight,
+              icon: Icon(Icons.monitor_weight, color: Color(0xFFA0BAFD),),
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 16),
             InputFields(
               controller: boyController,
               placeholder: 'Boy (cm)',
-              icon: Icons.height,
+              icon: Icon(Icons.height, color: Color(0xFFA0BAFD),),
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 16),
             InputFields(
               controller: uyrukController,
               placeholder: 'Uyruk',
-              icon: Icons.flag,
+              icon: Icon(Icons.flag, color: Color(0xFFA0BAFD),),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: emailController,
               placeholder: 'E-posta',
-              icon: Icons.email,
+              icon: Icon(Icons.mail, color: Color(0xFFA0BAFD),),
             ),
             SizedBox(height: 16),
             InputFields(
               controller: passwordController,
-              placeholder: 'Şifre',
-              icon: Icons.lock,
+              placeholder: 'Sifre',
+              icon: Icon(Icons.lock, color: Color(0xFFA0BAFD),),
               secureTextEntry: true,
             ),
             SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: saveUserData,
-              child: Text('Kaydet'),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                await auth.signOut();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (ctx) => LoginScreen()),
-                );
-              },
-              child: Text('Çıkış Yap'),
-            ),
+
+            // Save Button
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: FancyButton(
+
+                  onClick: saveUserData,
+                  button_text: "Kaydet",
+                  button_height: 50,
+                  button_width: 300,
+                  button_radius: 50,
+
+                  button_outline_width: 0,
+                  button_outline_color: Colors.pink[50],
+
+                  button_text_size: 22,
+
+                  button_color: Color(0xFFA0BAFD),
+
+              ),
+            )
           ],
         ),
       ),
     );
+
   }
 }

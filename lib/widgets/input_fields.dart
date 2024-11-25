@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class InputFields extends StatelessWidget {
   final TextEditingController controller;
   final String placeholder;
-  final IconData icon;
+  final Icon icon;
   final TextInputType keyboardType;
   final bool secureTextEntry;
   final VoidCallback? onTapSuffixIcon;
@@ -35,7 +35,7 @@ class InputFields extends StatelessWidget {
           color: Colors.black,
         ),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.black),
+          prefixIcon: icon,
           hintText: placeholder,
           hintStyle: TextStyle(color: Colors.grey[600]),
           suffixIcon: onTapSuffixIcon != null

@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
             InputFields(
               controller: _emailController,
               placeholder: 'E-Mail',
-              icon: Icons.mail,
+              icon: Icon(Icons.mail, color: Colors.black),
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 20),
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
             InputFields(
               controller: _passwordController,
               placeholder: 'Şifre',
-              icon: Icons.lock,
+              icon: Icon(Icons.lock, color: Colors.black),
               secureTextEntry: !_isPasswordVisible,
               onTapSuffixIcon: () {
                 setState(() {
