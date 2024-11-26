@@ -66,7 +66,7 @@ class BleController {
             DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
           await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
-          await _initializeCommunication(deviceId);
+          await initializeCommunication(deviceId);
         } else if (connectionState.connectionState ==
             DeviceConnectionState.disconnected) {
           print("Cihaz bağlantısı kesildi: $deviceId");
@@ -79,7 +79,7 @@ class BleController {
   }
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
-  Future<void> _initializeCommunication(String deviceId) async {
+  Future<void> initializeCommunication(String deviceId) async {
     Uuid serviceUuid = Uuid.parse('0000180f-0000-1000-8000-00805f9b34fb');
     Uuid characteristicUuid = Uuid.parse('00002a19-0000-1000-8000-00805f9b34fb');
 
@@ -105,6 +105,12 @@ class BleController {
   }
 
   Future<void> sendChar1() async {
+    // Ensure the characteristic is initialized before use.
+    if (_characteristic == null) {
+      print("Characterisitc is not initialized.");
+      return;
+    }
+
     try {
       await _ble.writeCharacteristicWithResponse(
         _characteristic,
@@ -115,6 +121,7 @@ class BleController {
       print("char 1 gönderilirken hata oluştu: $error");
     }
   }
+
 
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {

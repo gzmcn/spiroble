@@ -30,17 +30,20 @@ class _SpiroScreenState extends State<SpiroScreen> {
   Future<void> incrementProgress() async {
     setState(() {
       if (progress < maxHeight) {
-        progress += 1.0; // Seviyeyi artır
+        progress += 1.0; // Increase level
       }
     });
 
-    // BLE cihazına Char1 gönder
+    // Initialize characteristic (if needed) and send char1
+    await _bleController.initializeCommunication("deviceId");
+
     try {
       await _bleController.sendChar1();
     } catch (error) {
       print("Char 1 gönderilirken hata oluştu: $error");
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
