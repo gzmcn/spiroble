@@ -81,8 +81,8 @@ class BleController {
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> _initializeCommunication(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('0000180f-0000-1000-8000-00805f9b34fb');
-    Uuid characteristicUuid = Uuid.parse('00002a19-0000-1000-8000-00805f9b34fb');
+    Uuid serviceUuid = Uuid.parse('CF3970D0-9A76-4C78-AD8D-4F429F3B2408');
+    Uuid characteristicUuid = Uuid.parse('19F54122-33AF-4E8F-9F3A-D5CD075EFD49');
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
