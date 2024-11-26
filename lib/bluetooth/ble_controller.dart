@@ -67,6 +67,8 @@ class BleController {
           print("Bağlantı başarılı: $deviceId");
           await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
+          await uid2(deviceId);
+          await uid3(deviceId);
         } else if (connectionState.connectionState ==
             DeviceConnectionState.disconnected) {
           print("Cihaz bağlantısı kesildi: $deviceId");
@@ -113,6 +115,57 @@ class BleController {
     try {
       final response = await _ble.readCharacteristic(_characteristic);
       print('İlk veri: $response');
+
+      if (response.isNotEmpty && response[0] == 1) {
+        _startReceivingData();
+      }
+    } catch (error) {
+      print("Veri okuma sırasında hata oluştu: $error");
+    }
+  }
+
+  // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
+  Future<void> uid2(String deviceId) async {
+    Uuid serviceUuid = Uuid.parse('E23A9EDE-3257-4AAA-BF53-8FAC3289726F'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
+    Uuid characteristicUuid = Uuid.parse('B6B22132-0DD2-4480-82C5-F8783DFA6C42'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
+
+    print('Servis UUID: $serviceUuid');
+    print('Karakteristik UUID: $characteristicUuid');
+
+    _characteristic = QualifiedCharacteristic(
+      serviceId: serviceUuid,
+      characteristicId: characteristicUuid,
+      deviceId: deviceId,
+    );
+
+    try {
+      final response = await _ble.readCharacteristic(_characteristic);
+      print('İkinci veri: $response');
+
+      if (response.isNotEmpty && response[0] == 1) {
+        _startReceivingData();
+      }
+    } catch (error) {
+      print("Veri okuma sırasında hata oluştu: $error");
+    }
+  }
+
+  Future<void> uid3(String deviceId) async {
+    Uuid serviceUuid = Uuid.parse('D72FDD71-D631-4381-841B-B695DA002032'); // D72FDD71-D631-4381-841B-B695DA002032
+    Uuid characteristicUuid = Uuid.parse('F8C87645-5A2E-40CF-9B22-30D72089DF2B'); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
+
+    print('Servis UUID: $serviceUuid');
+    print('Karakteristik UUID: $characteristicUuid');
+
+    _characteristic = QualifiedCharacteristic(
+      serviceId: serviceUuid,
+      characteristicId: characteristicUuid,
+      deviceId: deviceId,
+    );
+
+    try {
+      final response = await _ble.readCharacteristic(_characteristic);
+      print('Üçüncü veri: $response');
 
       if (response.isNotEmpty && response[0] == 1) {
         _startReceivingData();
