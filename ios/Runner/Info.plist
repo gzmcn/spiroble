@@ -5,7 +5,10 @@
 
     <key>NSBluetoothPeripheralUsageDescription</key>
     <string>BLEcihaz</string>
-
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BLE cihazlarını bulmak için gereklidir.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Konum bilgisine her zaman erişim gereklidir.</string>
 
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>

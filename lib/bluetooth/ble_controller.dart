@@ -18,6 +18,7 @@ class BleController {
   void initialize() {
     print("BLE bağlantısı başlatılıyor...");
     // Gerekli başlangıç işlemleri burada yapılabilir.
+    
   }
 
   // BLE cihazlarını taramaya başlama
@@ -58,25 +59,25 @@ class BleController {
 
   // Bağlantı kurma
   Future<void> connectToDevice(String deviceId) async {
-    print("Cihaza bağlanılıyor: $deviceId");
-    _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
-      (connectionState) async {
-        print("Bağlantı durumu: ${connectionState.connectionState}");
-        if (connectionState.connectionState ==
-            DeviceConnectionState.connected) {
-          print("Bağlantı başarılı: $deviceId");
-          await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
-          await _initializeCommunication(deviceId);
-        } else if (connectionState.connectionState ==
-            DeviceConnectionState.disconnected) {
-          print("Cihaz bağlantısı kesildi: $deviceId");
-        }
-      },
-      onError: (error) {
-        print("Bağlantı sırasında hata oluştu: $error");
-      },
-    );
-  }
+  print("Cihaza bağlanılıyor: $deviceId");
+  _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
+    (connectionState) async {
+      print("Bağlantı durumu: ${connectionState.connectionState}");
+      if (connectionState.connectionState == DeviceConnectionState.connected) {
+        print("Bağlantı başarılı: $deviceId");
+        await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
+        await _initializeCommunication(deviceId); // Karakteristik başlatılıyor
+        await sendChar1(); // Karakteristik başlatıldıktan sonra veriyi gönderin
+      } else if (connectionState.connectionState == DeviceConnectionState.disconnected) {
+        print("Cihaz bağlantısı kesildi: $deviceId");
+      }
+    },
+    onError: (error) {
+      print("Bağlantı sırasında hata oluştu: $error");
+    },
+  );
+}
+
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> _initializeCommunication(String deviceId) async {
