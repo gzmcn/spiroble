@@ -35,7 +35,7 @@ class _SpiroScreenState extends State<SpiroScreen> {
     });
 
     // Initialize characteristic (if needed) and send char1
-    await _bleController.initializeCommunication("deviceId");
+    await _bleController.initializeCharacteristic("deviceId", "serviceUuid", "characteristicUuid" );
 
     try {
       await _bleController.sendChar1();
