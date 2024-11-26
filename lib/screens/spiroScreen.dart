@@ -1,28 +1,53 @@
 import 'package:flutter/material.dart';
+import '../bluetooth/ble_controller.dart';
 
 class SpiroScreen extends StatefulWidget {
   const SpiroScreen({super.key});
 
   @override
-  State<SpiroScreen> createState() => _SpiroScreen();
+  _SpiroScreenState createState() => _SpiroScreenState();
 }
 
-class _SpiroScreen extends State<SpiroScreen> {
-  double progress = 0.0; // Initial progress (0 to 10)
-  final double maxHeight = 10.0; // Maksimum yükseklik (10 birim)
+class _SpiroScreenState extends State<SpiroScreen> {
+  late final BleController _bleController;
+  double progress = 0.0; // Sıvı seviyesi başlangıcı
+  final double maxHeight = 10.0; // Maksimum sıvı yüksekliği
 
-  // This function is used to increment the progress by 1 unit
-  void incrementProgress() {
+  @override
+  void initState() {
+    super.initState();
+    _bleController = BleController(); // BLE bağlantısı için kontrolcü
+    _bleController.initialize(); // BLE başlatma işlemleri
+  }
+
+  @override
+  void dispose() {
+    _bleController.dispose(); // Kaynakları temizle
+    super.dispose();
+  }
+
+  // Sıvı seviyesini artır ve BLE cihazına Char1 gönder
+  Future<void> incrementProgress() async {
     setState(() {
       if (progress < maxHeight) {
-        progress += 1.0; // Char 1 geldiğinde sıvıyı bir birim yükselt
+        progress += 1.0; // Seviyeyi artır
       }
     });
+
+    // BLE cihazına Char1 gönder
+    try {
+      await _bleController.sendChar1();
+    } catch (error) {
+      print("Char 1 gönderilirken hata oluştu: $error");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('SpiroScreen'),
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -45,15 +70,13 @@ class _SpiroScreen extends State<SpiroScreen> {
               ),
               const SizedBox(height: 40),
               CustomPaint(
-                size: const Size(120, 300), // Boru boyutu
+                size: const Size(120, 300), // Borunun boyutu
                 painter: SpirometerPainter(progress, maxHeight),
               ),
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
-                  // Teste başla işlevi
-                  print("Teste Başla butonuna tıklandı.");
-                  incrementProgress(); // Butona basıldığında sıvıyı bir birim yükselt
+                  incrementProgress(); // Butona basıldığında işlemleri başlat
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),
@@ -75,7 +98,7 @@ class _SpiroScreen extends State<SpiroScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              if (progress == maxHeight) // Sıvı en üst seviyeye geldiğinde
+              if (progress == maxHeight) // Sıvı maksimum seviyeye ulaştıysa
                 const Text(
                   "Sonuçlandı",
                   style: TextStyle(
@@ -93,8 +116,8 @@ class _SpiroScreen extends State<SpiroScreen> {
 }
 
 class SpirometerPainter extends CustomPainter {
-  final double progress; // Animasyonun ilerleme değeri
-  final double maxHeight; // Maksimum yükseklik (10 birim)
+  final double progress;
+  final double maxHeight;
 
   SpirometerPainter(this.progress, this.maxHeight);
 
@@ -102,7 +125,7 @@ class SpirometerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Paint progressPaint = Paint()
       ..shader = LinearGradient(
-        colors: [Colors.blueAccent, Colors.purpleAccent], // Gradyan renkler
+        colors: [Colors.blueAccent, Colors.purpleAccent],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
@@ -113,29 +136,29 @@ class SpirometerPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
 
-    final rect = Rect.fromLTWH(20, 10, size.width - 40,
-        size.height - 20); // Boru şeklindeki dikdörtgen
-    final progressHeight =
-        (size.height - 20) * (progress / maxHeight); // Sıvı seviyesi
+    final rect = Rect.fromLTWH(
+      20,
+      10,
+      size.width - 40,
+      size.height - 20,
+    );
+    final progressHeight = (size.height - 20) * (progress / maxHeight);
 
     // Boru (dış çerçeve)
     canvas.drawRect(rect, borderPaint);
 
-    // İçerideki sıvı
+    // Sıvının içi
     canvas.drawRect(
-      Rect.fromLTWH(20, size.height - 10 - progressHeight, size.width - 40,
-          progressHeight),
+      Rect.fromLTWH(
+        20,
+        size.height - 10 - progressHeight,
+        size.width - 40,
+        progressHeight,
+      ),
       progressPaint,
     );
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: SpiroScreen(),
-  ));
 }

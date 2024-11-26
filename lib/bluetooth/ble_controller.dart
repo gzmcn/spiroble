@@ -7,16 +7,21 @@ class BleController {
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
-  StreamController.broadcast();
+      StreamController.broadcast();
   Stream<List<DiscoveredDevice>> get deviceStream =>
       _deviceStreamController.stream;
 
   final List<DiscoveredDevice> _devices = [];
   late QualifiedCharacteristic _characteristic;
 
+  // BLE bağlantısını başlatmak için initialize metodu
+  void initialize() {
+    print("BLE bağlantısı başlatılıyor...");
+    // Gerekli başlangıç işlemleri burada yapılabilir.
+  }
+
   // BLE cihazlarını taramaya başlama
   Future<void> startScan() async {
-    // İzinleri kontrol et
     if (!await _checkPermissions()) {
       print("Gerekli izinler verilmedi!");
       return;
@@ -24,7 +29,7 @@ class BleController {
 
     print("Tarama başlatılıyor...");
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
-          (device) {
+      (device) {
         _addDeviceToStream(device);
       },
       onError: (error) {
@@ -55,9 +60,10 @@ class BleController {
   Future<void> connectToDevice(String deviceId) async {
     print("Cihaza bağlanılıyor: $deviceId");
     _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
-          (connectionState) async {
+      (connectionState) async {
         print("Bağlantı durumu: ${connectionState.connectionState}");
-        if (connectionState.connectionState == DeviceConnectionState.connected) {
+        if (connectionState.connectionState ==
+            DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
           await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
           await _initializeCommunication(deviceId);
@@ -98,11 +104,23 @@ class BleController {
     }
   }
 
+  Future<void> sendChar1() async {
+    try {
+      await _ble.writeCharacteristicWithResponse(
+        _characteristic,
+        value: [1], // Sending `char 1`
+      );
+      print("char 1 gönderildi!");
+    } catch (error) {
+      print("char 1 gönderilirken hata oluştu: $error");
+    }
+  }
+
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {
     print("Veri alımı başlatılıyor...");
     _ble.subscribeToCharacteristic(_characteristic).listen(
-          (data) {
+      (data) {
         print('Alınan veri: $data');
       },
       onError: (error) {
@@ -129,7 +147,7 @@ class BleController {
     return true;
   }
 
-  // Kaynakları temizleme
+  // Kaynakları temizlemek için dispose metodu
   void dispose() {
     print("Kaynaklar temizleniyor...");
     _scanSubscription?.cancel();
