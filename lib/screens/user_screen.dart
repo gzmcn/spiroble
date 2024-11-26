@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 import 'package:fancy_button_flutter/fancy_button_flutter.dart';
+import 'package:spiroble/widgets/menu.dart';
 
 class ProfileScreen extends StatefulWidget {
   ProfileScreen({super.key});
@@ -125,9 +126,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
+      endDrawer: const Menu(),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
+        title: const Text(
           'Profilim',
           style: TextStyle(
             fontWeight: FontWeight.bold,
@@ -135,20 +137,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.black,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await auth.signOut();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (ctx) => LoginScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             // Updated Profile Section
