@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../bluetooth/ble_controller.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+
 
 class SpiroScreen extends StatefulWidget {
   const SpiroScreen({super.key});
@@ -26,7 +28,8 @@ class _SpiroScreenState extends State<SpiroScreen> {
     super.dispose();
   }
 
-  // Sıvı seviyesini artır ve BLE cihazına Char1 gönder
+
+
   Future<void> incrementProgress() async {
     setState(() {
       if (progress < maxHeight) {
@@ -34,15 +37,43 @@ class _SpiroScreenState extends State<SpiroScreen> {
       }
     });
 
-    // Initialize characteristic (if needed) and send char1
-    await _bleController.initializeCharacteristic("deviceId", "serviceUuid", "characteristicUuid" );
+    // Start scanning when the button is pressed
+    await _bleController.startScan();
 
-    try {
-      await _bleController.sendChar1();
-    } catch (error) {
-      print("Char 1 gönderilirken hata oluştu: $error");
+    // Get the deviceId dynamically from the device stream
+    String? deviceId;
+
+    // Listen to discovered devices
+    await for (List<DiscoveredDevice> devices in _bleController.deviceStream) {
+      // You can choose a device from the list, for example, the first one
+      // Or, use a specific condition to choose a device
+      deviceId = devices.isNotEmpty ? devices.first.id : null;
+
+      if (deviceId != null) {
+        print("Device ID found: $deviceId");
+        break; // Stop listening once the device is found
+      }
+    }
+
+    if (deviceId != null) {
+      String serviceUuid = "CF3970D0-9A76-4C78-AD8D-4F429F3B2408";
+      String characteristicUuid = "19F54122-33AF-4E8F-9F3A-D5CD075EFD49";
+
+      try {
+        // Initialize the characteristic with the dynamically found deviceId
+        await _bleController.initializeCharacteristic(deviceId, serviceUuid, characteristicUuid);
+
+        // Send char1 after initializing the characteristic
+        await _bleController.sendChar1();
+      } catch (error) {
+        print("Error while initializing characteristic or sending char1: $error");
+      }
+    } else {
+      print("No device found to connect to.");
     }
   }
+
+
 
 
   @override

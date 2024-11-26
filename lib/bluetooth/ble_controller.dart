@@ -78,16 +78,22 @@ class BleController {
     );
   }
 
-  // Initialize _characteristic properly
   Future<void> initializeCharacteristic(String deviceId, String serviceUuid, String characteristicUuid) async {
-    Uuid serviceUuidParsed = Uuid.parse(serviceUuid);
-    Uuid characteristicUuidParsed = Uuid.parse(characteristicUuid);
+    try {
+      // Attempt to parse the UUIDs
+      Uuid serviceUuidParsed = Uuid.parse(serviceUuid);
+      Uuid characteristicUuidParsed = Uuid.parse(characteristicUuid);
 
-    _characteristic = QualifiedCharacteristic(
-      deviceId: deviceId,
-      serviceId: serviceUuidParsed,
-      characteristicId: characteristicUuidParsed,
-    );
+      // Initialize the characteristic
+      _characteristic = QualifiedCharacteristic(
+        deviceId: deviceId,
+        serviceId: serviceUuidParsed,
+        characteristicId: characteristicUuidParsed,
+      );
+      print("Characteristic initialized successfully.");
+    } catch (e) {
+      print("Error parsing UUIDs: $e");
+    }
   }
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
