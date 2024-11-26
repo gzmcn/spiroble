@@ -34,7 +34,7 @@ class _HomeScreenState extends State<AppScreen> {
         return TestScreen();
 
       case 3:
-        return ResultScreen();
+        return ResultsScreen();
 
       case 4:
         return BluetoothScreen();
