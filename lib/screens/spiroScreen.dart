@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../bluetooth/ble_controller.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
-
 class SpiroScreen extends StatefulWidget {
   const SpiroScreen({super.key});
 
@@ -28,8 +27,12 @@ class _SpiroScreenState extends State<SpiroScreen> {
     super.dispose();
   }
 
+  // Sonuçlandı yazısı çıktığında char 0 göndermek
+  Future<void> sendChar0() async {
+    await _bleController.sendChar1(); // char 0'ı gönder
+  }
 
-
+  // Progress artırma ve Bluetooth cihazıyla iletişim başlatma
   Future<void> incrementProgress() async {
     setState(() {
       if (progress < maxHeight) {
@@ -73,9 +76,6 @@ class _SpiroScreenState extends State<SpiroScreen> {
     }
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +116,7 @@ class _SpiroScreenState extends State<SpiroScreen> {
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                   backgroundColor: const Color.fromARGB(255, 251, 251, 251),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 30, vertical: 15), // Buton boyutu
+                      horizontal: 30, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.circular(30), // Yuvarlatılmış köşeler
@@ -133,13 +133,40 @@ class _SpiroScreenState extends State<SpiroScreen> {
               ),
               const SizedBox(height: 40),
               if (progress == maxHeight) // Sıvı maksimum seviyeye ulaştıysa
-                const Text(
-                  "Sonuçlandı",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
+                Column(
+                  children: [
+                    const Text(
+                      "Sonuçlandı",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Sonuçlandı yazısı çıktığında char 0 gönder
+                        await sendChar0();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 251, 251, 251),
+                        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 8,
+                      ),
+                      child: const Text(
+                        "Char 0 Verisi Gönder",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
@@ -176,23 +203,23 @@ class SpirometerPainter extends CustomPainter {
       size.width - 40,
       size.height - 20,
     );
-    final progressHeight = (size.height - 20) * (progress / maxHeight);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, const Radius.circular(10)), borderPaint);
 
-    // Boru (dış çerçeve)
-    canvas.drawRect(rect, borderPaint);
-
-    // Sıvının içi
-    canvas.drawRect(
-      Rect.fromLTWH(
-        20,
-        size.height - 10 - progressHeight,
-        size.width - 40,
-        progressHeight,
-      ),
-      progressPaint,
+    // Bar
+    final double barHeight = (progress / maxHeight) * size.height;
+    final barRect = Rect.fromLTWH(
+      20,
+      size.height - barHeight - 10,
+      size.width - 40,
+      barHeight,
     );
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(barRect, const Radius.circular(10)), progressPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
 }

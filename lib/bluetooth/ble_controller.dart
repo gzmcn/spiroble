@@ -140,6 +140,24 @@ class BleController {
     }
   }
 
+  Future<void> sendChar0() async {
+    // Ensure the characteristic is initialized before use.
+    if (_characteristic == null) {
+      print("Characterisitc is not initialized.");
+      return;
+    }
+
+    try {
+      await _ble.writeCharacteristicWithResponse(
+        _characteristic,
+        value: [0], // Sending `char 1`
+      );
+      print("char 0 gönderildi!");
+    } catch (error) {
+      print("char 0 gönderilirken hata oluştu: $error");
+    }
+  }
+
 
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {

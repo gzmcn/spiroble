@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spiroble/bluetooth/ble_controller.dart';
 import 'package:spiroble/screens/spiroScreen.dart';
 
 class TestScreen extends StatefulWidget {
@@ -10,12 +11,15 @@ class TestScreen extends StatefulWidget {
 
 class _TestScreen extends State<TestScreen>
     with SingleTickerProviderStateMixin {
+  late final BleController _bleController; 
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
+    _bleController = BleController();
+    _bleController.initialize();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -28,8 +32,13 @@ class _TestScreen extends State<TestScreen>
 
   @override
   void dispose() {
+    _bleController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+   Future<void> sendChar0() async {
+    await _bleController.sendChar0(); // char 0'ı gönder
   }
 
   @override
@@ -50,7 +59,8 @@ class _TestScreen extends State<TestScreen>
               return Transform.scale(
                 scale: _animation.value, // Büyüklük animasyonu
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await sendChar0();
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => SpiroScreen(),
                     ));
