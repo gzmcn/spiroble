@@ -106,7 +106,7 @@ class BleController {
 
   Future<void> sendChar1() async {
     try {
-      await _ble.writeCharacteristicWithResponse(
+      await _ble.writeCharacteristicWithoutResponse(
         _characteristic,
         value: [1], // Sending `char 1`
       );
