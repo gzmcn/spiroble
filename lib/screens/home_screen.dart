@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:spiroble/bluetooth/ble_controller.dart';
 import 'package:spiroble/screens/testScreen.dart';
+
+BleController bleController = BleController();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -58,6 +61,35 @@ class _HomeScreen extends State<HomeScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => TestScreen(),
                   ));
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                  backgroundColor: const Color.fromARGB(255, 251, 251, 251),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 30, vertical: 15), // Buton boyutu
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(30), // Yuvarlatılmış köşeler
+                  ), // Buton metin rengi
+                  elevation: 8, // Gölge efekti
+                ),
+                child: Text(
+                  "Teste Basla",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  void example() {
+                    bleController.writeToCharacteristic(
+                      "deviceId",
+                      "serviceUuid",
+                      "characteristicUuid",
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),

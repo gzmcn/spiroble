@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+
+// Global olarak tanımlayın veya sınıf içinde kullanın
+final FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
 
 class BleController {
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
-  StreamController.broadcast();
+      StreamController.broadcast();
   Stream<List<DiscoveredDevice>> get deviceStream =>
       _deviceStreamController.stream;
 
@@ -24,7 +28,7 @@ class BleController {
 
     print("Tarama başlatılıyor...");
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
-          (device) {
+      (device) {
         _addDeviceToStream(device);
       },
       onError: (error) {
@@ -51,18 +55,40 @@ class BleController {
     }
   }
 
+  void writeToCharacteristic(
+      String deviceId, String serviceUuid, String characteristicUuid) async {
+    final characteristic = QualifiedCharacteristic(
+      deviceId: deviceId,
+      serviceId: Uuid.parse(serviceUuid),
+      characteristicId: Uuid.parse(characteristicUuid),
+    );
+
+    try {
+      await flutterReactiveBle.writeCharacteristicWithResponse(
+        characteristic,
+        value: [0x01], // 1 gönderir
+      );
+      print("Data written successfully!");
+    } catch (e) {
+      print("Write error: $e");
+    }
+  }
+
   // Bağlantı kurma
   Future<void> connectToDevice(String deviceId) async {
     while (true) {
       try {
         print("Cihaza bağlanılıyor: $deviceId");
-        _connectionSubscription = _ble.connectToDevice(
+        _connectionSubscription = _ble
+            .connectToDevice(
           id: deviceId,
           connectionTimeout: const Duration(seconds: 30), // Kısa bir timeout
-        ).listen(
-              (connectionState) async {
+        )
+            .listen(
+          (connectionState) async {
             print("Bağlantı durumu: ${connectionState.connectionState}");
-            if (connectionState.connectionState == DeviceConnectionState.connected) {
+            if (connectionState.connectionState ==
+                DeviceConnectionState.connected) {
               print("Bağlantı başarılı: $deviceId");
               await _initializeCommunication(deviceId);
               return; // Bağlantı başarılı olursa döngüden çık
@@ -73,19 +99,19 @@ class BleController {
           },
         );
 
-        await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyerek yeniden deneme
+        await Future.delayed(
+            Duration(seconds: 5)); // Gecikme ekleyerek yeniden deneme
       } catch (e) {
         print("Bağlantı hatası: $e");
       }
     }
   }
 
-
-
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> _initializeCommunication(String deviceId) async {
     Uuid serviceUuid = Uuid.parse('0000180f-0000-1000-8000-00805f9b34fb');
-    Uuid characteristicUuid = Uuid.parse('00002a19-0000-1000-8000-00805f9b34fb');
+    Uuid characteristicUuid =
+        Uuid.parse('00002a19-0000-1000-8000-00805f9b34fb');
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -112,7 +138,7 @@ class BleController {
   void _startReceivingData() {
     print("Veri alımı başlatılıyor...");
     _ble.subscribeToCharacteristic(_characteristic).listen(
-          (data) {
+      (data) {
         print('Alınan veri: $data');
       },
       onError: (error) {
