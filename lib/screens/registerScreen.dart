@@ -1,11 +1,21 @@
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'package:spiroble/screens/LoginScreen.dart';
+import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
+import 'package:spiroble/widgets/input_fields.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  final _database = FirebaseDatabase.instance.ref();
 
   // Controller'lar
   final TextEditingController _emailController = TextEditingController();
@@ -20,15 +30,28 @@ class RegisterScreen extends StatelessWidget {
   String _cinsiyet = 'Cinsiyet Seçin';
   String _uyruk = 'Uyruk Seçin';
 
-  // Hata kontrolü
-  String? _errorMessage;
   bool _isLoading = false;
 
   // Email doğrulama fonksiyonu
   bool isValidEmail(String email) {
     final emailPattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$";
-    final regex = RegExp(emailPattern);
-    return regex.hasMatch(email);
+    return RegExp(emailPattern).hasMatch(email);
+  }
+
+  // Doğum tarihi seçimi
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (selectedDate != null) {
+      setState(() {
+        _dogumTarihiController.text =
+            "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
+      });
+    }
   }
 
   // Kayıt işlemi
@@ -41,23 +64,27 @@ class RegisterScreen extends StatelessWidget {
     final String kilo = _kiloController.text.trim();
     final String boy = _boyController.text.trim();
 
-    // Hatalar için liste
     List<String> errors = [];
 
     // Form validasyonu
-    if (ad.isEmpty) errors.add('Ad alanı boş bırakılamaz');
-    if (soyad.isEmpty) errors.add('Soyad alanı boş bırakılamaz');
-    if (password.length < 6) errors.add('Şifre en az 6 haneden oluşmalıdır');
-    if (!isValidEmail(email)) errors.add('Geçerli bir email adresi giriniz');
-    if (double.tryParse(boy) == null || double.parse(boy) <= 0)
-      errors.add('Geçerli bir boy giriniz');
-    if (double.tryParse(kilo) == null || double.parse(kilo) <= 0)
-      errors.add('Geçerli bir kilo giriniz');
-    if (_cinsiyet == 'Cinsiyet Seçin') errors.add('Cinsiyet seçiniz');
-    if (_uyruk == 'Uyruk Seçin') errors.add('Uyruk seçiniz');
+    if (ad.isEmpty) errors.add('Ad alanı boş bırakılamaz.');
+    if (soyad.isEmpty) errors.add('Soyad alanı boş bırakılamaz.');
+    if (!isValidEmail(email)) errors.add('Geçerli bir e-posta adresi giriniz.');
+    if (password.length < 6) errors.add('Şifre en az 6 karakter olmalıdır.');
+    if (double.tryParse(boy) == null || double.parse(boy) <= 0) {
+      errors.add('Geçerli bir boy giriniz.');
+    }
+    if (double.tryParse(boy)! >= 250) {
+      errors.add('lütfen geçerli bir boy giriniz');
+    }
+    if (double.tryParse(kilo) == null || double.parse(kilo) <= 0) {
+      errors.add('Geçerli bir kilo giriniz.');
+    }
+    if (_cinsiyet == 'Cinsiyet Seçin') errors.add('Cinsiyet seçiniz.');
+    if (_uyruk == 'Uyruk Seçin') errors.add('Uyruk seçiniz.');
 
+    // Hataları göster
     if (errors.isNotEmpty) {
-      // Hata mesajlarını kullanıcıya göster
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -74,8 +101,12 @@ class RegisterScreen extends StatelessWidget {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      // Firebase Authentication ile kullanıcı kaydı
+      // Firebase Authentication ile kayıt
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -83,7 +114,7 @@ class RegisterScreen extends StatelessWidget {
       );
 
       // Firestore'a kullanıcı verilerini kaydetme
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      await _database.child('users').child(userCredential.user!.uid).set({
         'email': email,
         'ad': ad,
         'soyad': soyad,
@@ -96,10 +127,9 @@ class RegisterScreen extends StatelessWidget {
 
       // Kayıt başarılı
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => AppScreen()),
       );
     } catch (e) {
-      // Kayıt sırasında hata mesajı göster
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -113,94 +143,181 @@ class RegisterScreen extends StatelessWidget {
           ],
         ),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Kayıt Ol')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            TextField(
-              controller: _adController,
-              decoration: InputDecoration(labelText: 'Ad'),
-            ),
-            TextField(
-              controller: _soyadController,
-              decoration: InputDecoration(labelText: 'Soyad'),
-            ),
-            TextField(
-              controller: _dogumTarihiController,
-              decoration:
-                  InputDecoration(labelText: 'Doğum Tarihi (YYYY-MM-DD)'),
-            ),
-            TextField(
-              controller: _kiloController,
-              decoration: InputDecoration(labelText: 'Kilo (kg)'),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: _boyController,
-              decoration: InputDecoration(labelText: 'Boy (cm)'),
-              keyboardType: TextInputType.number,
-            ),
-            // Cinsiyet Seçimi
-            DropdownButton<String>(
-              value: _cinsiyet,
-              onChanged: (String? newValue) {
-                // Cinsiyet seçim işlemi
-                _cinsiyet = newValue!;
-              },
-              items: <String>['Cinsiyet Seçin', 'Erkek', 'Kadın']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            // Uyruk Seçimi
-            DropdownButton<String>(
-              value: _uyruk,
-              onChanged: (String? newValue) {
-                // Uyruk seçim işlemi
-                _uyruk = newValue!;
-              },
-              items: <String>[
-                'Uyruk Seçin',
-                'Beyaz Tenli',
-                'Afro-Amerikalı',
-                'Kuzeydoğu-Asyalı',
-                'Güneydoğu-Asyalı',
-                'Diğer'
-              ].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-posta'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Şifre'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _register(context),
-              child:
-                  _isLoading ? CircularProgressIndicator() : Text('Kayıt Ol'),
-            ),
-          ],
+      appBar: AppBar(
+        title: Text('Kayıt Ol'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: InputFields(
+                      controller: _adController,
+                      placeholder: 'Ad',
+                      icon: Icon(Icons.person_2_rounded),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: InputFields(
+                      controller: _soyadController,
+                      placeholder: 'Soyad',
+                      icon: Icon(Icons.person),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 15),
+              GestureDetector(
+                onTap: () => _selectDate(context),
+                child: AbsorbPointer(
+                  child: InputFields(
+                    controller: _dogumTarihiController,
+                    placeholder: 'Doğum Tarihi',
+                    icon: Icon(Icons.calendar_today),
+                  ),
+                ),
+              ),
+              SizedBox(height: 15),
+              InputFields(
+                controller: _kiloController,
+                placeholder: 'Kilo (kg)',
+                icon: Icon(Icons.line_weight),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 15),
+              InputFields(
+                controller: _boyController,
+                placeholder: 'Boy (cm)',
+                icon: Icon(Icons.height),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                      child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: Colors.black,
+                          width: 1), // Border rengi ve genişliği
+                      borderRadius: BorderRadius.circular(18),
+                      // Kenarları yuvarlamak için
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: DropdownButton<String>(
+                      value: _cinsiyet,
+                      isExpanded: true,
+                      onChanged: (value) => setState(() {
+                        _cinsiyet = value!;
+                      }),
+                      items: ['Cinsiyet Seçin', 'Erkek', 'Kadın']
+                          .map((value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ))
+                          .toList(),
+                    ),
+                  )),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Colors.black,
+                            width: 1), // Border rengi ve genişliği
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: DropdownButton<String>(
+                        value: _uyruk,
+                        isExpanded: true,
+                        onChanged: (value) => setState(() {
+                          _uyruk = value!;
+                        }),
+                        items: [
+                          'Uyruk Seçin',
+                          'Beyaz Tenli',
+                          'Afro-Amerikalı',
+                          'Kuzeydoğu-Asyalı',
+                          'Güneydoğu-Asyalı',
+                          'Diğer'
+                        ]
+                            .map((value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(height: 15),
+              InputFields(
+                controller: _emailController,
+                placeholder: 'E-posta',
+                icon: Icon(Icons.email),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              SizedBox(height: 15),
+              InputFields(
+                controller: _passwordController,
+                placeholder: 'Şifre',
+                icon: Icon(Icons.lock),
+                secureTextEntry: true,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _isLoading
+                    ? null
+                    : () => _register(
+                        context), // Kayıt ol butonuna tıklama engeli ekledim
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFA0BAFD),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 32, vertical: 16), // Butonun iç boşlukları
+                  textStyle: const TextStyle(
+                    fontSize: 15, // Yazı boyutu
+                    fontWeight: FontWeight.bold, // Yazı kalınlığı
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                  ),
+                ),
+                child: _isLoading
+                    ? CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : Text('Kayıt Ol'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (ctx) => LoginScreen()));
+                },
+                child: const Text('Zaten hesabınız var mı'),
+              ),
+            ],
+          ),
         ),
       ),
     );

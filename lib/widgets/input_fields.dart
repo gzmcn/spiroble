@@ -14,22 +14,25 @@ class InputFields extends StatelessWidget {
     required this.icon,
     this.keyboardType = TextInputType.text,
     this.secureTextEntry = false,
-    this.onTapSuffixIcon, 
+    this.onTapSuffixIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: Color(0xFFF7F2F9),
-        borderRadius: BorderRadius.circular(30),
-      ),
+          color: Color(0xFFF7F2F9),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: Colors.grey,
+            width: 1.0,
+          )),
       child: TextField(
         controller: controller,
         obscureText: secureTextEntry,
         keyboardType: keyboardType,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: Colors.black,
@@ -37,7 +40,7 @@ class InputFields extends StatelessWidget {
         decoration: InputDecoration(
           prefixIcon: icon,
           hintText: placeholder,
-          hintStyle: TextStyle(color: Colors.grey[600]),
+          hintStyle: TextStyle(color: Colors.grey[220]),
           suffixIcon: onTapSuffixIcon != null
               ? IconButton(
                   icon: Icon(
