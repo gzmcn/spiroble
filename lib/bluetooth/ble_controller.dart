@@ -7,16 +7,21 @@ class BleController {
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
-  StreamController.broadcast();
+      StreamController.broadcast();
   Stream<List<DiscoveredDevice>> get deviceStream =>
       _deviceStreamController.stream;
 
   final List<DiscoveredDevice> _devices = [];
   late QualifiedCharacteristic _characteristic;
 
+  // BLE bağlantısını başlatmak için initialize metodu
+  void initialize() {
+    print("BLE bağlantısı başlatılıyor...");
+    // Gerekli başlangıç işlemleri burada yapılabilir.
+  }
+
   // BLE cihazlarını taramaya başlama
   Future<void> startScan() async {
-    // İzinleri kontrol et
     if (!await _checkPermissions()) {
       print("Gerekli izinler verilmedi!");
       return;
@@ -24,7 +29,7 @@ class BleController {
 
     print("Tarama başlatılıyor...");
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
-          (device) {
+      (device) {
         _addDeviceToStream(device);
       },
       onError: (error) {
@@ -53,39 +58,44 @@ class BleController {
 
   // Bağlantı kurma
   Future<void> connectToDevice(String deviceId) async {
-    while (true) {
-      try {
-        print("Cihaza bağlanılıyor: $deviceId");
-        _connectionSubscription = _ble.connectToDevice(
-          id: deviceId,
-          connectionTimeout: const Duration(seconds: 30), // Kısa bir timeout
-        ).listen(
-              (connectionState) async {
-            print("Bağlantı durumu: ${connectionState.connectionState}");
-            if (connectionState.connectionState == DeviceConnectionState.connected) {
-              print("Bağlantı başarılı: $deviceId");
-              await _initializeCommunication(deviceId);
-              return; // Bağlantı başarılı olursa döngüden çık
-            }
-          },
-          onError: (error) {
-            print("Bağlantı sırasında hata oluştu: $error");
-          },
-        );
-
-        await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyerek yeniden deneme
-      } catch (e) {
-        print("Bağlantı hatası: $e");
-      }
-    }
+    print("Cihaza bağlanılıyor: $deviceId");
+    _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
+      (connectionState) async {
+        print("Bağlantı durumu: ${connectionState.connectionState}");
+        if (connectionState.connectionState ==
+            DeviceConnectionState.connected) {
+          print("Bağlantı başarılı: $deviceId");
+          await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
+          await initializeCommunication(deviceId);
+        } else if (connectionState.connectionState ==
+            DeviceConnectionState.disconnected) {
+          print("Cihaz bağlantısı kesildi: $deviceId");
+        }
+      },
+      onError: (error) {
+        print("Bağlantı sırasında hata oluştu: $error");
+      },
+    );
   }
 
+  // Initialize _characteristic properly
+  Future<void> initializeCharacteristic(
+      String deviceId, String serviceUuid, String characteristicUuid) async {
+    Uuid serviceUuidParsed = Uuid.parse(serviceUuid);
+    Uuid characteristicUuidParsed = Uuid.parse(characteristicUuid);
 
+    _characteristic = QualifiedCharacteristic(
+      deviceId: deviceId,
+      serviceId: serviceUuidParsed,
+      characteristicId: characteristicUuidParsed,
+    );
+  }
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
-  Future<void> _initializeCommunication(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('0000180f-0000-1000-8000-00805f9b34fb');
-    Uuid characteristicUuid = Uuid.parse('00002a19-0000-1000-8000-00805f9b34fb');
+  Future<void> initializeCommunication(String deviceId) async {
+    Uuid serviceUuid = Uuid.parse('CF3970D0-9A76-4C78-AD8D-4F429F3B2408');
+    Uuid characteristicUuid =
+        Uuid.parse('19F54122-33AF-4E8F-9F3A-D5CD075EFD49');
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -108,11 +118,29 @@ class BleController {
     }
   }
 
+  Future<void> sendChar1() async {
+    // Ensure the characteristic is initialized before use.
+    if (_characteristic == null) {
+      print("Characterisitc is not initialized.");
+      return;
+    }
+
+    try {
+      await _ble.writeCharacteristicWithResponse(
+        _characteristic,
+        value: [1], // Sending `char 1`
+      );
+      print("char 1 gönderildi!");
+    } catch (error) {
+      print("char 1 gönderilirken hata oluştu: $error");
+    }
+  }
+
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {
     print("Veri alımı başlatılıyor...");
     _ble.subscribeToCharacteristic(_characteristic).listen(
-          (data) {
+      (data) {
         print('Alınan veri: $data');
       },
       onError: (error) {
@@ -139,7 +167,7 @@ class BleController {
     return true;
   }
 
-  // Kaynakları temizleme
+  // Kaynakları temizlemek için dispose metodu
   void dispose() {
     print("Kaynaklar temizleniyor...");
     _scanSubscription?.cancel();
