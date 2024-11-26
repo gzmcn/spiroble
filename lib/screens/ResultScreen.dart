@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/screens/TestDetailScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,14 +37,22 @@ class ResultsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFA0BAFD),
         elevation: 0,
-        title: const Text(
-          'Sonuçlarım',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+        centerTitle: true,
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TestDetailScreen()),
+            );
+          },
+          child: const Text(
+            'Sonuçlarım',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-        centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
