@@ -62,9 +62,14 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    _bleController.connectToDevice(device.id);
+                    if(_bleController.connection){
+                      _bleController.disconnectToDevice(device.id);
+                    }else{
+                      _bleController.connectToDevice(device.id);
+                    }
+
                   },
-                  child: const Text('Bağlan'),
+                  child:  Text( _bleController.connection ? 'Bağlantıyı Kes' : 'Bağlan',),
                 ),
               );
             },

@@ -1,18 +1,33 @@
 import 'dart:async';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/material.dart';
 
-class BleController {
+class BleController extends ChangeNotifier{
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
+
+
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
       StreamController.broadcast();
+
   Stream<List<DiscoveredDevice>> get deviceStream =>
       _deviceStreamController.stream;
 
   final List<DiscoveredDevice> _devices = [];
   late QualifiedCharacteristic _characteristic;
+
+  // dinamik veri kontrolü
+  bool _connection = false;
+  bool get connection => _connection;
+
+  String deviceId = '';
+
+  void setConnection(bool value) {
+    _connection = value;
+    notifyListeners(); // Durum değişikliğini bildir
+  }
 
   // BLE bağlantısını başlatmak için initialize metodu
   void initialize() {
@@ -65,19 +80,35 @@ class BleController {
         if (connectionState.connectionState ==
             DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
-          await Future.delayed(Duration(seconds: 5)); // Gecikme ekleyin
+          this.deviceId = deviceId;
+          setConnection(true);
+          await Future.delayed(Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
           await uid2(deviceId);
           await uid3(deviceId);
         } else if (connectionState.connectionState ==
             DeviceConnectionState.disconnected) {
           print("Cihaz bağlantısı kesildi: $deviceId");
+          setConnection(false);
         }
       },
       onError: (error) {
         print("Bağlantı sırasında hata oluştu: $error");
       },
     );
+  }
+
+  Future<void> disconnectToDevice(String deviceId) async {
+    try {
+      await _connectionSubscription?.cancel();
+      _connectionSubscription = null;
+      print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
+      setConnection(false); // Bağlantı durumu güncellendi
+      deviceId = '';
+    } catch (error) {
+      print("Cihaz bağlantısı kesilirken hata oluştu: $error");
+      setConnection(true);
+    }
   }
 
   Future<void> initializeCharacteristic(String deviceId, String serviceUuid, String characteristicUuid) async {
@@ -178,20 +209,25 @@ class BleController {
   Future<void> sendChar1() async {
     // Ensure the characteristic is initialized before use.
     if (_characteristic == null) {
-      print("Characterisitc is not initialized.");
+      print("Characteristic is not initialized.");
       return;
     }
 
     try {
+      // Log the characteristic's UUID and the data being sent for debugging purposes
+      print("Sending char 1 to characteristic: $_characteristic");
+
+      // Send the char1 value to the characteristic
       await _ble.writeCharacteristicWithResponse(
         _characteristic,
         value: [1], // Sending `char 1`
       );
       print("char 1 gönderildi!");
     } catch (error) {
-      print("char 1 gönderilirken hata oluştu: $error");
+      print("Error sending char 1: $error");
     }
   }
+
 
 
   // Cihazdan veri okuma işlemini başlatma
