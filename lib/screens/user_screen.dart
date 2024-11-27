@@ -1,19 +1,128 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/services.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/widgets/CircularProgressBar.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 import 'package:fancy_button_flutter/fancy_button_flutter.dart';
+import 'dart:convert';
+import 'package:csv/csv.dart';
+import 'dart:math';
 
 class ProfileScreen extends StatefulWidget {
+  
   ProfileScreen({super.key});
-
+  
   @override
   State<StatefulWidget> createState() {
     return _ProfileScreenState();
   }
 }
+var name ;
+
+
+
+Future<void> calculateM() async {
+  try {
+    
+    // İki CSV dosyasını oku
+    final String secondTableData =
+        await rootBundle.loadString('assets/ikincitablo.csv');
+    final String parametersData =
+        await rootBundle.loadString('assets/parameters.csv');
+
+    // CSV verilerini parse et
+    List<List<dynamic>> secondTable =
+        const CsvToListConverter().convert(secondTableData);
+    List<List<dynamic>> parametersTable =
+        const CsvToListConverter().convert(parametersData);
+
+    // Sabitleri oku (ikincitablo.csv)
+    Map<String, Map<String, double>> constants = {};
+    for (int i = 1; i < secondTable.length; i++) {
+      constants[secondTable[i][0]] = {
+        'FEV1 males': secondTable[i][1],
+        'FVC males': secondTable[i][2],
+        'FEV1FVC males': secondTable[i][3],
+        'FEF2575 males': secondTable[i][4],
+        'FEF75 males': secondTable[i][5],
+        'FEV1 females': secondTable[i][6],
+        'FVC females': secondTable[i][7],
+        'FEV1FVC females': secondTable[i][8],
+        'FEF2575 females': secondTable[i][9],
+        'FEF75 females': secondTable[i][10],
+      };
+    }
+
+    // Mspline hesaplama fonksiyonu
+    double interpolateMspline(
+        double age, double ageClose, double ageNext, double msplineClose, double msplineNext) {
+      return msplineClose +
+          ((ageClose - age) / 0.25) * (msplineNext - msplineClose);
+    }
+
+    // İşlenmiş veriler
+    List<Map<String, dynamic>> processedResults = [];
+
+    for (int i = 1; i < parametersTable.length - 1; i++) {
+      double age = (parametersTable[i][0] as num).toDouble();
+      double height = 170.0; // Boy değerini double yap
+      int AfrAm = 0; // Örnek kategori
+      int NEAsia = 0; //aaaaa
+
+      
+      int SEAsia = 1;
+
+      // Mspline değerleri
+      double msplineClose = (parametersTable[i][1] as num).toDouble();
+      double msplineNext = (parametersTable[i + 1][1] as num).toDouble();
+      double ageClose = (parametersTable[i][0] as num).toDouble();
+      double ageNext = (parametersTable[i + 1][0] as num).toDouble();
+
+
+      // Mspline interpolasyonu
+      double msplineInterpolated =
+          interpolateMspline(age, ageClose, ageNext, msplineClose, msplineNext);
+
+      // Formül sabitleri
+      double a0 = (constants['a0']?["FEV1 males"] ?? 0).toDouble();
+      double a1 = (constants['a1']?["FEV1 males"] ?? 0).toDouble();
+      double a2 = (constants['a2']?["FEV1 males"] ?? 0).toDouble();
+      double a3 = (constants['a3']?["FEV1 males"] ?? 0).toDouble();
+      double a4 = (constants['a4']?["FEV1 males"] ?? 0).toDouble();
+      double a5 = (constants['a5']?["FEV1 males"] ?? 0).toDouble();
+
+      // M Hesaplama
+      double M = exp(
+        a0 +
+            a1 * log(height) +
+            a2 * log(age) +
+            a3 * AfrAm +
+            a4 * NEAsia +
+            a5 * SEAsia +
+            msplineInterpolated,
+      );
+
+      processedResults.add({
+        'age': age,
+        'M': M,
+        'msplineInterpolated': msplineInterpolated,
+      });
+    }
+
+    // Sonuçları yazdır
+    for (var result in processedResults) {
+      print(
+          'Yaş: ${result['age']}, M: ${result['M']}, Spline: ${result['msplineInterpolated']}');
+    }
+  } catch (e) {
+    print('Bir hata oluştu: $e');
+    print('aa');
+  }
+}
+
+
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final DatabaseReference database = FirebaseDatabase.instance.ref();
@@ -48,6 +157,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> fetchUserData() async {
+    
+    
     try {
       final currentUser = auth.currentUser;
       if (currentUser != null) {
@@ -57,6 +168,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Veri türü uyumsuzluğunu düzeltmek için 'toString' kullanıyoruz
           setState(() {
+           
+            
             adController.text = data['ad'] ?? '';
             soyadController.text = data['soyad'] ?? '';
             dogumTarihiController.text = data['dogumTarihi'] ?? '';
@@ -290,6 +403,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             SizedBox(height: 24),
 
+            SizedBox(height: 16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: FancyButton(
+                onClick: () async {
+                  try {
+                    await calculateM();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("M hesaplama tamamlandı!")),
+                    );
+                  } catch (error) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Hesaplama sırasında bir hata oluştu: $error")),
+                    );
+                  }
+                },
+                button_text: "M Hesapla",
+                button_height: 50,
+                button_width: 300,
+                button_radius: 50,
+                button_outline_width: 0,
+                button_outline_color: Colors.pink[50],
+                button_text_size: 22,
+                button_color: Colors.orange,
+              ),
+            ),
+
             // Save Button
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -311,7 +451,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   progress: 33,
                   maxValue: 55,
                   minValue: 1,
-                  text: "",
+                  text: "asd",
                 )
               ],
             )
