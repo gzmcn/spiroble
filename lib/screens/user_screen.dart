@@ -311,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   progress: 33,
                   maxValue: 55,
                   minValue: 1,
-                  text: "fsfs",
+                  text: "",
                 )
               ],
             )
