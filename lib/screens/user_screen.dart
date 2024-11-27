@@ -1,6 +1,9 @@
+import 'dart:ffi';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:spiroble/function/bla.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/widgets/CircularProgressBar.dart';
 import 'package:spiroble/widgets/input_fields.dart';
@@ -76,6 +79,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> saveUserData() async {
+    double age = 12.7;
+
+    // calculateFEV1 fonksiyonunu await ile çağırıyoruz
+    double fev1 = await FEV1Calculator().calculateFEV1(age);
+
+    // Sonucu yazdırıyoruz
+    print('FEV1 for age $age is: $fev1');
+
     try {
       final currentUser = auth.currentUser;
       if (currentUser != null) {
@@ -166,10 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundImage: AssetImage("assets/user-logo.png"),
-                    radius: 35,
-                  ),
                   SizedBox(width: 20), // Spacing between avatar and text
                   Expanded(
                     // Ensures the text gets enough space
