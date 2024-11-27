@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -20,119 +21,98 @@ class ProfileScreen extends StatefulWidget {
   }
 }
 
-Future<void> calculateM(String gender) async {
+Future<void> calculateMForAllLabels(String gender) async {
   try {
-    // İki CSV dosyasını oku
-    final String secondTableData =
-        await rootBundle.loadString('assets/ikincitablo.csv');
-    final String parametersData =
-        await rootBundle.loadString('assets/parameters.csv');
+    // Dosyaları yükle
+    final parametersData = await rootBundle.loadString('assets/parameters.csv');
+    final secondTableData = await rootBundle.loadString('assets/ikincitablo.csv');
 
-    // CSV verilerini parse et
-    List<List<dynamic>> secondTable =
-        const CsvToListConverter().convert(secondTableData);
-    List<List<dynamic>> parametersTable =
-        const CsvToListConverter().convert(parametersData);
+    // CSV verilerini ayrıştır ve tür dönüşümü yap
+    List<List<double>> parametersTable = const LineSplitter()
+        .convert(parametersData)
+        .map((line) => line.split(',').map((e) => double.tryParse(e) ?? 0.0).toList())
+        .toList();
+    List<List<dynamic>> secondTable = const LineSplitter()
+        .convert(secondTableData)
+        .map((line) => line.split(','))
+        .toList();
 
-    // Sabitleri oku (ikincitablo.csv)
+    // Sabitler (ikincitablo.csv) - Yatay olarak al
     Map<String, Map<String, double>> constants = {};
     for (int i = 1; i < secondTable.length; i++) {
-      constants[secondTable[i][0]] = {
-        'FEV1 males': secondTable[i][1],
-        'FVC males': secondTable[i][2],
-        'FEV1FVC males': secondTable[i][3],
-        'FEF2575 males': secondTable[i][4],
-        'FEF75 males': secondTable[i][5],
-        'FEV1 females': secondTable[i][6],
-        'FVC females': secondTable[i][7],
-        'FEV1FVC females': secondTable[i][8],
-        'FEF2575 females': secondTable[i][9],
-        'FEF75 females': secondTable[i][10],
-      };
-    }
-
-    // Mspline hesaplama fonksiyonu
-    double interpolateMspline(
-        double age, double ageClose, double ageNext, double msplineClose, double msplineNext) {
-      return msplineClose +
-          ((ageClose - age) / 0.25) * (msplineNext - msplineClose);
-    }
-
-    // İşlenmiş veriler
-    List<Map<String, dynamic>> processedResults = [];
-
-    for (int i = 1; i < parametersTable.length - 1; i++) {
-      double age = (parametersTable[i][0] as num).toDouble();
-      double height = 170.0; // Boy değeri örnek olarak
-      int AfrAm = 1; // Örnek kategori
-      int NEAsia = 0;
-      int SEAsia = 0;
-
-      // Mspline değerleri
-      double msplineClose = (parametersTable[i][1] as num).toDouble();
-      double msplineNext = (parametersTable[i + 1][1] as num).toDouble();
-      double ageClose = (parametersTable[i][0] as num).toDouble();
-      double ageNext = (parametersTable[i + 1][0] as num).toDouble();
-
-      // Mspline interpolasyonu
-      double msplineInterpolated =
-          interpolateMspline(age, ageClose, ageNext, msplineClose, msplineNext);
-
-      Map<String, double> calculatedM = {};
-
-      // Başlık bazlı M hesaplaması (cinsiyete göre farklı parametreler kullanılıyor)
-      for (var title in constants.keys) {
-        double a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0;
-
-        // Erkek ve Kadın için farklı parametreler seç
-        if (gender == 'Erkek') {
-          print("erkek");
-          a0 = constants[title]?['FEV1 males'] ?? 0;
-          a1 = constants[title]?['FVC males'] ?? 0;
-          a2 = constants[title]?['FEV1FVC males'] ?? 0;
-          a3 = constants[title]?['FEF2575 males'] ?? 0;
-          a4 = constants[title]?['FEF75 males'] ?? 0;
-        } else if (gender == 'Kadin') {
-          print("kadın");
-          a0 = constants[title]?['FEV1 females'] ?? 0;
-          a1 = constants[title]?['FVC females'] ?? 0;
-          a2 = constants[title]?['FEV1FVC females'] ?? 0;
-          a3 = constants[title]?['FEF2575 females'] ?? 0;
-          a4 = constants[title]?['FEF75 females'] ?? 0;
+      for (int j = 1; j < secondTable[i].length; j++) {
+        String label = secondTable[0][j]; // The label is in the first row
+        if (!constants.containsKey(label)) {
+          constants[label] = {};
         }
+        constants[label]?[secondTable[i][0]] = double.parse(secondTable[i][j]);
+      }
+    }
 
-        // M Hesaplama
+    // Hasta verileri
+    double age = 3;
+    double height = 170;
+    int afrAm = 1;
+    int neAsia = 0;
+    int seAsia = 0;
+
+    // Mspline interpolasyonu fonksiyonu
+    double interpolateMspline(double age, double ageClose, double ageNext,
+        double msplineClose, double msplineNext) {
+      return msplineClose +
+          ((age - ageClose) / 0.25) * (msplineNext - msplineClose);
+    }
+
+    // Sonuçları sakla
+    Map<String, double> results = {};
+
+    // Her etiket için hesaplama yap
+    for (var title in constants.keys) {
+      // Cinsiyete göre sabitler
+      var labels = gender == 'Erkek'
+          ? ['FEV1 males', 'FVC males', 'FEV1FVC males', 'FEF2575 males', 'FEF75 males']
+          : ['FEV1 females', 'FVC females', 'FEV1FVC females', 'FEF2575 females', 'FEF75 females'];
+
+      for (var label in labels) {
+        // Sabitler a0, a1, a2, a3, a4, a5 değerlerini al
+        double a0 = constants[label]?['a0'] ?? 0.0;
+        double a1 = constants[label]?['a1'] ?? 0.0;
+        double a2 = constants[label]?['a2'] ?? 0.0;
+        double a3 = constants[label]?['a3'] ?? 0.0;
+        double a4 = constants[label]?['a4'] ?? 0.0;
+        double a5 = constants[label]?['a5'] ?? 0.0;
+
+        print(label);
+
+        // Yaş aralığını bul
+        var closeRow = parametersTable.lastWhere((row) => row[0] <= age);
+        var nextRow = parametersTable.firstWhere((row) => row[0] > age);
+
+        // Mspline değerini her etiket için farklı kolonlardan al
+        int msplineColumnIndex = labels.indexOf(label) + 1; // Label'a göre kolon indeksini al
+        double msplineClose = closeRow[msplineColumnIndex];
+        double msplineNext = nextRow[msplineColumnIndex];
+
+        print(msplineClose);
+        print(msplineNext);
+
+        double msplineInterpolated = interpolateMspline(
+            age, closeRow[0], nextRow[0], msplineClose, msplineNext);
+
+        // Formülü uygula
         double M = exp(
           a0 +
               a1 * log(height) +
               a2 * log(age) +
-              a3 * AfrAm +
-              a4 * NEAsia +
-              a5 * SEAsia +
+              a3 * afrAm +
+              a4 * neAsia +
+              a5 * seAsia +
               msplineInterpolated,
         );
-
-        // Hesaplanan M değerlerini sakla
-        calculatedM[title] = M;
-      }
-
-      // Sonuçları kaydet
-      processedResults.add({
-        'age': age,
-        'M': calculatedM,
-        'msplineInterpolated': msplineInterpolated,
-      });
-    }
-
-    // Sonuçları yazdır
-    for (var result in processedResults) {
-      print('Yaş: ${result['age']}, Spline: ${result['msplineInterpolated']}');
-      for (var entry in result['M'].entries) {
-        print('${entry.key}: ${entry.value}');
-
+        results[label] = M;
+        print('$label için hesaplanan M: $M');
       }
     }
-    
 
   } catch (e) {
     print('Bir hata oluştu: $e');
@@ -202,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             String gender = data['cinsiyet'] ?? 'Erkek';
 
             // calculateM fonksiyonunu burada çağırıyoruz
-            calculateM(gender); // 'gender' parametresini gönderiyoruz
+            calculateMForAllLabels(gender); // 'gender' parametresini gönderiyoruz
           });
         }
       }
