@@ -21,6 +21,12 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final DatabaseReference database = FirebaseDatabase.instance.ref();
   final FirebaseAuth auth = FirebaseAuth.instance;
+  final FEV1Calculator fev1Calculator = FEV1Calculator();
+  double? _fev1Value;
+  String? _fev1Error;
+  bool _isLoadingFEV1 = false;
+
+
 
   bool loading = true;
   Map<String, String> userData = {
@@ -48,13 +54,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     fetchUserData();
+    _fetchFEV1(10); // Fetch FEV1 on initialization
   }
+
+  // Example async function to calculate FEV1
+Future<void> _fetchFEV1(double age) async {
+  setState(() {
+    _isLoadingFEV1 = true;
+    _fev1Error = null;
+  });
+
+  try {
+    // Use class instance instead of creating new one
+    print('Starting FEV1 calculation...'); // Debug print
+    
+    // Load data and print confirmation
+    await fev1Calculator.loadIkincitablodata();
+    print('Ikincitablo data loaded');
+    
+    await fev1Calculator.loadCSVData();
+    print('CSV data loaded');
+
+    // Print calculation parameters
+    print('Calculating with parameters:');
+    print('Index: 0');
+    print('Age: 5.5');
+    print('Height: 170.0');
+    print('IsMale: true');
+
+    double result = await fev1Calculator.calculateVariable(0, 5.5, 170.0, true);
+    print('Calculated result: $result'); // Debug print
+
+    setState(() {
+      _fev1Value = result;
+      _isLoadingFEV1 = false;
+    });
+  } catch (e) {
+    print('Error during calculation: $e'); // Debug print
+    setState(() {
+      _fev1Error = e.toString();
+      _isLoadingFEV1 = false;
+    });
+  }
+}
 
   Future<void> fetchUserData() async {
     try {
       final currentUser = auth.currentUser;
       if (currentUser != null) {
-        final snapshot = await database.child('users/${currentUser.uid}').get();
+        final snapshot =
+            await database.child('users/${currentUser.uid}').get();
         if (snapshot.exists) {
           final data = Map<String, dynamic>.from(snapshot.value as Map);
 
@@ -81,11 +130,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> saveUserData() async {
     double age = 12.7;
 
-    // calculateFEV1 fonksiyonunu await ile çağırıyoruz
-    double fev1 = await FEV1Calculator().calculateFEV1(age);
+    try {
+      // Corrected method call using existing fev1Calculator instance
+      double fev1 =
+          await fev1Calculator.calculateVariable(0, age, 170, true);
 
-    // Sonucu yazdırıyoruz
-    print('FEV1 for age $age is: $fev1');
+      // Sonucu yazdırıyoruz
+      print('FEV1 for age $age is: $fev1');
+    } catch (e) {
+      print('Error calculating FEV1: $e');
+      setState(() {
+        _fev1Error = 'Error calculating FEV1: $e';
+      });
+      // Optionally, show a SnackBar to inform the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: FEV1 hesaplanamadı.')),
+      );
+      return; // Exit the function if calculation fails
+    }
 
     try {
       final currentUser = auth.currentUser;
@@ -103,6 +165,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (error) {
       print('Error updating user data: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profil güncellenirken hata oluştu.')));
     }
   }
 
@@ -112,7 +176,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (currentUser != null) {
       // Reference to the users' data
       final database = FirebaseDatabase.instance.ref();
-      final snapshot = await database.child('users/${currentUser.uid}').get();
+      final snapshot =
+          await database.child('users/${currentUser.uid}').get();
 
       // Check if data exists
       if (snapshot.exists) {
@@ -128,6 +193,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print("No current user found.");
       return "No name available";
     }
+  }
+
+  // Added _calculateProgress method
+  double _calculateProgress(double fev1Value) {
+    double maxValue = 55.0; // Define based on your application's logic
+    if (maxValue == 0) return 0;
+    double progress = (fev1Value / maxValue) * 100;
+    return progress.clamp(0, 100);
   }
 
   @override
@@ -169,7 +242,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 130,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFFA0BAFD), Colors.deepOrange.shade700],
+                  colors: [
+                    const Color(0xFFA0BAFD),
+                    Colors.deepOrange.shade700
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -193,7 +269,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         } else if (snapshot.hasError) {
                           return Text(
                             "Error loading name",
-                            style: TextStyle(color: Colors.white, fontSize: 22),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 22),
                           );
                         } else if (snapshot.hasData) {
                           return Text(
@@ -208,7 +285,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         } else {
                           return Text(
                             "No name available",
-                            style: TextStyle(color: Colors.white, fontSize: 22),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 22),
                           );
                         }
                       },
@@ -312,16 +390,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_color: Color(0xFFA0BAFD),
               ),
             ),
-            Row(
-              children: [
-                CustomCircularProgressBar(
-                  progress: 33,
-                  maxValue: 55,
-                  minValue: 1,
-                  text: "",
-                )
-              ],
-            )
+            SizedBox(height: 24),
+
+            // FEV1 Circular Progress Bar
+            Center(
+              child: _isLoadingFEV1
+                  ? CircularProgressIndicator()
+                  : _fev1Error != null
+                      ? Text(
+                          _fev1Error!,
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : CustomCircularProgressBar(
+                          progress: _calculateProgress(_fev1Value!),
+                          maxValue: 55,
+                          minValue: 1,
+                          text: _fev1Value != null
+                              ? _fev1Value!.toStringAsFixed(2)
+                              : "N/A",
+                        ),
+            ),
           ],
         ),
       ),

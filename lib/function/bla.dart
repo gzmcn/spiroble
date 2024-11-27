@@ -1,8 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:csv/csv.dart';
+import 'dart:math';
+
 
 class FEV1Calculator {
+
+    List<List<dynamic>> ikincitabloData = []; 
+
+    Future<void> loadIkincitablodata() async {
+      final String response = await rootBundle.loadString('assets/ikincitablo.csv');
+      ikincitabloData = const CsvToListConverter().convert(response);
+    }
+
   // CSV dosyasından veriyi okuma
   Future<List<List<dynamic>>> loadCSVData() async {
     final String response = await rootBundle.loadString('assets/data.csv');
@@ -53,4 +63,91 @@ class FEV1Calculator {
 
     return fev1Male; // veya fev1Female
   }
+
+  List<dynamic> getCoefficientsColumn(int index, bool isMale) {
+  int columnIndex = isMale ? index + 1 : index + 6; // Adjust column based on gender
+  List<dynamic> columnCoefficients = [];
+  
+  // Get values from rows 1-6 (skipping header row 0) for the specified column
+  for (int i = 1; i <= 6; i++) {
+    if (i < ikincitabloData.length && columnIndex < ikincitabloData[i].length) {
+      columnCoefficients.add(ikincitabloData[i][columnIndex]);
+    }
+  }
+  
+  print('Column coefficients: $columnCoefficients');
+  return columnCoefficients;
+}
+
+  Future<double> calculateVariable(int index, double age, double height, bool isMale,
+    {double AfrAm = 1.0, double NEAsia = 0.0, double SEAsia = 0.0}) async {
+  try {
+    print('Starting calculation with:');
+    print('Index: $index, Age: $age, Height: $height, IsMale: $isMale');
+
+    // Load data if needed
+    if (ikincitabloData.isEmpty) {
+      await loadIkincitablodata();
+    }
+
+    // Validate inputs
+    if (index < 0 || index > 4) {
+      throw Exception("Invalid index. Must be between 0 and 4.");
+    }
+    if (height <= 0 || age <= 0) {
+      throw Exception("Height and age must be positive.");
+    }
+
+    // Get coefficients
+    int genderOffset = isMale ? 1 : 6;
+    print('Using gender offset: $genderOffset');
+
+    if (index + 1 >= ikincitabloData.length) {
+      throw Exception("Index out of range in ikincitabloData.");
+    }
+
+    List<dynamic> coefficients = getCoefficientsColumn(index, isMale);
+    print('Raw coefficients: $coefficients');
+
+    // Parse coefficients vertically
+    double a0 = double.parse(coefficients[0].toString());
+    double a1 = double.parse(coefficients[1].toString());
+    double a2 = double.parse(coefficients[2].toString());
+    double a3 = double.parse(coefficients[3].toString());
+    double a4 = double.parse(coefficients[4].toString());
+    double a5 = double.parse(coefficients[5].toString());
+
+    print('Parsed coefficients:');
+    print('a0: $a0, a1: $a1, a2: $a2, a3: $a3, a4: $a4, a5: $a5');
+
+    // Calculate exponent terms
+    double lnHeight = log(height);
+    double lnAge = log(age);
+
+    print('Calculated logarithms:');
+    print('ln(height): $lnHeight');
+    print('ln(age): $lnAge');
+
+    // Calculate final exponent
+    double exponent = a0 +
+        a1 * lnHeight +
+        a2 * lnAge +
+        a3 * AfrAm +
+        a4 * NEAsia +
+        a5 * SEAsia;
+
+    print('Calculated exponent: $exponent');
+
+    // Calculate final result
+    double result = exp(exponent);
+    print('Final result: $result');
+
+    return result;
+
+  } catch (e, stackTrace) {
+    print('Error in calculateVariable: $e');
+    print('Stack trace: $stackTrace');
+    rethrow;
+  }
+}
 }
