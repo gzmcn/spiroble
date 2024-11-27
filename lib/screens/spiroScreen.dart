@@ -53,8 +53,8 @@ class _SpiroScreenState extends State<SpiroScreen> {
     String? deviceId;
     await for (List<DiscoveredDevice> devices in _bleController.deviceStream) {
       for (var device in devices) {
-        if (device.name == "Blank") {
-          print("Device 'Blank' found: ${device.id}");
+        if (device.name == "Spirometer") {
+          print("Device 'Spirometer' found: ${device.id}");
 
           // Set the deviceId and stop the scan once the device is found
           deviceId = device.id;
@@ -68,8 +68,8 @@ class _SpiroScreenState extends State<SpiroScreen> {
     }
 
     if (deviceId != null) {
-      String serviceUuid = "CF3970D0-9A76-4C78-AD8D-4F429F3B2408";
-      String characteristicUuid = "19F54122-33AF-4E8F-9F3A-D5CD075EFD49";
+      String serviceUuid = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
+      String characteristicUuid = "E3223119-9445-4E96-A4A1-85358C4046A2";
 
       try {
         // Initialize the characteristic with the found deviceId
@@ -98,6 +98,7 @@ class _SpiroScreenState extends State<SpiroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final deviceId = BluetoothConnectionManager().getDeviceId();
     return Scaffold(
       appBar: AppBar(
         title: const Text('SpiroScreen'),
@@ -131,6 +132,11 @@ class _SpiroScreenState extends State<SpiroScreen> {
               ElevatedButton(
                 onPressed: () {
                   incrementProgress(); // Butona basıldığında işlemleri başlat
+                  if (deviceId != null) {
+                    _bleController.notify(deviceId!); // null değilse çağır
+                  } else {
+                    print("Bağlı cihaz yok, işlem yapılamaz.");
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),

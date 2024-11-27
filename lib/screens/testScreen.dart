@@ -70,7 +70,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
 
           // Find the device with the name "Blank"
           final deviceToConnect = devices.firstWhere(
-                (device) => device.name == "Blank",
+                (device) => device.name == "Spirometer",
             orElse: () => DiscoveredDevice(
               id: "",
               name: "",
@@ -110,7 +110,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
 
                             // After successful connection, update the UI state
                             setState(() {});  // This triggers the UI to reflect the connection change
-                            print("Device connected successfully");
+                            print("BAGLANDI");
 
                             // Now navigate to the SpiroScreen
                             Navigator.of(context).push(MaterialPageRoute(

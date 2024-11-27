@@ -84,7 +84,7 @@ class BleController extends ChangeNotifier{
           setConnection(true);
           await Future.delayed(Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
-          await uid2(deviceId);
+          await notify(deviceId);
           await uid3(deviceId);
         } else if (connectionState.connectionState ==
             DeviceConnectionState.disconnected) {
@@ -131,8 +131,8 @@ class BleController extends ChangeNotifier{
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> initializeCommunication(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('CF3970D0-9A76-4C78-AD8D-4F429F3B2408');
-    Uuid characteristicUuid = Uuid.parse('19F54122-33AF-4E8F-9F3A-D5CD075EFD49');
+    Uuid serviceUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
+    Uuid characteristicUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -156,9 +156,9 @@ class BleController extends ChangeNotifier{
   }
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
-  Future<void> uid2(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('E23A9EDE-3257-4AAA-BF53-8FAC3289726F'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
-    Uuid characteristicUuid = Uuid.parse('B6B22132-0DD2-4480-82C5-F8783DFA6C42'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
+  Future<void> notify(String deviceId) async {
+    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
+    Uuid characteristicUuid = Uuid.parse('BEB5483E-36E1-4688-B7F5-EA07361B26A8'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -182,8 +182,8 @@ class BleController extends ChangeNotifier{
   }
 
   Future<void> uid3(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('D72FDD71-D631-4381-841B-B695DA002032'); // D72FDD71-D631-4381-841B-B695DA002032
-    Uuid characteristicUuid = Uuid.parse('F8C87645-5A2E-40CF-9B22-30D72089DF2B'); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
+    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // D72FDD71-D631-4381-841B-B695DA002032
+    Uuid characteristicUuid = Uuid.parse('E3223119-9445-4E96-A4A1-85358C4046A2'); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
