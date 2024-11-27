@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
+import 'package:spiroble/widgets/CircularProgressBar.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 import 'package:fancy_button_flutter/fancy_button_flutter.dart';
 
@@ -303,6 +304,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_text_size: 22,
                 button_color: Color(0xFFA0BAFD),
               ),
+            ),
+            Row(
+              children: [
+                CustomCircularProgressBar(
+                  progress: 33,
+                  maxValue: 55,
+                  minValue: 1,
+                  text: "fsfs",
+                )
+              ],
             )
           ],
         ),
