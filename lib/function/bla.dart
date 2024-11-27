@@ -42,7 +42,7 @@ class FEV1Calculator {
     }).toList();
 
     List<double> fev1Females = rawData.map((row) {
-      // FEV1 kadın verisini double'a dönüştürme
+      // FEV1 kadın verisini double'a dönüştürmem
       return double.tryParse(row[6].toString()) ?? 0.0;
     }).toList();
 
