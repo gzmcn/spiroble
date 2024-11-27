@@ -19,13 +19,9 @@ class ProfileScreen extends StatefulWidget {
     return _ProfileScreenState();
   }
 }
-var name ;
 
-
-
-Future<void> calculateM() async {
+Future<void> calculateM(String gender) async {
   try {
-    
     // İki CSV dosyasını oku
     final String secondTableData =
         await rootBundle.loadString('assets/ikincitablo.csv');
@@ -67,12 +63,10 @@ Future<void> calculateM() async {
 
     for (int i = 1; i < parametersTable.length - 1; i++) {
       double age = (parametersTable[i][0] as num).toDouble();
-      double height = 170.0; // Boy değerini double yap
-      int AfrAm = 0; // Örnek kategori
-      int NEAsia = 0; //aaaaa
-
-      
-      int SEAsia = 1;
+      double height = 170.0; // Boy değeri örnek olarak
+      int AfrAm = 1; // Örnek kategori
+      int NEAsia = 0;
+      int SEAsia = 0;
 
       // Mspline değerleri
       double msplineClose = (parametersTable[i][1] as num).toDouble();
@@ -80,47 +74,71 @@ Future<void> calculateM() async {
       double ageClose = (parametersTable[i][0] as num).toDouble();
       double ageNext = (parametersTable[i + 1][0] as num).toDouble();
 
-
       // Mspline interpolasyonu
       double msplineInterpolated =
           interpolateMspline(age, ageClose, ageNext, msplineClose, msplineNext);
 
-      // Formül sabitleri
-      double a0 = (constants['a0']?["FEV1 males"] ?? 0).toDouble();
-      double a1 = (constants['a1']?["FEV1 males"] ?? 0).toDouble();
-      double a2 = (constants['a2']?["FEV1 males"] ?? 0).toDouble();
-      double a3 = (constants['a3']?["FEV1 males"] ?? 0).toDouble();
-      double a4 = (constants['a4']?["FEV1 males"] ?? 0).toDouble();
-      double a5 = (constants['a5']?["FEV1 males"] ?? 0).toDouble();
+      Map<String, double> calculatedM = {};
 
-      // M Hesaplama
-      double M = exp(
-        a0 +
-            a1 * log(height) +
-            a2 * log(age) +
-            a3 * AfrAm +
-            a4 * NEAsia +
-            a5 * SEAsia +
-            msplineInterpolated,
-      );
+      // Başlık bazlı M hesaplaması (cinsiyete göre farklı parametreler kullanılıyor)
+      for (var title in constants.keys) {
+        double a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0;
 
+        // Erkek ve Kadın için farklı parametreler seç
+        if (gender == 'Erkek') {
+          print("erkek");
+          a0 = constants[title]?['FEV1 males'] ?? 0;
+          a1 = constants[title]?['FVC males'] ?? 0;
+          a2 = constants[title]?['FEV1FVC males'] ?? 0;
+          a3 = constants[title]?['FEF2575 males'] ?? 0;
+          a4 = constants[title]?['FEF75 males'] ?? 0;
+        } else if (gender == 'Kadin') {
+          print("kadın");
+          a0 = constants[title]?['FEV1 females'] ?? 0;
+          a1 = constants[title]?['FVC females'] ?? 0;
+          a2 = constants[title]?['FEV1FVC females'] ?? 0;
+          a3 = constants[title]?['FEF2575 females'] ?? 0;
+          a4 = constants[title]?['FEF75 females'] ?? 0;
+        }
+
+        // M Hesaplama
+        double M = exp(
+          a0 +
+              a1 * log(height) +
+              a2 * log(age) +
+              a3 * AfrAm +
+              a4 * NEAsia +
+              a5 * SEAsia +
+              msplineInterpolated,
+        );
+
+        // Hesaplanan M değerlerini sakla
+        calculatedM[title] = M;
+      }
+
+      // Sonuçları kaydet
       processedResults.add({
         'age': age,
-        'M': M,
+        'M': calculatedM,
         'msplineInterpolated': msplineInterpolated,
       });
     }
 
     // Sonuçları yazdır
     for (var result in processedResults) {
-      print(
-          'Yaş: ${result['age']}, M: ${result['M']}, Spline: ${result['msplineInterpolated']}');
+      print('Yaş: ${result['age']}, Spline: ${result['msplineInterpolated']}');
+      for (var entry in result['M'].entries) {
+        print('${entry.key}: ${entry.value}');
+
+      }
     }
+    
+
   } catch (e) {
     print('Bir hata oluştu: $e');
-    print('aa');
   }
 }
+
 
 
 
@@ -180,6 +198,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             uyrukController.text = data['uyruk'] ?? '';
             emailController.text = currentUser.email ?? '';
             loading = false;
+
+            String gender = data['cinsiyet'] ?? 'Erkek';
+
+            // calculateM fonksiyonunu burada çağırıyoruz
+            calculateM(gender); // 'gender' parametresini gönderiyoruz
           });
         }
       }
@@ -409,7 +432,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: FancyButton(
                 onClick: () async {
                   try {
-                    await calculateM();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("M hesaplama tamamlandı!")),
                     );
