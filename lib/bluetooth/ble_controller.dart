@@ -200,19 +200,23 @@ class BleController extends ChangeNotifier {
     // Karakteristikten gelen bildirimleri dinle ve özel formatı çözümle
     return _ble.subscribeToCharacteristic(characteristic).map((data) {
       try {
-        // Veriyi stringe dönüştür
+        // Veriyi string olarak çöz
         final rawString = utf8.decode(data);
 
-        // Veri formatını parse et ve değerleri ayrıştır
+        // Süslü parantez kontrolü
         if (!rawString.startsWith("{") || !rawString.endsWith("}")) {
           throw Exception("Beklenmeyen veri formatı: $rawString");
         }
 
-        // Süslü parantezleri temizle ve değerleri ayrıştır
+        // Süslü parantezleri temizle
         final trimmed = rawString.substring(1, rawString.length - 1);
-        final values = trimmed.split(", ").map((value) => double.parse(value)).toList();
 
-        // Üç değer bekleniyor, hata kontrolü ekle
+        // Boşluklara dikkat ederek ayrıştırma
+        final values = trimmed.split(",").map((value) {
+          return double.parse(value.trim());
+        }).toList();
+
+        // Üç değer bekleniyor, hata kontrolü
         if (values.length != 3) {
           throw Exception("Beklenmeyen veri uzunluğu: $values");
         }
