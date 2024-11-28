@@ -1,13 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 
-class BleController extends ChangeNotifier{
+class BleController extends ChangeNotifier {
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
-
 
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
       StreamController.broadcast();
@@ -111,7 +111,8 @@ class BleController extends ChangeNotifier{
     }
   }
 
-  Future<void> initializeCharacteristic(String deviceId, String serviceUuid, String characteristicUuid) async {
+  Future<void> initializeCharacteristic(
+      String deviceId, String serviceUuid, String characteristicUuid) async {
     try {
       // Attempt to parse the UUIDs
       Uuid serviceUuidParsed = Uuid.parse(serviceUuid);
@@ -132,7 +133,8 @@ class BleController extends ChangeNotifier{
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> initializeCommunication(String deviceId) async {
     Uuid serviceUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
-    Uuid characteristicUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
+    Uuid characteristicUuid =
+        Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -157,8 +159,10 @@ class BleController extends ChangeNotifier{
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> notify(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
-    Uuid characteristicUuid = Uuid.parse('BEB5483E-36E1-4688-B7F5-EA07361B26A8'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
+    Uuid serviceUuid = Uuid.parse(
+        '4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
+    Uuid characteristicUuid = Uuid.parse(
+        'BEB5483E-36E1-4688-B7F5-EA07361B26A8'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -182,8 +186,10 @@ class BleController extends ChangeNotifier{
   }
 
   Future<void> uid3(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // D72FDD71-D631-4381-841B-B695DA002032
-    Uuid characteristicUuid = Uuid.parse('E3223119-9445-4E96-A4A1-85358C4046A2'); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
+    Uuid serviceUuid = Uuid.parse(
+        '4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // D72FDD71-D631-4381-841B-B695DA002032
+    Uuid characteristicUuid = Uuid.parse(
+        'E3223119-9445-4E96-A4A1-85358C4046A2'); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -215,20 +221,22 @@ class BleController extends ChangeNotifier{
 
     try {
       // Log the characteristic's UUID and the data being sent for debugging purposes
-      print("Sending char 1 to characteristic: $_characteristic");
+      print("Sending char '1' to characteristic: $_characteristic");
 
-      // Send the char1 value to the characteristic
+      // Convert the character '1' to a byte array using UTF-8 encoding
+      final valueToSend = utf8
+          .encode('1'); // [49] olacaktır çünkü '1' UTF-8'de 49'a karşılık gelir
+
+      // Send the value to the characteristic
       await _ble.writeCharacteristicWithResponse(
         _characteristic,
-        value: [1], // Sending `char 1`
+        value: valueToSend,
       );
-      print("char 1 gönderildi!");
+      print("Char '1' gönderildi!");
     } catch (error) {
-      print("Error sending char 1: $error");
+      print("Error sending char '1': $error");
     }
   }
-
-
 
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {
