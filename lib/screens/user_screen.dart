@@ -12,115 +12,13 @@ import 'package:csv/csv.dart';
 import 'dart:math';
 
 class ProfileScreen extends StatefulWidget {
-  
   ProfileScreen({super.key});
-  
+
   @override
   State<StatefulWidget> createState() {
     return _ProfileScreenState();
   }
 }
-
-Future<void> calculateMForAllLabels(String gender) async {
-  try {
-    // Dosyaları yükle
-    final parametersData = await rootBundle.loadString('assets/parameters.csv');
-    final secondTableData = await rootBundle.loadString('assets/ikincitablo.csv');
-
-    // CSV verilerini ayrıştır ve tür dönüşümü yap
-    List<List<double>> parametersTable = const LineSplitter()
-        .convert(parametersData)
-        .map((line) => line.split(',').map((e) => double.tryParse(e) ?? 0.0).toList())
-        .toList();
-    List<List<dynamic>> secondTable = const LineSplitter()
-        .convert(secondTableData)
-        .map((line) => line.split(','))
-        .toList();
-
-    // Sabitler (ikincitablo.csv) - Yatay olarak al
-    Map<String, Map<String, double>> constants = {};
-    for (int i = 1; i < secondTable.length; i++) {
-      for (int j = 1; j < secondTable[i].length; j++) {
-        String label = secondTable[0][j]; // The label is in the first row
-        if (!constants.containsKey(label)) {
-          constants[label] = {};
-        }
-        constants[label]?[secondTable[i][0]] = double.parse(secondTable[i][j]);
-      }
-    }
-
-    // Hasta verileri
-    double age = 26;
-    double height = 184;
-    int afrAm = 0;
-    int neAsia = 0;
-    int seAsia = 0;
-
-    // Mspline interpolasyonu fonksiyonu
-    double interpolateMspline(double age, double ageClose, double ageNext,
-        double msplineClose, double msplineNext) {
-      return msplineClose +
-          ((age - ageClose) / 0.25) * (msplineNext - msplineClose);
-    }
-
-    // Sonuçları sakla
-    Map<String, double> results = {};
-
-    // Her etiket için hesaplama yap
-    for (var title in constants.keys) {
-      // Cinsiyete göre sabitler
-      var labels = gender == 'Erkek'
-          ? ['FEV1 males', 'FVC males', 'FEV1FVC males', 'FEF2575 males', 'FEF75 males']
-          : ['FEV1 females', 'FVC females', 'FEV1FVC females', 'FEF2575 females', 'FEF75 females'];
-
-      for (var label in labels) {
-        // Sabitler a0, a1, a2, a3, a4, a5 değerlerini al
-        double a0 = constants[label]?['a0'] ?? 0.0;
-        double a1 = constants[label]?['a1'] ?? 0.0;
-        double a2 = constants[label]?['a2'] ?? 0.0;
-        double a3 = constants[label]?['a3'] ?? 0.0;
-        double a4 = constants[label]?['a4'] ?? 0.0;
-        double a5 = constants[label]?['a5'] ?? 0.0;
-
-
-        // Yaş aralığını bul
-        var closeRow = parametersTable.lastWhere((row) => row[0] <= age);
-        var nextRow = parametersTable.firstWhere((row) => row[0] > age);
-
-        // Mspline değerini her etiket için farklı kolonlardan al
-        int msplineColumnIndex = labels.indexOf(label) + 1; // Label'a göre kolon indeksini al
-        double msplineClose = closeRow[msplineColumnIndex];
-        double msplineNext = nextRow[msplineColumnIndex];
-
-
-        double msplineInterpolated = interpolateMspline(
-            age, closeRow[0], nextRow[0], msplineClose, msplineNext);
-
-        // Formülü uygula
-        double M = exp(
-          a0 +
-              a1 * log(height) +
-              a2 * log(age) +
-              a3 * afrAm +
-              a4 * neAsia +
-              a5 * seAsia +
-              msplineInterpolated,
-        );
-        if (!results.containsKey(label) || results[label] != M) {
-          results[label] = M; // Yalnızca değer farklıysa veya yeni bir etiketse kaydet
-          print('$label için hesaplanan M: $M');
-        }
-      }
-    }
-    
-
-  } catch (e) {
-    print('Bir hata oluştu: $e');
-  }
-}
-
-
-
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final DatabaseReference database = FirebaseDatabase.instance.ref();
@@ -139,6 +37,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     'password': '',
   };
 
+  Map<String, double> results = {};
+
   final TextEditingController adController = TextEditingController();
   final TextEditingController soyadController = TextEditingController();
   final TextEditingController dogumTarihiController = TextEditingController();
@@ -155,8 +55,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> fetchUserData() async {
-    
-    
     try {
       final currentUser = auth.currentUser;
       if (currentUser != null) {
@@ -166,8 +64,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Veri türü uyumsuzluğunu düzeltmek için 'toString' kullanıyoruz
           setState(() {
-           
-            
             adController.text = data['ad'] ?? '';
             soyadController.text = data['soyad'] ?? '';
             dogumTarihiController.text = data['dogumTarihi'] ?? '';
@@ -182,12 +78,130 @@ class _ProfileScreenState extends State<ProfileScreen> {
             String gender = data['cinsiyet'] ?? 'Erkek';
 
             // calculateM fonksiyonunu burada çağırıyoruz
-            calculateMForAllLabels(gender); // 'gender' parametresini gönderiyoruz
+            calculateMForAllLabels(
+                gender); // 'gender' parametresini gönderiyoruz
           });
         }
       }
     } catch (error) {
       print('Error fetching user data: $error');
+    }
+  }
+
+  Future<void> calculateMForAllLabels(String gender) async {
+    try {
+      // Dosyaları yükle
+      final parametersData =
+          await rootBundle.loadString('assets/parameters.csv');
+      final secondTableData =
+          await rootBundle.loadString('assets/ikincitablo.csv');
+
+      // CSV verilerini ayrıştır ve tür dönüşümü yap
+      List<List<double>> parametersTable = const LineSplitter()
+          .convert(parametersData)
+          .map((line) =>
+              line.split(',').map((e) => double.tryParse(e) ?? 0.0).toList())
+          .toList();
+      List<List<dynamic>> secondTable = const LineSplitter()
+          .convert(secondTableData)
+          .map((line) => line.split(','))
+          .toList();
+
+      Map<String, double> tempResults = {};
+
+      // Sabitler (ikincitablo.csv) - Yatay olarak al
+      Map<String, Map<String, double>> constants = {};
+      for (int i = 1; i < secondTable.length; i++) {
+        for (int j = 1; j < secondTable[i].length; j++) {
+          String label = secondTable[0][j]; // The label is in the first row
+          if (!constants.containsKey(label)) {
+            constants[label] = {};
+          }
+          constants[label]?[secondTable[i][0]] =
+              double.parse(secondTable[i][j]);
+        }
+      }
+
+      // Hasta verileri
+      double age = 26;
+      double height = 184;
+      int afrAm = 0;
+      int neAsia = 0;
+      int seAsia = 0;
+
+      // Mspline interpolasyonu fonksiyonu
+      double interpolateMspline(double age, double ageClose, double ageNext,
+          double msplineClose, double msplineNext) {
+        return msplineClose +
+            ((age - ageClose) / 0.25) * (msplineNext - msplineClose);
+      }
+
+      // Sonuçları sakla
+      
+
+      // Her etiket için hesaplama yap
+      for (var title in constants.keys) {
+        // Cinsiyete göre sabitler
+        var labels = gender == 'Erkek'
+            ? [
+                'FEV1 males',
+                'FVC males',
+                'FEV1FVC males',
+                'FEF2575 males',
+                'FEF75 males'
+              ]
+            : [
+                'FEV1 females',
+                'FVC females',
+                'FEV1FVC females',
+                'FEF2575 females',
+                'FEF75 females'
+              ];
+
+        for (var label in labels) {
+          // Sabitler a0, a1, a2, a3, a4, a5 değerlerini al
+          double a0 = constants[label]?['a0'] ?? 0.0;
+          double a1 = constants[label]?['a1'] ?? 0.0;
+          double a2 = constants[label]?['a2'] ?? 0.0;
+          double a3 = constants[label]?['a3'] ?? 0.0;
+          double a4 = constants[label]?['a4'] ?? 0.0;
+          double a5 = constants[label]?['a5'] ?? 0.0;
+
+          // Yaş aralığını bul
+          var closeRow = parametersTable.lastWhere((row) => row[0] <= age);
+          var nextRow = parametersTable.firstWhere((row) => row[0] > age);
+
+          // Mspline değerini her etiket için farklı kolonlardan al
+          int msplineColumnIndex =
+              labels.indexOf(label) + 1; // Label'a göre kolon indeksini al
+          double msplineClose = closeRow[msplineColumnIndex];
+          double msplineNext = nextRow[msplineColumnIndex];
+
+          double msplineInterpolated = interpolateMspline(
+              age, closeRow[0], nextRow[0], msplineClose, msplineNext);
+
+          // Formülü uygula
+          double M = exp(
+            a0 +
+                a1 * log(height) +
+                a2 * log(age) +
+                a3 * afrAm +
+                a4 * neAsia +
+                a5 * seAsia +
+                msplineInterpolated,
+          );
+          if (!tempResults.containsKey(label) || tempResults[label] != M) {
+            tempResults[label] =
+                M; // Yalnızca değer farklıysa veya yeni bir etiketse kaydet
+            print('$label için hesaplanan M: $M');
+          }
+        }
+      }
+      setState(() {
+        results = tempResults; // Update the results map in the state
+      });
+    } catch (e) {
+      print('Bir hata oluştu: $e');
     }
   }
 
@@ -406,7 +420,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             SizedBox(height: 24),
 
-            SizedBox(height: 16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
+            SizedBox(
+                height:
+                    16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: FancyButton(
@@ -417,7 +433,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     );
                   } catch (error) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Hesaplama sırasında bir hata oluştu: $error")),
+                      SnackBar(
+                          content: Text(
+                              "Hesaplama sırasında bir hata oluştu: $error")),
                     );
                   }
                 },
@@ -447,16 +465,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_color: Color(0xFFA0BAFD),
               ),
             ),
-            Row(
-              children: [
-                CustomCircularProgressBar(
-                  progress: 33,
-                  maxValue: 55,
-                  minValue: 1,
-                  text: "asd",
-                )
-              ],
+            Column(
+  children: [
+    Padding(
+      padding: const EdgeInsets.all(16),
+      child: results.isNotEmpty
+          ? Wrap(
+              spacing: 16, // Horizontal space between items
+              runSpacing: 16, // Vertical space between lines
+              children: results.entries.map((entry) {
+                // Remove the 'males' part from the entry.key
+                String updatedKey = entry.key;
+                if(entry.key.contains('males'))
+                  updatedKey = entry.key.replaceAll('males', '').trim();
+                else
+                  updatedKey = entry.key.replaceAll('females', '').trim();
+
+                return Container(
+                  width: 100, // You can adjust the width as needed
+                  child: CustomCircularProgressBar(
+                    progress: entry.value, // Use M value here
+                    maxValue: 100, // Adjust this based on the M value range
+                    minValue: 0,
+                    text: '$updatedKey \n ${entry.value.toStringAsFixed(2)}', // Display label and value
+                  ),
+                );
+              }).toList(),
             )
+          : Container(),
+    ),
+  ],
+)
+
+
           ],
         ),
       ),
