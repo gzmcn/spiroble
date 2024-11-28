@@ -37,7 +37,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bluetooth Cihazlar'),
+        title: const Text('Bluetooth_Services Cihazlar'),
       ),
       body: StreamBuilder<List<DiscoveredDevice>>(
         stream: _bleController.deviceStream,

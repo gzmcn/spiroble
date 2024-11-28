@@ -79,7 +79,7 @@ class _SpiroScreenState extends State<SpiroScreen> {
         // Send char1 after initializing the characteristic
         await _bleController.sendChar1(serviceUuid,characteristicUuid, deviceId);
 
-        // Update the Bluetooth connection state globally
+        // Update the Bluetooth_Services connection state globally
         BluetoothConnectionManager().setConnectionState(deviceId, true);
       } catch (error) {
         print("Error while initializing characteristic or sending char1: $error");
