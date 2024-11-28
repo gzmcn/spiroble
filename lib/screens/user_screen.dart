@@ -137,7 +137,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       // Sonuçları sakla
-      
 
       // Her etiket için hesaplama yap
       for (var title in constants.keys) {
@@ -423,32 +422,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(
                 height:
                     16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: FancyButton(
-                onClick: () async {
-                  try {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("M hesaplama tamamlandı!")),
-                    );
-                  } catch (error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              "Hesaplama sırasında bir hata oluştu: $error")),
-                    );
-                  }
-                },
-                button_text: "M Hesapla",
-                button_height: 50,
-                button_width: 300,
-                button_radius: 50,
-                button_outline_width: 0,
-                button_outline_color: Colors.pink[50],
-                button_text_size: 22,
-                button_color: Colors.orange,
-              ),
-            ),
 
             // Save Button
             Padding(
@@ -465,39 +438,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_color: Color(0xFFA0BAFD),
               ),
             ),
+             SizedBox(
+                height:
+                    12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      'Beklenen Değerler',
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(
+                          top: 8), // Adds space between the text and the line
+                      height: 4, // Height of the line
+                      width: 280, // Width of the line (you can adjust this)
+                      color: Colors.black, // Line color
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
             Column(
-  children: [
-    Padding(
-      padding: const EdgeInsets.all(16),
-      child: results.isNotEmpty
-          ? Wrap(
-              spacing: 16, // Horizontal space between items
-              runSpacing: 16, // Vertical space between lines
-              children: results.entries.map((entry) {
-                // Remove the 'males' part from the entry.key
-                String updatedKey = entry.key;
-                if(entry.key.contains('males'))
-                  updatedKey = entry.key.replaceAll('males', '').trim();
-                else
-                  updatedKey = entry.key.replaceAll('females', '').trim();
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: results.isNotEmpty
+                      ? Wrap(
+                          spacing: 16, // Horizontal space between items
+                          runSpacing: 16, // Vertical space between lines
+                          children: results.entries.map((entry) {
+                            // Remove the 'males' part from the entry.key
+                            String updatedKey = entry.key;
+                            if (entry.key.contains('males'))
+                              updatedKey =
+                                  entry.key.replaceAll('males', '').trim();
+                            else
+                              updatedKey =
+                                  entry.key.replaceAll('females', '').trim();
 
-                return Container(
-                  width: 100, // You can adjust the width as needed
-                  child: CustomCircularProgressBar(
-                    progress: entry.value, // Use M value here
-                    maxValue: 100, // Adjust this based on the M value range
-                    minValue: 0,
-                    text: '$updatedKey \n ${entry.value.toStringAsFixed(2)}', // Display label and value
-                  ),
-                );
-              }).toList(),
+                            return Container(
+                              width: 100, // You can adjust the width as needed
+                              child: CustomCircularProgressBar(
+                                progress: entry.value, // Use M value here
+                                maxValue:
+                                    100, // Adjust this based on the M value range
+                                minValue: 0,
+                                text:
+                                    '$updatedKey \n ${entry.value.toStringAsFixed(2)}', // Display label and value
+                              ),
+                            );
+                          }).toList(),
+                        )
+                      : Container(),
+                ),
+              ],
             )
-          : Container(),
-    ),
-  ],
-)
-
-
           ],
         ),
       ),
