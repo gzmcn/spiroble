@@ -1,33 +1,140 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:convert';
 
+class BleController extends ChangeNotifier {
+  final FlutterBluePlus _flutterBlue = FlutterBluePlus();
+  final StreamController<List<BluetoothDevice>> _deviceStreamController =
+      StreamController.broadcast();
 
-class BleController extends ChangeNotifier{
-  final FlutterReactiveBle _ble = FlutterReactiveBle();
-  StreamSubscription<DiscoveredDevice>? _scanSubscription;
-  StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
+  Stream<List<BluetoothDevice>> get deviceStream =>
+      _deviceStreamController.stream;
 
-  Stream<DeviceConnectionState>? _connectionStateStream;
-  late StreamSubscription<DeviceConnectionState> _connectionStateSubscription;
+  final List<BluetoothDevice> _devices = [];
+  BluetoothDevice? _connectedDevice;
+  BluetoothCharacteristic? _characteristic;
 
-  final StreamController<List<DiscoveredDevice>> _deviceStreamController = StreamController.broadcast();
+  bool _isConnected = false;
+  bool get isConnected => _isConnected;
 
-  Stream<List<DiscoveredDevice>> get deviceStream => _deviceStreamController.stream;
+  String deviceId = '';
 
-  final List<DiscoveredDevice> _devices = [];
-  late QualifiedCharacteristic _characteristic;
+  void setConnection(bool value) {
+    _isConnected = value;
+    notifyListeners();
+  }
 
-  // dinamik veri kontrolü
-  bool _connection = false;
-  bool get connection => _connection;
+  Future<void> startScan() async {
+    if (!await _checkPermissions()) {
+      print("Gerekli izinler verilmedi!");
+      return;
+    }
 
+    print("Tarama başlatılıyor...");
+    _devices.clear();
 
-  String? connectedDeviceId;
+    // Tarama başlatılır ve dinlenir
+    FlutterBluePlus.scanResults.listen((results) {
+      for (var scanResult in results) {
+        if (!_devices.any((device) => device.id == scanResult.device.id)) {
+          _devices.add(scanResult.device);
+          _deviceStreamController.add(List.unmodifiable(_devices));
+        }
+      }
+    }, onError: (error) {
+      print("Tarama sırasında hata oluştu: $error");
+    });
 
-  // İzin kontrolü
+    // Tarama başlatılır
+    await FlutterBluePlus.startScan(timeout: Duration(seconds: 10));
+  }
+
+  void stopScan() {
+    print("Tarama durduruluyor...");
+    FlutterBluePlus.stopScan();
+  }
+
+  Future<void> connectToDevice(String deviceId) async {
+    try {
+      print("Cihaza bağlanılıyor: $deviceId");
+      final device = _devices.firstWhere((d) => d.id == deviceId);
+      await device.connect();
+      _connectedDevice = device;
+      this.deviceId = deviceId;
+      setConnection(true);
+
+      print("Bağlantı başarılı: $deviceId");
+      _discoverServices();
+    } catch (error) {
+      print("Bağlantı sırasında hata oluştu: $error");
+      setConnection(false);
+    }
+  }
+
+  Future<void> disconnectFromDevice() async {
+    if (_connectedDevice != null) {
+      try {
+        await _connectedDevice!.disconnect();
+        print("Bağlantı kesildi: $deviceId");
+        setConnection(false);
+        _connectedDevice = null;
+        deviceId = '';
+      } catch (error) {
+        print("Bağlantı kesilirken hata oluştu: $error");
+      }
+    }
+  }
+
+  Future<void> _discoverServices() async {
+    if (_connectedDevice == null) return;
+
+    print("Servisler keşfediliyor...");
+    final services = await _connectedDevice!.discoverServices();
+
+    for (var service in services) {
+      for (var characteristic in service.characteristics) {
+        print(
+            "Bulunan karakteristik: ${characteristic.uuid}, Servis: ${service.uuid}");
+        if (_isTargetCharacteristic(characteristic)) {
+          _characteristic = characteristic;
+          _startReceivingData();
+          break;
+        }
+      }
+    }
+  }
+
+  bool _isTargetCharacteristic(BluetoothCharacteristic characteristic) {
+    // Belirli bir karakteristiği hedeflemek için kontrol ekleyin
+    return characteristic.uuid.toString().toUpperCase() ==
+        'BEB5483E-36E1-4688-B7F5-EA07361B26A8';
+  }
+
+  Future<void> sendChar1() async {
+    if (_characteristic == null) return;
+
+    try {
+      final valueToSend = utf8.encode('1'); // '1' değerini gönder
+      await _characteristic!.write(valueToSend);
+      print("Char '1' gönderildi!");
+    } catch (error) {
+      print("Char '1' gönderilirken hata oluştu: $error");
+    }
+  }
+
+  void _startReceivingData() {
+    if (_characteristic == null) return;
+
+    _characteristic!.setNotifyValue(true);
+    _characteristic!.value.listen((data) {
+      print("Alınan veri: ${utf8.decode(data)}");
+    }, onError: (error) {
+      print("Veri alımı sırasında hata oluştu: $error");
+    });
+  }
+
   Future<bool> _checkPermissions() async {
     final permissions = [
       Permission.bluetoothScan,
@@ -45,114 +152,11 @@ class BleController extends ChangeNotifier{
     return true;
   }
 
-  void setConnection(String? deviceId, bool value) {
-    connectedDeviceId = deviceId;
-    _connection = value;
-    notifyListeners(); // Durum değişikliğini bildir
+  @override
+  void dispose() {
+    print("Kaynaklar temizleniyor...");
+    _deviceStreamController.close();
+    disconnectFromDevice();
+    super.dispose();
   }
-
-  // BLE bağlantısını başlatmak için initialize metodu
-  void initialize() {
-    print("BLE bağlantısı başlatılıyor...");
-    // Gerekli başlangıç işlemleri burada yapılabilir.
-  }
-
-  // BLE cihazlarını taramaya başlama
-  Future<void> startScan() async {
-    if (!await _checkPermissions()) {
-      print("Gerekli izinler verilmedi!");
-      return;
-    }
-
-    print("Tarama başlatılıyor...");
-    _scanSubscription = _ble.scanForDevices(withServices: []).listen(
-          (device) {
-        _addDeviceToStream(device);
-      },
-      onError: (error) {
-        print("Tarama sırasında hata oluştu: $error");
-      },
-      onDone: () {
-        print("Tarama tamamlandı.");
-      },
-    );
-  }
-
-  // Tarama sırasında bulunan cihazları listeye ekleme
-  void _addDeviceToStream(DiscoveredDevice device) {
-    if (!_devices.any((d) => d.id == device.id)) {
-      _devices.add(device);
-      _deviceStreamController.add(List.unmodifiable(_devices));
-    }
-  }
-
-  // Bağlantı kurma
-  Future<void> connectToDevice(String deviceId) async {
-    print("Cihaza bağlanılıyor: $deviceId");
-    _connectionSubscription = _ble.connectToDevice(id: deviceId).listen((connectionState) async {
-        print("Bağlantı durumu: ${connectionState.connectionState}");
-        if (connectionState.connectionState == DeviceConnectionState.connected) {
-            print("Bağlantı başarılı: $deviceId");
-
-            setConnection(deviceId ,true);
-            await Future.delayed(Duration(seconds: 1)); // Gecikme ekleyin
-
-            await initializeCommunication(deviceId);
-            await notify(deviceId);
-            await uid3(deviceId);
-
-        } else if (connectionState.connectionState == DeviceConnectionState.disconnected) {
-          print("Cihaz bağlantısı kesildi: $deviceId");
-          setConnection(deviceId, false);
-        }
-      },
-      onError: (error) {
-        print("Bağlantı sırasında hata oluştu: $error");
-      },
-    );
-  }
-
-  void startConnectionStateListener(String deviceId) {
-    // Bağlantı durumunu sürekli dinlemek için stream başlat
-    _connectionStateStream = _ble.connectToDevice(id: deviceId);
-
-    // Stream'e abone ol
-    _connectionStateSubscription = _connectionStateStream!.listen((connectionState) {
-      // Bağlantı durumu güncellenince yapılacak işlemler
-      if (connectionState.connectionState == DeviceConnectionState.connected) {
-        connectedDeviceId = deviceId;
-        _connection = true; // Bağlantı başarılı
-        print("Cihaz bağlı: $deviceId");
-      } else if (connectionState.connectionState == DeviceConnectionState.disconnected) {
-        connectedDeviceId = null;
-        _connection = false; // Bağlantı kesildi
-        print("Cihaz bağlantısı kesildi: $deviceId");
-      }
-    }, onError: (error) {
-      print("Bağlantı hatası: $error");
-      connectedDeviceId = null;
-      _connection = false; // Hata durumunda bağlantıyı kesilmiş olarak kabul et
-    });
-  }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
