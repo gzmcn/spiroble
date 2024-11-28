@@ -66,6 +66,20 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                       _bleController.disconnectToDevice(device.id);
                     }else{
                       _bleController.connectToDevice(device.id);
+                      print("bağlı");
+
+                      String serviceUuid = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
+                      String characteristicUuid = "E3223119-9445-4E96-A4A1-85358C4046A2";
+                      _bleController.sendChar1(serviceUuid, characteristicUuid, device.id);
+                      // _bleController.notify(device.id);
+
+                      _bleController.notifyAsDoubles(device.id).listen((doubles) {
+                          print("Bildirim alındı: ${doubles[0]}, ${doubles[1]}, ${doubles[2]}");
+                        },
+                        onError: (error) {
+                          print("Hata: $error");
+                        },
+                      );
                     }
 
                   },

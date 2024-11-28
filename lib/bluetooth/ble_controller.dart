@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
 class BleController extends ChangeNotifier {
   final FlutterReactiveBle _ble = FlutterReactiveBle();
@@ -133,8 +134,7 @@ class BleController extends ChangeNotifier {
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> initializeCommunication(String deviceId) async {
     Uuid serviceUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
-    Uuid characteristicUuid =
-        Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
+    Uuid characteristicUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -159,19 +159,21 @@ class BleController extends ChangeNotifier {
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> notify(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse(
-        '4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
-    Uuid characteristicUuid = Uuid.parse(
-        'BEB5483E-36E1-4688-B7F5-EA07361B26A8'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
+    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
+    Uuid characteristicUuid = Uuid.parse('BEB5483E-36E1-4688-B7F5-EA07361B26A8'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
+
 
     _characteristic = QualifiedCharacteristic(
       serviceId: serviceUuid,
       characteristicId: characteristicUuid,
       deviceId: deviceId,
-    );
+      );
+
+
+
 
     try {
       final response = await _ble.readCharacteristic(_characteristic);
@@ -184,6 +186,44 @@ class BleController extends ChangeNotifier {
       print("Veri okuma sırasında hata oluştu: $error");
     }
   }
+
+  Stream<List<double>> notifyAsDoubles(String deviceId) {
+    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B');
+    Uuid characteristicUuid = Uuid.parse('BEB5483E-36E1-4688-B7F5-EA07361B26A8');
+
+    final characteristic = QualifiedCharacteristic(
+      serviceId: serviceUuid,
+      characteristicId: characteristicUuid,
+      deviceId: deviceId,
+    );
+
+    // Karakteristikten gelen bildirimleri dinle ve özel formatı çözümle
+    return _ble.subscribeToCharacteristic(characteristic).map((data) {
+      try {
+        // Veriyi stringe dönüştür
+        final rawString = utf8.decode(data);
+
+        // Veri formatını parse et ve değerleri ayrıştır
+        if (!rawString.startsWith("{") || !rawString.endsWith("}")) {
+          throw Exception("Beklenmeyen veri formatı: $rawString");
+        }
+
+        // Süslü parantezleri temizle ve değerleri ayrıştır
+        final trimmed = rawString.substring(1, rawString.length - 1);
+        final values = trimmed.split(", ").map((value) => double.parse(value)).toList();
+
+        // Üç değer bekleniyor, hata kontrolü ekle
+        if (values.length != 3) {
+          throw Exception("Beklenmeyen veri uzunluğu: $values");
+        }
+
+        return values;
+      } catch (error) {
+        throw Exception("Veri ayrıştırma hatası: $error");
+      }
+    });
+  }
+
 
   Future<void> uid3(String deviceId) async {
     Uuid serviceUuid = Uuid.parse(
@@ -212,31 +252,36 @@ class BleController extends ChangeNotifier {
     }
   }
 
-  Future<void> sendChar1() async {
-    // Ensure the characteristic is initialized before use.
-    if (_characteristic == null) {
-      print("Characteristic is not initialized.");
-      return;
-    }
-
+  Future<void> sendChar1(String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
-      // Log the characteristic's UUID and the data being sent for debugging purposes
+      // UUID'leri Uuid formatına çevir
+      Uuid parsedServiceUuid = Uuid.parse(serviceUuid);
+      Uuid parsedCharacteristicUuid = Uuid.parse(characteristicUuid);
+
+      // Karakteristiği tanımla
+      _characteristic = QualifiedCharacteristic(
+        serviceId: parsedServiceUuid,
+        characteristicId: parsedCharacteristicUuid,
+        deviceId: deviceId, // Daha önce bağlanılan cihaz ID'si
+      );
+
       print("Sending char '1' to characteristic: $_characteristic");
 
-      // Convert the character '1' to a byte array using UTF-8 encoding
-      final valueToSend = utf8
-          .encode('1'); // [49] olacaktır çünkü '1' UTF-8'de 49'a karşılık gelir
+      // UTF-8 formatında '1' karakterini byte array olarak hazırla
+      final valueToSend = utf8.encode('1'); // [49]
 
-      // Send the value to the characteristic
+      // Karakteristiğe yaz
       await _ble.writeCharacteristicWithResponse(
         _characteristic,
         value: valueToSend,
       );
+
       print("Char '1' gönderildi!");
     } catch (error) {
       print("Error sending char '1': $error");
     }
   }
+
 
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {
