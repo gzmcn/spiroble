@@ -50,9 +50,9 @@ Future<void> calculateMForAllLabels(String gender) async {
     }
 
     // Hasta verileri
-    double age = 3;
-    double height = 170;
-    int afrAm = 1;
+    double age = 26;
+    double height = 184;
+    int afrAm = 0;
     int neAsia = 0;
     int seAsia = 0;
 
@@ -82,7 +82,6 @@ Future<void> calculateMForAllLabels(String gender) async {
         double a4 = constants[label]?['a4'] ?? 0.0;
         double a5 = constants[label]?['a5'] ?? 0.0;
 
-        print(label);
 
         // Yaş aralığını bul
         var closeRow = parametersTable.lastWhere((row) => row[0] <= age);
@@ -93,8 +92,6 @@ Future<void> calculateMForAllLabels(String gender) async {
         double msplineClose = closeRow[msplineColumnIndex];
         double msplineNext = nextRow[msplineColumnIndex];
 
-        print(msplineClose);
-        print(msplineNext);
 
         double msplineInterpolated = interpolateMspline(
             age, closeRow[0], nextRow[0], msplineClose, msplineNext);
@@ -109,10 +106,13 @@ Future<void> calculateMForAllLabels(String gender) async {
               a5 * seAsia +
               msplineInterpolated,
         );
-        results[label] = M;
-        print('$label için hesaplanan M: $M');
+        if (!results.containsKey(label) || results[label] != M) {
+          results[label] = M; // Yalnızca değer farklıysa veya yeni bir etiketse kaydet
+          print('$label için hesaplanan M: $M');
+        }
       }
     }
+    
 
   } catch (e) {
     print('Bir hata oluştu: $e');
