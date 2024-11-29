@@ -7,7 +7,7 @@ import 'dart:convert';
 class BleController extends ChangeNotifier {
   final FlutterBluePlus _flutterBlue = FlutterBluePlus();
   final StreamController<List<BluetoothDevice>> _deviceStreamController =
-      StreamController.broadcast();
+  StreamController.broadcast();
 
   Stream<List<BluetoothDevice>> get deviceStream =>
       _deviceStreamController.stream;
@@ -17,6 +17,7 @@ class BleController extends ChangeNotifier {
   BluetoothCharacteristic? _characteristic;
 
   bool _isConnected = false;
+
   bool get isConnected => _isConnected;
 
   String deviceId = '';
@@ -54,6 +55,26 @@ class BleController extends ChangeNotifier {
   void stopScan() {
     print("Tarama durduruluyor...");
     FlutterBluePlus.stopScan();
+  }
+
+  // İzin kontrolü
+  Future<bool> _checkPermissions() async {
+    final permissions = [
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.locationWhenInUse,
+    ];
+
+    for (var permission in permissions) {
+      if (await permission
+          .request()
+          .isDenied) {
+        print("${permission.value} izni verilmedi.");
+        return false;
+      }
+    }
+    print("Tüm izinler verildi.");
+    return true;
   }
 
   Future<void> connectToDevice(String deviceId) async {
@@ -96,7 +117,8 @@ class BleController extends ChangeNotifier {
     for (var service in services) {
       for (var characteristic in service.characteristics) {
         print(
-            "Bulunan karakteristik: ${characteristic.uuid}, Servis: ${service.uuid}");
+            "Bulunan karakteristik: ${characteristic.uuid}, Servis: ${service
+                .uuid}");
         if (_isTargetCharacteristic(characteristic)) {
           _characteristic = characteristic;
           _startReceivingData();
@@ -112,51 +134,141 @@ class BleController extends ChangeNotifier {
         'BEB5483E-36E1-4688-B7F5-EA07361B26A8';
   }
 
-  Future<void> sendChar1() async {
-    if (_characteristic == null) return;
+  Future<void> sendChar1(String serviceUuid, String characteristicUuid,
+      String deviceId, dynamic FlutterBlue) async {
+    try {
+      BluetoothDevice device = await FlutterBlue.instance.connect(deviceId);
+      BluetoothService service = (await device.discoverServices()).firstWhere(
+            (service) => service.uuid.toString() == serviceUuid,
+        orElse: () => throw Exception('Service not found'),
+      );
+
+      BluetoothCharacteristic characteristic = service.characteristics
+          .firstWhere(
+            (characteristic) =>
+        characteristic.uuid.toString() == characteristicUuid,
+        orElse: () => throw Exception('Characteristic not found'),
+      );
+
+      print("Sending char '1' to characteristic: $characteristic");
+
+      final valueToSend = utf8.encode('1'); // [49]
+
+      // Write to the characteristic with response
+      await characteristic.write(valueToSend, withoutResponse: false);
+
+      print("Char '1' sent!");
+    } catch (error) {
+      print("Error sending char '1': $error");
+    }
+  }
+
+  Future<void> uid3(String deviceId, dynamic FlutterBlue) async {
+    BluetoothDevice device = await FlutterBlue.instance.connect(deviceId);
+    BluetoothService service = (await device.discoverServices()).firstWhere(
+          (service) =>
+      service.uuid.toString() == '4FAFC201-1FB5-459E-8FCC-C5C9C331914B',
+      orElse: () => throw Exception('Service not found'),
+    );
+
+    BluetoothCharacteristic characteristic = service.characteristics.firstWhere(
+          (characteristic) =>
+      characteristic.uuid.toString() == 'E3223119-9445-4E96-A4A1-85358C4046A2',
+      orElse: () => throw Exception('Characteristic not found'),
+    );
 
     try {
-      final valueToSend = utf8.encode('1'); // '1' değerini gönder
-      await _characteristic!.write(valueToSend);
-      print("Char '1' gönderildi!");
+      final response = await characteristic.read();
+      print('Third data: $response');
+
+      if (response.isNotEmpty && response[0] == 1) {
+        _startReceivingData();
+      }
     } catch (error) {
-      print("Char '1' gönderilirken hata oluştu: $error");
+      print("Error reading data: $error");
     }
   }
 
-  void _startReceivingData() {
-    if (_characteristic == null) return;
+  Stream<List<double>> notifyAsDoubles(String deviceId,
+      dynamic FlutterBlue) async* {
+    BluetoothDevice device = await FlutterBlue.instance.connect(deviceId);
+    BluetoothService service = (await device.discoverServices()).firstWhere(
+          (service) =>
+      service.uuid.toString() == '4FAFC201-1FB5-459E-8FCC-C5C9C331914B',
+      orElse: () => throw Exception('Service not found'),
+    );
 
-    _characteristic!.setNotifyValue(true);
-    _characteristic!.value.listen((data) {
-      print("Alınan veri: ${utf8.decode(data)}");
-    }, onError: (error) {
-      print("Veri alımı sırasında hata oluştu: $error");
-    });
-  }
+    BluetoothCharacteristic characteristic = service.characteristics.firstWhere(
+          (characteristic) =>
+      characteristic.uuid.toString() == 'BEB5483E-36E1-4688-B7F5-EA07361B26A8',
+      orElse: () => throw Exception('Characteristic not found'),
+    );
 
-  Future<bool> _checkPermissions() async {
-    final permissions = [
-      Permission.bluetoothScan,
-      Permission.bluetoothConnect,
-      Permission.locationWhenInUse,
-    ];
+    characteristic.setNotifyValue(true); // Subscribe to notifications
 
-    for (var permission in permissions) {
-      if (await permission.request().isDenied) {
-        print("${permission.value} izni verilmedi.");
-        return false;
+    await for (List<int> data in characteristic.value) {
+      try {
+        final rawString = utf8.decode(data);
+
+        // Check if the data starts and ends with curly braces
+        if (!rawString.startsWith("{") || !rawString.endsWith("}")) {
+          throw Exception("Unexpected data format: $rawString");
+        }
+
+        // Trim curly braces and split by commas
+        final trimmed = rawString.substring(1, rawString.length - 1);
+        final values = trimmed.split(",").map((value) {
+          return double.parse(value.trim());
+        }).toList();
+
+        // Expecting 3 values
+        if (values.length != 3) {
+          throw Exception("Unexpected data length: $values");
+        }
+
+        yield values;
+      } catch (error) {
+        throw Exception("Data parsing error: $error");
       }
     }
-    print("Tüm izinler verildi.");
-    return true;
-  }
 
-  @override
-  void dispose() {
-    print("Kaynaklar temizleniyor...");
-    _deviceStreamController.close();
-    disconnectFromDevice();
-    super.dispose();
+
+    void _startReceivingData() {
+      if (_characteristic == null) return;
+
+      _characteristic!.setNotifyValue(true);
+      _characteristic!.value.listen((data) {
+        print("Alınan veri: ${utf8.decode(data)}");
+      }, onError: (error) {
+        print("Veri alımı sırasında hata oluştu: $error");
+      });
+    }
+
+    Future<bool> _checkPermissions() async {
+      final permissions = [
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+        Permission.locationWhenInUse,
+      ];
+
+      for (var permission in permissions) {
+        if (await permission
+            .request()
+            .isDenied) {
+          print("${permission.value} izni verilmedi.");
+          return false;
+        }
+      }
+      print("Tüm izinler verildi.");
+      return true;
+    }
+
+    @override
+    void dispose() {
+      print("Kaynaklar temizleniyor...");
+      _deviceStreamController.close();
+      disconnectFromDevice();
+      super.dispose();
+    }
   }
 }

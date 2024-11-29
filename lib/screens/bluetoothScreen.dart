@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:spiroble/bluetooth/ble_controller.dart';
+import 'package:spiroble/Bluetooth_Services/ble_controller.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -58,12 +59,15 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             itemBuilder: (context, index) {
               final device = devices[index];
               return ListTile(
-                title: Text(device.name.isNotEmpty ? device.name : 'Cihaz: ${device.id.substring(0, 5)}'),
+                title: Text(
+                  device.name.isNotEmpty ? device.name : 'Cihaz: ${device.id.toString().substring(0, 5)}',
+                ),
                 subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
+
                 trailing: ElevatedButton(
                   onPressed: () {
-                    if(_bleController.connection){
-                      _bleController.disconnectToDevice(device.id);
+                    if(_bleController.isConnected){
+                      // _bleController.disconnectToDevice(device.id);
                     }else{
                       _bleController.connectToDevice(device.id);
                       print("bağlı");
@@ -83,7 +87,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     }
 
                   },
-                  child:  Text( _bleController.connection ? 'Bağlantıyı Kes' : 'Bağlan',),
+                  child:  Text( _bleController.isConnected ? 'Bağlantıyı Kes' : 'Bağlan',),
                 ),
               );
             },
