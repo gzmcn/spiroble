@@ -311,11 +311,4 @@ class BleController extends ChangeNotifier {
   }
 
   // Kaynakları temizlemek için dispose metodu
-  @override
-  void dispose() {
-    super.dispose();
-    print("Kaynaklar temizleniyor...");
-    _scanSubscription?.cancel();
-    _deviceStreamController.close();
-  }
 }
