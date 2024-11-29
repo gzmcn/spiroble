@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import '../Bluetooth_Services/ble_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:spiroble/bluetooth/ble_controller.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -23,7 +22,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       Permission.bluetooth,
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      Permission.location
+      Permission.location,
     ].request();
   }
 
@@ -39,17 +38,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       appBar: AppBar(
         title: const Text('Bluetooth Cihazlar'),
       ),
-      body: StreamBuilder<List<DiscoveredDevice>>(
-        stream: _bleController.deviceStream,
-        builder: (context, snapshot) {
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}'));
-          }
-          final devices = snapshot.data ?? [];
+      body: AnimatedBuilder(
+        animation: _bleController,
+        builder: (context, _) {
+          final devices = _bleController.scannedDevices;
           if (devices.isEmpty) {
             return const Center(child: Text('Cihaz bulunamadı.'));
           }
@@ -58,32 +50,38 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             itemBuilder: (context, index) {
               final device = devices[index];
               return ListTile(
-                title: Text(device.name.isNotEmpty ? device.name : 'Cihaz: ${device.id.substring(0, 5)}'),
-                subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
+                title: Text(
+                  device.name.isNotEmpty
+                      ? device.name
+                      : 'Cihaz: ${device.id.toString().substring(0, 5)}',
+                ),
+                subtitle: Text('ID: ${device.id}'),
                 trailing: ElevatedButton(
-                  onPressed: () {
-                    if(_bleController.connection){
-                      _bleController.disconnectToDevice(device.id);
-                    }else{
-                      _bleController.connectToDevice(device.id);
-                      print("bağlı");
+                  onPressed: () async {
+                    if (_bleController.isConnected &&
+                        _bleController.connectedDevice?.id == device.id) {
+                      await _bleController.disconnectFromDevice();
+                    } else {
+                      await _bleController.connectToDevice(device);
 
-                      String serviceUuid = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
-                      String characteristicUuid = "E3223119-9445-4E96-A4A1-85358C4046A2";
-                      _bleController.sendChar1(serviceUuid, characteristicUuid, device.id);
-                      // _bleController.notify(device.id);
+                      // Servisleri keşfetme örneği
+                      final services = await _bleController.discoverServices();
+                      for (var service in services) {
+                        print('Service UUID: ${service.uuid}');
+                        for (var characteristic in service.characteristics) {
+                          print('Characteristic UUID: ${characteristic.uuid}');
 
-                      _bleController.notifyAsDoubles(device.id).listen((doubles) {
-                          print("Bildirim alındı: ${doubles[0]}, ${doubles[1]}, ${doubles[2]}");
-                        },
-                        onError: (error) {
-                          print("Hata: $error");
-                        },
-                      );
+                          // Bildirimlere abone ol
+                          _bleController
+                              .subscribeToNotifications(characteristic);
+                        }
+                      }
                     }
-
                   },
-                  child:  Text( _bleController.connection ? 'Bağlantıyı Kes' : 'Bağlan',),
+                  child: Text(_bleController.isConnected &&
+                          _bleController.connectedDevice?.id == device.id
+                      ? 'Bağlantıyı Kes'
+                      : 'Bağlan'),
                 ),
               );
             },
