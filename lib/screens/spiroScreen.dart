@@ -20,12 +20,11 @@ class _SpiroScreenState extends State<SpiroScreen> {
   void initState() {
     super.initState();
     _bleController = BleController(); // BLE bağlantısı için kontrolcü
-    _bleController.initialize(); // BLE başlatma işlemleri
 
     // Check the connection status
     if (BluetoothConnectionManager().checkConnection()) {
       // The device is already connected
-      print("Already connected to device: ${BluetoothConnectionManager().getDeviceId()}");
+      print("Already connected to device: ${BluetoothConnectionManager().connectedDeviceId}");
     } else {
       // Device is not connected, show "Bağlan" button
       print("No device connected. Show 'Bağlan' button.");
@@ -98,7 +97,7 @@ class _SpiroScreenState extends State<SpiroScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final deviceId = BluetoothConnectionManager().getDeviceId();
+    final deviceId = BluetoothConnectionManager().connectedDeviceId;
     return Scaffold(
       appBar: AppBar(
         title: const Text('SpiroScreen'),

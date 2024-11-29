@@ -36,7 +36,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
     // Check the connection status
     if (BluetoothConnectionManager().checkConnection()) {
       // The device is already connected
-      print("Already connected to device: ${BluetoothConnectionManager().getDeviceId()}");
+      print("Already connected to device: ${BluetoothConnectionManager().connectedDeviceId}");
     } else {
       // Device is not connected, show "Bağlan" button
       print("No device connected. Show 'Bağlan' button.");
