@@ -39,12 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Hata'),
-          content: Text(
+          title: const Text('Hata'),
+          content: const Text(
               'Giriş işlemi başarısız. Lütfen bilgilerinizi kontrol edin.'),
           actions: <Widget>[
             TextButton(
-              child: Text('Tamam'),
+              child: const Text('Tamam'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -67,15 +67,15 @@ class _LoginScreenState extends State<LoginScreen> {
             InputFields(
               controller: _emailController,
               placeholder: 'E-Mail',
-              icon: Icon(Icons.mail, color: Colors.black),
+              icon: const Icon(Icons.mail, color: Colors.black),
               keyboardType: TextInputType.emailAddress,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Password Input Field
             InputFields(
               controller: _passwordController,
               placeholder: 'Şifre',
-              icon: Icon(Icons.lock, color: Colors.black),
+              icon: const Icon(Icons.lock, color: Colors.black),
               secureTextEntry: !_isPasswordVisible,
               onTapSuffixIcon: () {
                 setState(() {
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 });
               },
             ),
-            SizedBox(height: 45),
+            const SizedBox(height: 45),
             // Sign In Button
             ElevatedButton(
               onPressed: _handleSignIn,
@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
                 ),
               ),
-              child: Text('Giriş Yap'),
+              child: const Text('Giriş Yap'),
             ),
 
             // Register Button

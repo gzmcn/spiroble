@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:spiroble/blocs/bluetooth_bloc.dart';
 import 'package:spiroble/screens/testScreen.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
@@ -82,12 +84,46 @@ class _HomeScreen extends State<HomeScreen> {
                   ), // Buton metin rengi
                   elevation: 8, // Gölge efekti
                 ),
-                child: Text(
-                  "Teste Basla",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: BlocBuilder<BluetoothBloc, BluetoothState>(
+                  builder: (context, state) {
+                    if (state is BluetoothInitial) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (state is BluetoothConnected) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Bağlı Cihaz: ${state.device.name}',
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                            ElevatedButton(
+                              onPressed: () {
+                                context
+                                    .read<BluetoothBloc>()
+                                    .add(BluetoothDisconnect());
+                              },
+                              child: Text('Bağlantıyı Kes'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else if (state is BluetoothDisconnected) {
+                      return Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Cihaza bağlan
+                            // Burada bağlantı kodu eklenebilir.
+                          },
+                          child: Text('Cihaza Bağlan'),
+                        ),
+                      );
+                    } else if (state is BluetoothError) {
+                      return Center(
+                          child: Text(state.message,
+                              style: TextStyle(color: Colors.red)));
+                    }
+                    return Container();
+                  },
                 ),
               ),
             ],

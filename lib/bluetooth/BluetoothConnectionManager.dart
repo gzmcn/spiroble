@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
+import 'package:spiroble/blocs/bluetooth_bloc.dart';
 
 class BluetoothConnectionManager {
   // StreamController'lar
@@ -35,6 +37,7 @@ class BluetoothConnectionManager {
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
+  late final BluetoothBloc _bluetoothBloc;
 
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
       StreamController.broadcast();
@@ -134,6 +137,7 @@ class BluetoothConnectionManager {
       print("Veri okuma sırasında hata oluştu: $error");
     }
   }
+
   //ne yaptığını bilmiyorum      İLERİDE TEKRAR KONTROL EDİLECEK
   Future<void> initializeCharacteristic(
       String deviceId, String serviceUuid, String characteristicUuid) async {
@@ -231,6 +235,16 @@ class BluetoothConnectionManager {
             DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
           setConnectionState(deviceId, true);
+          DiscoveredDevice device = DiscoveredDevice(
+            id: deviceId, // Cihazın UUID'si
+            name: 'Spirometer', // Cihazın adı
+            serviceData: {}, // Servis verisi (boş bir map)
+            manufacturerData: Uint8List(0), // Üretici verisi (boş bir map)
+            serviceUuids: [], // Cihazın sunduğu servis UUID'leri (boş bir liste)
+            rssi: -50, // Sinyal gücü
+          );
+          // Burada BLoC'a BluetoothConnect event gönderiyoruz
+          _bluetoothBloc.add(BluetoothConnect(device));
 
           await Future.delayed(const Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
@@ -262,7 +276,6 @@ class BluetoothConnectionManager {
     }
   }
 
-  
   Future<void> sendChar1(
       String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
@@ -294,13 +307,11 @@ class BluetoothConnectionManager {
     }
   }
 
-
-  void dispose() {    
+  void dispose() {
     print("Kaynaklar temizleniyor...");
     _scanSubscription?.cancel();
     _deviceController.close();
   }
 
   // Kaynakları serbest bırakma
- 
 }

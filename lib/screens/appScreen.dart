@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:spiroble/blocs/bluetooth_bloc.dart';
 import 'package:spiroble/screens/ResultScreen.dart';
 import 'package:spiroble/screens/bluetoothScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
@@ -43,16 +45,21 @@ class _HomeScreenState extends State<AppScreen> {
     }
   }
 
-  @override
+ 
+    @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: _selectedScreen(),
-      ),
-      bottomNavigationBar: NavigationMenu(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
+    return BlocProvider(
+      create: (context) => BluetoothBloc(),
+      child: Scaffold(
+        body: Center(
+          child: _selectedScreen(),
+        ),
+        bottomNavigationBar: NavigationMenu(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onItemTapped,
+        ),
       ),
     );
   }
-}
+  }
+
