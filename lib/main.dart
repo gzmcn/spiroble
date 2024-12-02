@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spiroble/blocs/theme.bloc.dart';
-import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/hosgeldiniz.dart';
 import 'package:spiroble/screens/splashScreen.dart';

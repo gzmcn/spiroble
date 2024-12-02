@@ -5,7 +5,6 @@ import 'package:spiroble/screens/StartSplashScreen.dart';
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/bluetoothScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
-import 'package:spiroble/screens/registerScreen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -60,53 +59,64 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Email Input Field
-            InputFields(
-              controller: _emailController,
-              placeholder: 'E-Mail',
-              icon: Icon(Icons.mail, color: Colors.black),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            SizedBox(height: 20),
-            // Password Input Field
-            InputFields(
-              controller: _passwordController,
-              placeholder: 'Şifre',
-              icon: Icon(Icons.lock, color: Colors.black),
-              secureTextEntry: !_isPasswordVisible,
-              onTapSuffixIcon: () {
-                setState(() {
-                  _isPasswordVisible = !_isPasswordVisible;
-                });
-              },
-            ),
-            SizedBox(height: 45),
-            // Sign In Button
-            ElevatedButton(
-              onPressed: _handleSignIn,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFA0BAFD),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 32, vertical: 16), // Butonun iç boşlukları
-                textStyle: const TextStyle(
-                  fontSize: 15, // Yazı boyutu
-                  fontWeight: FontWeight.bold, // Yazı kalınlığı
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
-                ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xff51A8FF), // Üst renk
+              Color(0xff123456), // Alt renk
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Email Input Field
+              InputFields(
+                controller: _emailController,
+                placeholder: 'E-Mail',
+                icon: Icon(Icons.mail, color: Colors.black),
+                keyboardType: TextInputType.emailAddress,
               ),
-              child: Text('Giriş Yap'),
-            ),
-
-            // Register Button
-          ],
+              SizedBox(height: 20),
+              // Password Input Field
+              InputFields(
+                controller: _passwordController,
+                placeholder: 'Şifre',
+                icon: Icon(Icons.lock, color: Colors.black),
+                secureTextEntry: !_isPasswordVisible,
+                onTapSuffixIcon: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              ),
+              SizedBox(height: 45),
+              // Sign In Button
+              ElevatedButton(
+                onPressed: _handleSignIn,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 236, 236, 236),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 32, vertical: 16), // Butonun iç boşlukları
+                  textStyle: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 20, // Yazı boyutu
+                    fontWeight: FontWeight.bold, // Yazı kalınlığı
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                  ),
+                ),
+                child: Text('Giriş Yap'),
+              ),
+            ],
+          ),
         ),
       ),
     );

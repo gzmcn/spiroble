@@ -4,8 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spiroble/screens/InfoScreen1.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
-import 'package:spiroble/screens/appScreen.dart';
-import 'package:spiroble/screens/home_screen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -154,170 +152,178 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Kayıt Ol'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: InputFields(
-                      controller: _adController,
-                      placeholder: 'Ad',
-                      icon: Icon(Icons.person_2_rounded),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.lightBlue],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: InputFields(
+                        controller: _adController,
+                        placeholder: 'Ad',
+                        icon: Icon(Icons.person_2_rounded),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: InputFields(
-                      controller: _soyadController,
-                      placeholder: 'Soyad',
-                      icon: Icon(Icons.person),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: InputFields(
+                        controller: _soyadController,
+                        placeholder: 'Soyad',
+                        icon: Icon(Icons.person),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 15),
-              GestureDetector(
-                onTap: () => _selectDate(context),
-                child: AbsorbPointer(
-                  child: InputFields(
-                    controller: _dogumTarihiController,
-                    placeholder: 'Doğum Tarihi',
-                    icon: Icon(Icons.calendar_today),
+                  ],
+                ),
+                SizedBox(height: 15),
+                GestureDetector(
+                  onTap: () => _selectDate(context),
+                  child: AbsorbPointer(
+                    child: InputFields(
+                      controller: _dogumTarihiController,
+                      placeholder: 'Doğum Tarihi',
+                      icon: Icon(Icons.calendar_today),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 15),
-              InputFields(
-                controller: _kiloController,
-                placeholder: 'Kilo (kg)',
-                icon: Icon(Icons.line_weight),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 15),
-              InputFields(
-                controller: _boyController,
-                placeholder: 'Boy (cm)',
-                icon: Icon(Icons.height),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
+                SizedBox(height: 15),
+                InputFields(
+                  controller: _kiloController,
+                  placeholder: 'Kilo (kg)',
+                  icon: Icon(Icons.line_weight),
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: 15),
+                InputFields(
+                  controller: _boyController,
+                  placeholder: 'Boy (cm)',
+                  icon: Icon(Icons.height),
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
                       child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: Colors.black,
-                          width: 1), // Border rengi ve genişliği
-                      borderRadius: BorderRadius.circular(18),
-                      // Kenarları yuvarlamak için
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: DropdownButton<String>(
-                      value: _cinsiyet,
-                      isExpanded: true,
-                      onChanged: (value) => setState(() {
-                        _cinsiyet = value!;
-                      }),
-                      items: ['Cinsiyet Seçin', 'Erkek', 'Kadın']
-                          .map((value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(value),
-                              ))
-                          .toList(),
-                    ),
-                  )),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
                             color: Colors.black,
-                            width: 1), // Border rengi ve genişliği
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DropdownButton<String>(
-                        value: _uyruk,
-                        isExpanded: true,
-                        onChanged: (value) => setState(() {
-                          _uyruk = value!;
-                        }),
-                        items: [
-                          'Uyruk Seçin',
-                          'Beyaz Tenli',
-                          'Afro-Amerikalı',
-                          'Kuzeydoğu-Asyalı',
-                          'Güneydoğu-Asyalı',
-                          'Diğer'
-                        ]
-                            .map((value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value),
-                                ))
-                            .toList(),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: DropdownButton<String>(
+                          value: _cinsiyet,
+                          isExpanded: true,
+                          onChanged: (value) => setState(() {
+                            _cinsiyet = value!;
+                          }),
+                          items: ['Cinsiyet Seçin', 'Erkek', 'Kadın']
+                              .map((value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value),
+                                  ))
+                              .toList(),
+                        ),
                       ),
                     ),
-                  )
-                ],
-              ),
-              SizedBox(height: 15),
-              InputFields(
-                controller: _emailController,
-                placeholder: 'E-posta',
-                icon: Icon(Icons.email),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 15),
-              InputFields(
-                controller: _passwordController,
-                placeholder: 'Şifre',
-                icon: Icon(Icons.lock),
-                secureTextEntry: true,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () => _register(
-                        context), // Kayıt ol butonuna tıklama engeli ekledim
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFA0BAFD),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 32, vertical: 16), // Butonun iç boşlukları
-                  textStyle: const TextStyle(
-                    fontSize: 15, // Yazı boyutu
-                    fontWeight: FontWeight.bold, // Yazı kalınlığı
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: DropdownButton<String>(
+                          value: _uyruk,
+                          isExpanded: true,
+                          onChanged: (value) => setState(() {
+                            _uyruk = value!;
+                          }),
+                          items: [
+                            'Uyruk Seçin',
+                            'Beyaz Tenli',
+                            'Afro-Amerikalı',
+                            'Kuzeydoğu-Asyalı',
+                            'Güneydoğu-Asyalı',
+                            'Diğer'
+                          ]
+                              .map((value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value),
+                                  ))
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 15),
+                InputFields(
+                  controller: _emailController,
+                  placeholder: 'E-posta',
+                  icon: Icon(Icons.email),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                SizedBox(height: 15),
+                InputFields(
+                  controller: _passwordController,
+                  placeholder: 'Şifre',
+                  icon: Icon(Icons.lock),
+                  secureTextEntry: true,
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : () => _register(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          'Kayıt Ol',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (ctx) => LoginScreen()),
+                    );
+                  },
+                  child: const Text(
+                    'Zaten hesabınız var mı',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
                   ),
                 ),
-                child: _isLoading
-                    ? CircularProgressIndicator(
-                        color: Colors.white,
-                      )
-                    : Text('Kayıt Ol'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (ctx) => LoginScreen()));
-                },
-                child: const Text('Zaten hesabınız var mı'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
