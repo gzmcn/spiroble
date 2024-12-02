@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
+import 'package:spiroble/screens/hosgeldiniz.dart';
 import 'package:spiroble/widgets/CircularProgressBar.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 import 'package:fancy_button_flutter/fancy_button_flutter.dart';
@@ -142,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () async {
               await auth.signOut();
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (ctx) => LoginScreen()),
+                MaterialPageRoute(builder: (ctx) => WelcomeScreen()),
               );
             },
           ),

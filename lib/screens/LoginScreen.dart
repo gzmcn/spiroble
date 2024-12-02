@@ -106,13 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
 
             // Register Button
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (ctx) => RegisterScreen()));
-              },
-              child: const Text('Üye ol'),
-            ),
           ],
         ),
       ),

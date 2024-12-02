@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spiroble/screens/InfoScreen2.dart';
+import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -24,11 +25,11 @@ class InfoScreen1 extends StatelessWidget {
           ),
           // Breath SVG ikonu
           Positioned(
-            top: 140,  // İkonun üst kısımdan ne kadar uzak olacağı
+            top: 140, // İkonun üst kısımdan ne kadar uzak olacağı
             left: 40,
             right: 0,
             child: SvgPicture.asset(
-              'assets/spirometer.svg',  // breath.svg dosyasının yolu
+              'assets/spirometer.svg', // breath.svg dosyasının yolu
               width: 125.0,
               height: 125.0,
             ),
@@ -39,7 +40,7 @@ class InfoScreen1 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // İkon ve yazı arasına daha fazla boşluk eklemek için SizedBox
-                const SizedBox(height: 220),  // Bu satır ile boşluğu artırdık
+                const SizedBox(height: 220), // Bu satır ile boşluğu artırdık
                 Text(
                   "Spirometri akciğer kapasitesini ve solunum fonksiyonlarını ölçmek için kullanılan bir cihazdır. Solunum hastalıklarının tanı ve takibinde yaygın olarak kullanılır.",
                   textAlign: TextAlign.center,
@@ -64,7 +65,7 @@ class InfoScreen1 extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
+                          builder: (context) => AppScreen(),
                         ),
                       );
                     },

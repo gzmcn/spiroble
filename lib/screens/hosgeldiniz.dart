@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:spiroble/screens/LoginScreen.dart';
+import 'package:spiroble/screens/registerScreen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -30,7 +32,8 @@ class WelcomeScreen extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: Container(
               width: double.infinity, // Make it full width
-              height: MediaQuery.of(context).size.height * 0.4, // Adjusted height
+              height:
+                  MediaQuery.of(context).size.height * 0.4, // Adjusted height
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -70,55 +73,61 @@ class WelcomeScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 50),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // First button action
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFFFFFFF),
-                          foregroundColor: Color(0xff51A8FF),
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (ctx) => LoginScreen()));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFFFFFFF),
+                            foregroundColor: Color(0xff51A8FF),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            'Giriş Yap',
+                            textAlign: TextAlign.center, // ✅ Correct placement
+                            style: TextStyle(
+                              color: Colors.lightBlue[600],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          'Giriş Yap',
-                          textAlign: TextAlign.center, // ✅ Correct placement
-                          style: TextStyle(
-                            color: Colors.lightBlue[600],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (ctx) => RegisterScreen()));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFFFFFFF),
+                            foregroundColor: Color(0xff51A8FF),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            'Kayıt Ol',
+                            textAlign: TextAlign.center, // ✅ Correct placement
+                            style: TextStyle(
+                              color: Colors.lightBlue[600],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Second button action
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFFFFFFF),
-                          foregroundColor: Color(0xff51A8FF),
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: Text(
-                          'Kayıt Ol',
-                          textAlign: TextAlign.center, // ✅ Correct placement
-                          style: TextStyle(
-                            color: Colors.lightBlue[600],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -145,7 +154,8 @@ class BouncingHeart extends StatefulWidget {
   _BouncingHeartState createState() => _BouncingHeartState();
 }
 
-class _BouncingHeartState extends State<BouncingHeart> with SingleTickerProviderStateMixin {
+class _BouncingHeartState extends State<BouncingHeart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

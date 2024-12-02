@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spiroble/screens/InfoScreen3.dart';
+import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
 
 class InfoScreen2 extends StatelessWidget {
@@ -29,7 +30,7 @@ class InfoScreen2 extends StatelessWidget {
               children: [
                 // SVG ikonu kullanma
                 SvgPicture.asset(
-                  'assets/lungs.svg',  // SVG dosyasının yolu
+                  'assets/lungs.svg', // SVG dosyasının yolu
                   width: 130.0,
                   height: 130.0,
                 ),
@@ -58,7 +59,7 @@ class InfoScreen2 extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
+                          builder: (context) => AppScreen(),
                         ),
                       );
                     },

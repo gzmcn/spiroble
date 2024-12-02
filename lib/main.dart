@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spiroble/blocs/theme.bloc.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/appScreen.dart';
+import 'package:spiroble/screens/hosgeldiniz.dart';
 import 'package:spiroble/screens/splashScreen.dart';
 import 'firebase_options.dart';
 
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
                   if (snapshot.hasData) {
                     return AppScreen();
                   }
-                  return LoginScreen();
+                  return WelcomeScreen();
                 }),
             theme: themeState.themeData,
           );
