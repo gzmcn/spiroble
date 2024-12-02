@@ -134,6 +134,7 @@ class BluetoothConnectionManager {
       print("Veri okuma sırasında hata oluştu: $error");
     }
   }
+
   //ne yaptığını bilmiyorum      İLERİDE TEKRAR KONTROL EDİLECEK
   Future<void> initializeCharacteristic(
       String deviceId, String serviceUuid, String characteristicUuid) async {
@@ -262,7 +263,6 @@ class BluetoothConnectionManager {
     }
   }
 
-  
   Future<void> sendChar1(
       String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
@@ -294,13 +294,11 @@ class BluetoothConnectionManager {
     }
   }
 
-
-  void dispose() {    
+  void dispose() {
     print("Kaynaklar temizleniyor...");
     _scanSubscription?.cancel();
     _deviceController.close();
   }
 
   // Kaynakları serbest bırakma
- 
 }
