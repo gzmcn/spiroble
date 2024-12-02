@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BluetoothConnectionManager with ChangeNotifier{
+//EKLENDİ
+// BluetoothConnectionManager'ı sağlayan provider'ı tanımlıyoruz
+final bluetoothConnectionProvider =
+    ChangeNotifierProvider<BluetoothConnectionManager>(
+  (ref) => BluetoothConnectionManager(),
+);
+
+class BluetoothConnectionManager with ChangeNotifier {
   // StreamController'lar
   final _connectionController = StreamController<bool>.broadcast();
   final _deviceController = StreamController<String?>.broadcast();
@@ -23,14 +30,26 @@ class BluetoothConnectionManager with ChangeNotifier{
   bool checkConnection() => _isConnected;
   String? get connectedDeviceId => _connectedDeviceId;
 
-  // Bağlantı durumunu ayarlama ve kontrolü
   void setConnectionState(String? deviceId, bool connected) {
-    _connectedDeviceId = deviceId;
-    _isConnected = connected;
+    // Eğer bağlantı kesildiyse ve deviceId null ise, bağlantı bilgilerini sıfırlayabilirsiniz.
+    if (deviceId == null) {
+      print("Device Id null");
+      if (!connected) {
+        print("Connection yok");
+        _connectedDeviceId =
+            null; // Bağlantı kesildiğinde cihaz ID'si null yapılabilir.
+        _isConnected = false;
+      }
+    } else {
+      _connectedDeviceId = deviceId;
+      _isConnected = connected;
+      print(deviceId);
+      print(_isConnected);
+    }
 
     notifyListeners();
 
-    // Yeni durumları akışlara ekle
+    // Akışlara ekleyin
     _deviceController.sink.add(_connectedDeviceId);
     _connectionController.sink.add(_isConnected);
   }
@@ -115,6 +134,10 @@ class BluetoothConnectionManager with ChangeNotifier{
   }
 
   Future<void> initializeCommunication(String deviceId) async {
+    if (deviceId == null) {
+      print("Geçersiz cihaz ID'si.");
+      return; // Null ID ile işlem yapılmaz
+    }
     Uuid serviceUuid =
         Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
     Uuid characteristicUuid =
@@ -137,6 +160,7 @@ class BluetoothConnectionManager with ChangeNotifier{
       print("Veri okuma sırasında hata oluştu: $error");
     }
   }
+
   //ne yaptığını bilmiyorum      İLERİDE TEKRAR KONTROL EDİLECEK
   Future<void> initializeCharacteristic(
       String deviceId, String serviceUuid, String characteristicUuid) async {
@@ -252,15 +276,19 @@ class BluetoothConnectionManager with ChangeNotifier{
     );
   }
 
-  //Silinecek ileride
-  Future<void> disconnectToDevice(String deviceId) async {
+//Silinecek ileride
+  Future<void> disconnectToDevice(String? deviceId) async {
+    if (deviceId == null) {
+      print("Geçersiz cihaz ID'si.");
+      return; // Geçersiz ID'lerle işlem yapılmaz
+    }
+
     try {
       await _connectionSubscription?.cancel();
       _connectionSubscription = null;
       print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
       setConnectionState(deviceId, false); // Bağlantı durumu güncellendi
       notifyListeners();
-      deviceId = '';
     } catch (error) {
       print("Cihaz bağlantısı kesilirken hata oluştu: $error");
       setConnectionState(deviceId, true);
@@ -268,7 +296,6 @@ class BluetoothConnectionManager with ChangeNotifier{
     }
   }
 
-  
   Future<void> sendChar1(
       String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
@@ -300,13 +327,14 @@ class BluetoothConnectionManager with ChangeNotifier{
     }
   }
 
-
-  void dispose() {    
+  void dispose() {
     print("Kaynaklar temizleniyor...");
     _scanSubscription?.cancel();
+    _connectionSubscription?.cancel(); // Bağlantı aboneliği de iptal edilmeli
     _deviceController.close();
+    _connectionController
+        .close(); // Gerekli olan diğer streamController'ları da temizleyin
   }
 
   // Kaynakları serbest bırakma
- 
 }

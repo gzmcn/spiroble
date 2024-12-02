@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:spiroble/screens/testScreen.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'package:spiroble/screens/testScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,10 +14,11 @@ class _HomeScreen extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Access BluetoothConnectionManager from the provider
-    final bluetoothManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
+    // BluetoothConnectionManager'ı kontrol et
+    final bluetoothManager =
+        Provider.of<BluetoothConnectionManager>(context, listen: false);
 
-    // Checking the connection status
+    // Bağlantı durumunu kontrol et
     print(bluetoothManager.connectedDeviceId.toString());
     if (bluetoothManager.checkConnection()) {
       print('connected');
@@ -30,11 +30,11 @@ class _HomeScreen extends State<HomeScreen> {
   String getGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return "günaydın!";
+      return "Günaydın!";
     } else if (hour < 18) {
-      return "iyi günler!";
+      return "İyi günler!";
     } else {
-      return "iyi akşamlar!";
+      return "İyi akşamlar!";
     }
   }
 
@@ -57,40 +57,44 @@ class _HomeScreen extends State<HomeScreen> {
                 children: [
                   Text(
                     getGreetingMessage(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                  // Bluetooth bağlantı durumunu göstermek
                   Text(
                     bluetoothManager.checkConnection()
                         ? "Cihaza bağlı: ${bluetoothManager.connectedDeviceId}"
                         : "Cihaza bağlı değil",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white70,
                     ),
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
+                  // Test widget'ına geçiş yapma
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => TestScreen(),
+                        builder: (context) =>
+                            TestScreen(), // Test ekranına geçiş
                       ));
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                       backgroundColor: const Color.fromARGB(255, 251, 251, 251),
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 8,
                     ),
-                    child: Text(
-                      "Teste Basla",
+                    child: const Text(
+                      "Teste Başla",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
