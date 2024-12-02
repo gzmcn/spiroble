@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
@@ -32,8 +31,12 @@ class BluetoothConnectionManager {
     _connectionController.sink.add(_isConnected);
   }
 
+  // kütüphane tanımlama
   final FlutterReactiveBle _ble = FlutterReactiveBle();
+
+  // taranmış cihazlar stream'i
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
+  // bağlanılmış cihaz stream'i
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
 
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
@@ -44,6 +47,8 @@ class BluetoothConnectionManager {
 
   final List<DiscoveredDevice> _devices = [];
   late QualifiedCharacteristic _characteristic;
+
+
 
   // izinleri ayarlama ve düzenleme
   Future<bool> _checkPermissions() async {
@@ -71,6 +76,7 @@ class BluetoothConnectionManager {
     }
   }
 
+
   //TARAMAYI BAŞLATIYORUZ
   Future<void> startScan() async {
     if (!await _checkPermissions()) {
@@ -81,6 +87,7 @@ class BluetoothConnectionManager {
     print("Tarama başlatılıyor...");
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
       (device) {
+        print("Found device with ID: ${device.id}");
         _addDeviceToStream(device);
       },
       onError: (error) {
@@ -294,13 +301,5 @@ class BluetoothConnectionManager {
     }
   }
 
-
-  void dispose() {    
-    print("Kaynaklar temizleniyor...");
-    _scanSubscription?.cancel();
-    _deviceController.close();
-  }
-
-  // Kaynakları serbest bırakma
- 
 }
+
