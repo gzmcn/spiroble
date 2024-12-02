@@ -50,4 +50,5 @@ flutter:
     - assets/spiroicons.svg
     - assets/entry.svg
     - assets/spirometer.svg
+    - assets/images/bluetooth_connected.jpg
   uses-material-design: true

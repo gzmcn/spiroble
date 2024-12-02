@@ -25,193 +25,183 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
-  final DatabaseReference _databaseRef =
-  FirebaseDatabase.instance.ref("test_results");
-  List<Map<String, dynamic>> _items = [];
+  List<Map<String, String>> measurements = []; // Başlangıçta boş liste
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    fetchMeasurements(); // Başlangıçta veri çekmeye başla
   }
 
-  Future<void> _fetchData() async {
-    _databaseRef.onValue.listen((event) {
-      final data = event.snapshot.value as Map<dynamic, dynamic>?;
-      if (data != null) {
-        setState(() {
-          _items = data.entries.map((e) {
-            final key = e.key;
-            final value = Map<String, dynamic>.from(e.value);
-            return {
-              'id': key,
-              'title': value['title'],
-              'date': value['date'],
-              'values': List<String>.from(value['values']),
-              'value1': value['value1'],
-              'value2': value['value2'],
-              'value3': value['value3'],
-            };
-          }).toList();
-        });
-      }
+  // Backend'den veri çekme simülasyonu
+  Future<void> fetchMeasurements() async {
+    // Bu kısımda gerçek API çağrısı yapılacak
+    await Future.delayed(Duration(seconds: 2)); // 2 saniye bekle
+
+    setState(() {
+      // Backend'den gelen veriler ile listeyi güncelle
+      measurements = [
+        {
+          "emoji": "🔥",
+          "fvc": "3.13 L",
+          "pef": "451 L/m",
+          "fev1": "1.20",
+          "date": "12 Mar 2021"
+        },
+        {
+          "emoji": "🔥",
+          "fvc": "3.32 L",
+          "pef": "375 L/m",
+          "fev1": "1.22",
+          "date": "11 Mar 2021"
+        },
+        {
+          "emoji": "🔥",
+          "fvc": "4.11 L",
+          "pef": "429 L/m",
+          "fev1": "1.34",
+          "date": "10 Mar 2021"
+        },
+        {
+          "emoji": "🔥",
+          "fvc": "4.12 L",
+          "pef": "429 L/m",
+          "fev1": "1.34",
+          "date": "10 Mar 2021"
+        }
+      ];
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[900], // Koyu zemin
       body: Column(
         children: [
-          // Header
+          // Üst kısım: Siyah gölgeli başlık ve altın menü butonları
           Container(
-            height: 100,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: const BoxDecoration(
-              color: Color(0xFFA0BAFD),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(25),
-                bottomRight: Radius.circular(25),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            color: Colors.grey[850], // Koyu zemin
+            child: Column(
               children: [
-                const Text(
-                  'Test Sonuçları',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
+                // Modern Başlık
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Günlük Ölçüm Değerleri",
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  blurRadius: 6,
+                                  offset: Offset(2, 2),
+                                ),
+                              ],
+                              color: Colors.white,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.black, size: 24),
-                  onPressed: () {
-                      Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context)  => TestDetailScreen(),
+                // Altın Renkli Menü Butonları
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          print("Spirometre Butonuna Tıklandı");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 197, 151, 0),
+                          shadowColor: Color.fromARGB(255, 182, 148, 0),
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                      );
-                    },
+                        ),
+                        child: Text(
+                          "Spirometre",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          print("Oksimetre Butonuna Tıklandı");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 197, 151, 0),
+                          shadowColor: Color.fromARGB(255, 182, 148, 0),
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          "Oksimetre",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          // Cards
           Expanded(
-            child: ListView.builder(
-              itemCount: _items.length,
-              itemBuilder: (context, index) {
-                final item = _items[index];
-                return GestureDetector(
-                  onTap: () {
-
+            // Ölçüm değerleri listesi
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: measurements.isEmpty
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: measurements.length,
+                      itemBuilder: (context, index) {
+                        final measurement = measurements[index];
+                        return ElevatedMeasurementCard(
+                          emoji: measurement['emoji']!,
+                          fvc: measurement['fvc']!,
+                          pef: measurement['pef']!,
+                          fev1: measurement['fev1']!,
+                          date: measurement['date']!,
+                        );
+                      },
+                    ),
+            ),
+          ),
+          // Alt Kısım: Profil ve Arama Butonları
+          Container(
+            color: Colors.grey[850],
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    print("Test Butonuna Tıklandı");
                   },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 10,
-                    ),
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(3, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title and Icon
-                        Row(
-                          children: [
-                            const Icon(Icons.bubble_chart,
-                                color: Color(0xFFA0BAFD)),
-                            const SizedBox(width: 8),
-                            Text(
-                              item['title'],
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF333333),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        // Date
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: Text(
-                            item['date'],
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF888888),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // Values
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: item['values']
-                              .map<Widget>(
-                                (value) => Text(
-                              value,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF333333),
-                              ),
-                            ),
-                          )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 10),
-                        // Value Details
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              item['value1'],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              item['value2'],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              item['value3'],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                  icon: Icon(Icons.search, color: Color.fromARGB(255, 182, 148, 0)),
+                  iconSize: 32,
+                ),
+                IconButton(
+                  onPressed: () {
+                    print("Profil Butonuna Tıklandı");
+                  },
+                  icon: Icon(Icons.person, color: Color.fromARGB(255, 182, 148, 0)),
+                  iconSize: 32,
+                ),
+              ],
             ),
           ),
         ],
@@ -220,3 +210,126 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 }
 
+class ElevatedMeasurementCard extends StatelessWidget {
+  final String emoji;
+  final String fvc;
+  final String pef;
+  final String fev1;
+  final String date;
+
+  ElevatedMeasurementCard({
+    required this.emoji,
+    required this.fvc,
+    required this.pef,
+    required this.fev1,
+    required this.date,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.grey[800], // Koyu arka plan
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(4, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tarih ve emoji
+          Row(
+            children: [
+              Text(
+                emoji,
+                style: TextStyle(fontSize: 28),
+              ),
+              SizedBox(width: 10),
+              Text(
+                date,
+                style: TextStyle(fontSize: 14, color: Colors.white70),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          // FVC, PEF, FEV1: İsimler ince yazı; değerler kalın
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    'FVC',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    fvc,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    'PEF',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    pef,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    'FEV1',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    fev1,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
