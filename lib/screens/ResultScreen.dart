@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:spiroble/screens/TestDetailScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +26,7 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   final DatabaseReference _databaseRef =
-  FirebaseDatabase.instance.ref("test_results");
+      FirebaseDatabase.instance.ref("sonuclar");
   List<Map<String, dynamic>> _items = [];
 
   @override
@@ -35,8 +35,16 @@ class _ResultScreenState extends State<ResultScreen> {
     _fetchData();
   }
 
+  // Veriyi Firebase'den çekme fonksiyonu
   Future<void> _fetchData() async {
-    _databaseRef.onValue.listen((event) {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('Kullanıcı giriş yapmamış!');
+      return;
+    }
+    String userId = user.uid; // Aktif kullanıcının ID'si
+
+    _databaseRef.child(userId).onValue.listen((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
       if (data != null) {
         setState(() {
@@ -45,12 +53,12 @@ class _ResultScreenState extends State<ResultScreen> {
             final value = Map<String, dynamic>.from(e.value);
             return {
               'id': key,
-              'title': value['title'],
-              'date': value['date'],
-              'values': List<String>.from(value['values']),
-              'value1': value['value1'],
-              'value2': value['value2'],
-              'value3': value['value3'],
+              'fef2575': value['fef2575'],
+              'fvc': value['fvc'],
+              'fev1': value['fev1'],
+              'pef': value['pef'],
+              'fev1Fvc': value['fev1Fvc'],
+              'timestamp': value['timestamp'],
             };
           }).toList();
         });
@@ -86,16 +94,6 @@ class _ResultScreenState extends State<ResultScreen> {
                     color: Colors.black,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.black, size: 24),
-                  onPressed: () {
-                      Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context)  => TestDetailScreen(),
-                          ),
-                      );
-                    },
-                ),
               ],
             ),
           ),
@@ -108,7 +106,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 final item = _items[index];
                 return GestureDetector(
                   onTap: () {
-
+                    // Burada tıklanan öğe ile ilgili işlem yapabilirsiniz
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(
@@ -137,7 +135,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                 color: Color(0xFFA0BAFD)),
                             const SizedBox(width: 8),
                             Text(
-                              item['title'],
+                              'Test Sonucu',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
@@ -147,11 +145,11 @@ class _ResultScreenState extends State<ResultScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        // Date
+                        // Timestamp
                         Align(
                           alignment: Alignment.topRight,
                           child: Text(
-                            item['date'],
+                            item['timestamp'],
                             style: const TextStyle(
                               fontSize: 14,
                               color: Color(0xFF888888),
@@ -161,50 +159,13 @@ class _ResultScreenState extends State<ResultScreen> {
                         ),
                         const SizedBox(height: 10),
                         // Values
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: item['values']
-                              .map<Widget>(
-                                (value) => Text(
-                              value,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF333333),
-                              ),
-                            ),
-                          )
-                              .toList(),
-                        ),
-                        const SizedBox(height: 10),
-                        // Value Details
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
                           children: [
-                            Text(
-                              item['value1'],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              item['value2'],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              item['value3'],
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF666666),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            Text('FEF2575: ${item['fef2575']}'),
+                            Text('FVC: ${item['fvc']}'),
+                            Text('FEV1: ${item['fev1']}'),
+                            Text('PEF: ${item['pef']}'),
+                            Text('FEV1/FVC: ${item['fev1Fvc']}'),
                           ],
                         ),
                       ],
@@ -219,4 +180,3 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 }
-
