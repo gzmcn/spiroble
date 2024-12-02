@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spiroble/blocs/theme.bloc.dart';
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/hosgeldiniz.dart';
-import 'package:spiroble/screens/splashScreen.dart';
+import 'package:spiroble/screens/StartSplashScreen.dart'; // Ensure splashScreen.dart is imported
 import 'firebase_options.dart';
 
 void main() async {
@@ -29,17 +29,7 @@ class MyApp extends StatelessWidget {
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, themeState) {
           return MaterialApp(
-            home: StreamBuilder(
-                stream: FirebaseAuth.instance.authStateChanges(),
-                builder: (ctx, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const ConnectionWaitingScreen();
-                  }
-                  if (snapshot.hasData) {
-                    return AppScreen();
-                  }
-                  return WelcomeScreen();
-                }),
+            home: StartSplashScreen(),  // StartSplashScreen will appear first
             theme: themeState.themeData,
           );
         },

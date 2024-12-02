@@ -55,7 +55,7 @@ class WelcomeScreen extends StatelessWidget {
                   children: [
                     // Your lower section widgets go here
                     Text(
-                      'SPİROMATİK\'E',
+                      'SPIROMATIK\'E',
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w700,

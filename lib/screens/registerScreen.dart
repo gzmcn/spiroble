@@ -25,122 +25,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _kiloController = TextEditingController();
   final TextEditingController _boyController = TextEditingController();
 
-  // Cinsiyet ve uyruk seçenekleri
+  // Değişkenler
   String _cinsiyet = 'Cinsiyet Seçin';
   String _uyruk = 'Uyruk Seçin';
 
   bool _isLoading = false;
 
-  // Email doğrulama fonksiyonu
-  bool isValidEmail(String email) {
-    final emailPattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$";
-    return RegExp(emailPattern).hasMatch(email);
-  }
-
-  // Doğum tarihi seçimi
-  Future<void> _selectDate(BuildContext context) async {
-    DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (selectedDate != null) {
-      setState(() {
-        _dogumTarihiController.text =
-            "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
-      });
-    }
-  }
-
-  // Kayıt işlemi
-  Future<void> _register(BuildContext context) async {
-    final String email = _emailController.text.trim();
-    final String password = _passwordController.text.trim();
-    final String ad = _adController.text.trim();
-    final String soyad = _soyadController.text.trim();
-    final String dogumTarihi = _dogumTarihiController.text.trim();
-    final String kilo = _kiloController.text.trim();
-    final String boy = _boyController.text.trim();
-
-    List<String> errors = [];
-
-    // Form validasyonu
-    if (ad.isEmpty) errors.add('Ad alanı boş bırakılamaz.');
-    if (soyad.isEmpty) errors.add('Soyad alanı boş bırakılamaz.');
-    if (!isValidEmail(email)) errors.add('Geçerli bir e-posta adresi giriniz.');
-    if (password.length < 6) errors.add('Şifre en az 6 karakter olmalıdır.');
-    if (double.tryParse(boy) == null || double.parse(boy) <= 0) {
-      errors.add('Geçerli bir boy giriniz.');
-    }
-    if (double.tryParse(boy)! >= 250) {
-      errors.add('lütfen geçerli bir boy giriniz');
-    }
-    if (double.tryParse(kilo) == null || double.parse(kilo) <= 0) {
-      errors.add('Geçerli bir kilo giriniz.');
-    }
-    if (_cinsiyet == 'Cinsiyet Seçin') errors.add('Cinsiyet seçiniz.');
-    if (_uyruk == 'Uyruk Seçin') errors.add('Uyruk seçiniz.');
-
-    // Hataları göster
-    if (errors.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text('Hata'),
-          content: Text(errors.join('\n')),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Tamam'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
+  // Kullanıcı kaydetme fonksiyonu
+  void _register(BuildContext context) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Firebase Authentication ile kayıt
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      // Firebase Authentication işlemi
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      // Firestore'a kullanıcı verilerini kaydetme
-      await _database.child('users').child(userCredential.user!.uid).set({
-        'email': email,
-        'ad': ad,
-        'soyad': soyad,
-        'dogumTarihi': dogumTarihi,
-        'kilo': double.parse(kilo),
-        'boy': double.parse(boy),
+      // Kullanıcı verilerini Firestore'a kaydetme
+      await _firestore.collection('users').doc(userCredential.user?.uid).set({
+        'ad': _adController.text.trim(),
+        'soyad': _soyadController.text.trim(),
+        'dogumTarihi': _dogumTarihiController.text.trim(),
+        'kilo': _kiloController.text.trim(),
+        'boy': _boyController.text.trim(),
         'cinsiyet': _cinsiyet,
         'uyruk': _uyruk,
+        'email': _emailController.text.trim(),
       });
 
-      // Kayıt başarılı
+      // Başarılı kayıt sonrası yönlendirme
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => InfoScreen1()),
+        MaterialPageRoute(builder: (ctx) => InfoScreen1()), // İlk bilgilendirme ekranı
       );
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text('Hata'),
-          content: Text('Bir hata oluştu: ${e.toString()}'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Tamam'),
-            ),
-          ],
-        ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Kayıt işlemi başarısız: $e')),
       );
     } finally {
       setState(() {
@@ -166,22 +88,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
+                SizedBox(height: 50),
+                // Ad ve Soyad için Column kullanıyoruz
+                Column(
                   children: [
-                    Expanded(
-                      child: InputFields(
-                        controller: _adController,
-                        placeholder: 'Ad',
-                        icon: Icon(Icons.person_2_rounded),
-                      ),
+                    InputFields(
+                      controller: _adController,
+                      placeholder: 'Ad',
+                      icon: Icon(Icons.person_2_rounded),
                     ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: InputFields(
-                        controller: _soyadController,
-                        placeholder: 'Soyad',
-                        icon: Icon(Icons.person),
-                      ),
+                    SizedBox(height: 10),
+                    InputFields(
+                      controller: _soyadController,
+                      placeholder: 'Soyad',
+                      icon: Icon(Icons.person),
                     ),
                   ],
                 ),
@@ -197,20 +117,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 SizedBox(height: 15),
-                InputFields(
-                  controller: _kiloController,
-                  placeholder: 'Kilo (kg)',
-                  icon: Icon(Icons.line_weight),
-                  keyboardType: TextInputType.number,
+                // Boy ve Kilo için Row kullanıyoruz
+                Row(
+                  children: [
+                    Expanded(
+                      child: InputFields(
+                        controller: _kiloController,
+                        placeholder: 'Kilo (kg)',
+                        icon: Icon(Icons.line_weight),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: InputFields(
+                        controller: _boyController,
+                        placeholder: 'Boy (cm)',
+                        icon: Icon(Icons.height),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 15),
-                InputFields(
-                  controller: _boyController,
-                  placeholder: 'Boy (cm)',
-                  icon: Icon(Icons.height),
-                  keyboardType: TextInputType.number,
-                ),
-                SizedBox(height: 15),
+                // Cinsiyet ve Uyruk için Row kullanıyoruz
                 Row(
                   children: [
                     Expanded(
@@ -232,9 +162,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }),
                           items: ['Cinsiyet Seçin', 'Erkek', 'Kadın']
                               .map((value) => DropdownMenuItem(
-                                    value: value,
-                                    child: Text(value),
-                                  ))
+                            value: value,
+                            child: Text(value),
+                          ))
                               .toList(),
                         ),
                       ),
@@ -266,9 +196,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             'Diğer'
                           ]
                               .map((value) => DropdownMenuItem(
-                                    value: value,
-                                    child: Text(value),
-                                  ))
+                            value: value,
+                            child: Text(value),
+                          ))
                               .toList(),
                         ),
                       ),
@@ -276,6 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 SizedBox(height: 15),
+                // E-posta ve Şifre alanları
                 InputFields(
                   controller: _emailController,
                   placeholder: 'E-posta',
@@ -289,15 +220,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   icon: Icon(Icons.lock),
                   secureTextEntry: true,
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 65),
                 ElevatedButton(
                   onPressed: _isLoading ? null : () => _register(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 16),
+                        horizontal: 34, vertical: 18),
                     textStyle: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                     shape: RoundedRectangleBorder(
@@ -307,9 +238,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          'Kayıt Ol',
-                          style: TextStyle(color: Colors.black),
-                        ),
+                    'Kayıt Ol',
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -318,7 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     );
                   },
                   child: const Text(
-                    'Zaten hesabınız var mı',
+                    'Zaten hesabınız var mı?',
                     style: TextStyle(color: Colors.white, fontSize: 15),
                   ),
                 ),
@@ -328,5 +259,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  // Tarih seçme fonksiyonu
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != DateTime.now()) {
+      setState(() {
+        _dogumTarihiController.text = '${picked.toLocal()}'.split(' ')[0];
+      });
+    }
   }
 }

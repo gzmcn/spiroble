@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:spiroble/screens/InfoScreen1.dart'; // İlk bilgilendirme ekranını import edin
+import 'package:spiroble/screens/hosgeldiniz.dart';  // Make sure WelcomeScreen is imported
 
 class StartSplashScreen extends StatefulWidget {
   const StartSplashScreen({Key? key}) : super(key: key);
@@ -13,11 +13,11 @@ class _SplashScreenState extends State<StartSplashScreen> {
   @override
   void initState() {
     super.initState();
-    // 2 saniye sonra InfoScreen1'e geçiş
+    // 3 seconds after splash screen, navigate to WelcomeScreen
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const InfoScreen1()),
+        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
       );
     });
   }
@@ -27,11 +27,11 @@ class _SplashScreenState extends State<StartSplashScreen> {
     return Scaffold(
       body: Center(
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(110), // Yuvarlak köşe radius
+          borderRadius: BorderRadius.circular(110), // Round corner radius
           child: SvgPicture.asset(
-            'assets/spiroicons.svg',  // Yeni ikon dosyasının yolu
-            width: 225,  // İkon boyutu
-            height: 225,  // İkon boyutu
+            'assets/spiroicons.svg',  // Icon asset path
+            width: 225,  // Icon size
+            height: 225,  // Icon size
           ),
         ),
       ),

@@ -43,6 +43,7 @@ flutter_icons:
 flutter_lints: ^4.0.0
 
 flutter:
+
   assets:
     - assets/logo.png
     - assets/lungs.svg
@@ -51,4 +52,5 @@ flutter:
     - assets/entry.svg
     - assets/spirometer.svg
     - assets/images/bluetooth_connected.jpg
+
   uses-material-design: true
