@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
+import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
+import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'dart:typed_data';
 
 class BleController extends ChangeNotifier {
@@ -27,13 +29,7 @@ class BleController extends ChangeNotifier {
 
   void setConnection(bool value) {
     _connection = value;
-    notifyListeners(); // Durum değişikliğini bildir
-  }
-
-  // BLE bağlantısını başlatmak için initialize metodu
-  void initialize() {
-    print("BLE bağlantısı başlatılıyor...");
-    // Gerekli başlangıç işlemleri burada yapılabilir.
+    notifyListeners();
   }
 
   // BLE cihazlarını taramaya başlama
@@ -57,6 +53,13 @@ class BleController extends ChangeNotifier {
     );
   }
 
+  void _addDeviceToStream(DiscoveredDevice device) {
+    if (!_devices.any((d) => d.id == device.id)) {
+      _devices.add(device);
+      _deviceStreamController.add(List.unmodifiable(_devices));
+    }
+  }
+
   // BLE cihazlarını taramayı durdurma
   void stopScan() {
     print("Tarama durduruluyor...");
@@ -65,12 +68,6 @@ class BleController extends ChangeNotifier {
   }
 
   // Tarama sırasında bulunan cihazları listeye ekleme
-  void _addDeviceToStream(DiscoveredDevice device) {
-    if (!_devices.any((d) => d.id == device.id)) {
-      _devices.add(device);
-      _deviceStreamController.add(List.unmodifiable(_devices));
-    }
-  }
 
   // Bağlantı kurma
   Future<void> connectToDevice(String deviceId) async {
@@ -82,7 +79,7 @@ class BleController extends ChangeNotifier {
             DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
           this.deviceId = deviceId;
-          setConnection(true);
+
           await Future.delayed(Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
           await notify(deviceId);
@@ -90,7 +87,6 @@ class BleController extends ChangeNotifier {
         } else if (connectionState.connectionState ==
             DeviceConnectionState.disconnected) {
           print("Cihaz bağlantısı kesildi: $deviceId");
-          setConnection(false);
         }
       },
       onError: (error) {
@@ -133,11 +129,10 @@ class BleController extends ChangeNotifier {
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> initializeCommunication(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
-    Uuid characteristicUuid = Uuid.parse('00002A00-0000-1000-8000-00805F9B34FB');
-
-    print('Servis UUID: $serviceUuid');
-    print('Karakteristik UUID: $characteristicUuid');
+    Uuid serviceUuid =
+        Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
+    Uuid characteristicUuid =
+        Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
 
     _characteristic = QualifiedCharacteristic(
       serviceId: serviceUuid,
@@ -159,21 +154,19 @@ class BleController extends ChangeNotifier {
 
   // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> notify(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
-    Uuid characteristicUuid = Uuid.parse('BEB5483E-36E1-4688-B7F5-EA07361B26A8'); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
+    Uuid serviceUuid = Uuid.parse(
+        BleUuids.notifyServiceUuid); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
+    Uuid characteristicUuid = Uuid.parse(BleUuids
+        .notifycharacteristicUuid); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
-
 
     _characteristic = QualifiedCharacteristic(
       serviceId: serviceUuid,
       characteristicId: characteristicUuid,
       deviceId: deviceId,
-      );
-
-
-
+    );
 
     try {
       final response = await _ble.readCharacteristic(_characteristic);
@@ -188,8 +181,8 @@ class BleController extends ChangeNotifier {
   }
 
   Stream<List<double>> notifyAsDoubles(String deviceId) {
-    Uuid serviceUuid = Uuid.parse('4FAFC201-1FB5-459E-8FCC-C5C9C331914B');
-    Uuid characteristicUuid = Uuid.parse('BEB5483E-36E1-4688-B7F5-EA07361B26A8');
+    Uuid serviceUuid = Uuid.parse(BleUuids.notifyServiceUuid);
+    Uuid characteristicUuid = Uuid.parse(BleUuids.notifycharacteristicUuid);
 
     final characteristic = QualifiedCharacteristic(
       serviceId: serviceUuid,
@@ -228,12 +221,11 @@ class BleController extends ChangeNotifier {
     });
   }
 
-
   Future<void> uid3(String deviceId) async {
     Uuid serviceUuid = Uuid.parse(
-        '4FAFC201-1FB5-459E-8FCC-C5C9C331914B'); // D72FDD71-D631-4381-841B-B695DA002032
+        BleUuids.Uuid3Services); // D72FDD71-D631-4381-841B-B695DA002032
     Uuid characteristicUuid = Uuid.parse(
-        'E3223119-9445-4E96-A4A1-85358C4046A2'); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
+        BleUuids.Uuid3Characteristic); // F8C87645-5A2E-40CF-9B22-30D72089DF2B
 
     print('Servis UUID: $serviceUuid');
     print('Karakteristik UUID: $characteristicUuid');
@@ -256,7 +248,8 @@ class BleController extends ChangeNotifier {
     }
   }
 
-  Future<void> sendChar1(String serviceUuid, String characteristicUuid, String deviceId) async {
+  Future<void> sendChar1(
+      String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
       // UUID'leri Uuid formatına çevir
       Uuid parsedServiceUuid = Uuid.parse(serviceUuid);
@@ -285,7 +278,6 @@ class BleController extends ChangeNotifier {
       print("Error sending char '1': $error");
     }
   }
-
 
   // Cihazdan veri okuma işlemini başlatma
   void _startReceivingData() {
@@ -319,10 +311,4 @@ class BleController extends ChangeNotifier {
   }
 
   // Kaynakları temizlemek için dispose metodu
-  void dispose() {
-    print("Kaynaklar temizleniyor...");
-    _scanSubscription?.cancel();
-    _connectionSubscription?.cancel();
-    _deviceStreamController.close();
-  }
 }

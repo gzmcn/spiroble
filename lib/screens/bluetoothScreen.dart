@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:spiroble/bluetooth/ble_controller.dart';
+import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
+import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -9,13 +10,13 @@ class BluetoothScreen extends StatefulWidget {
 }
 
 class _BluetoothScreenState extends State<BluetoothScreen> {
-  final BleController _bleController = BleController();
+  final BluetoothConnectionManager _bleManager = BluetoothConnectionManager();
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
-    _bleController.startScan();
+    _bleManager.startScan();
   }
 
   Future<void> _requestPermissions() async {
@@ -27,11 +28,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     ].request();
   }
 
-  @override
-  void dispose() {
-    _bleController.dispose();
-    super.dispose();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +37,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         title: const Text('Bluetooth Cihazlar'),
       ),
       body: StreamBuilder<List<DiscoveredDevice>>(
-        stream: _bleController.deviceStream,
+        stream: _bleManager.DiscoveredDeviceStream,
         builder: (context, snapshot) {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -62,18 +59,19 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    if(_bleController.connection){
-                      _bleController.disconnectToDevice(device.id);
+                    //global bir değişkende tutulmalı dinamik olsun
+                    if(_bleManager.checkConnection()){
+                      _bleManager.disconnectToDevice(device.id);
                     }else{
-                      _bleController.connectToDevice(device.id);
+                      _bleManager.connectToDevice(device.id);
                       print("bağlı");
 
-                      String serviceUuid = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
-                      String characteristicUuid = "E3223119-9445-4E96-A4A1-85358C4046A2";
-                      _bleController.sendChar1(serviceUuid, characteristicUuid, device.id);
+                      String serviceUuid = BleUuids.Uuid3Services;
+                      String characteristicUuid = BleUuids.Uuid3Characteristic;
+                      _bleManager.sendChar1(serviceUuid, characteristicUuid, device.id);
                       // _bleController.notify(device.id);
 
-                      _bleController.notifyAsDoubles(device.id).listen((doubles) {
+                      _bleManager.notifyAsDoubles(device.id).listen((doubles) {
                           print("Bildirim alındı: ${doubles[0]}, ${doubles[1]}, ${doubles[2]}");
                         },
                         onError: (error) {
@@ -83,7 +81,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     }
 
                   },
-                  child:  Text( _bleController.connection ? 'Bağlantıyı Kes' : 'Bağlan',),
+                  child:  Text( _bleManager.checkConnection() ? 'Bağlantıyı Kes' : 'Bağlan',),
                 ),
               );
             },

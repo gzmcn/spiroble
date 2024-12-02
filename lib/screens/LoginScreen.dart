@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/bluetoothScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
 import 'package:spiroble/screens/registerScreen.dart';
@@ -31,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Başarılı giriş sonrası HomeScreen'e geçiş yap
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => BluetoothScreen()),
+        MaterialPageRoute(builder: (context) => AppScreen()),
       );
     } catch (error) {
       print('Sign-in error: ${error.toString()}');
@@ -82,20 +83,33 @@ class _LoginScreenState extends State<LoginScreen> {
                 });
               },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 45),
             // Sign In Button
             ElevatedButton(
               onPressed: _handleSignIn,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA0BAFD),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 32, vertical: 16), // Butonun iç boşlukları
+                textStyle: const TextStyle(
+                  fontSize: 15, // Yazı boyutu
+                  fontWeight: FontWeight.bold, // Yazı kalınlığı
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                ),
+              ),
               child: Text('Giriş Yap'),
             ),
-            SizedBox(height: 20),
+
             // Register Button
             TextButton(
               onPressed: () {
                 Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (ctx) => RegisterScreen()));
               },
-              child: Text('Üye Ol'),
+              child: const Text('Üye ol'),
             ),
           ],
         ),

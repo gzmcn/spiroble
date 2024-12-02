@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spiroble/screens/testScreen.dart';
 import 'package:spiroble/screens/asistanScreen.dart'; // Asistan ekranını import edin
+import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,6 +12,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreen extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    print(BluetoothConnectionManager().connectedDeviceId.toString());
+    if (BluetoothConnectionManager().checkConnection()) {
+      print('connected');
+    } else {
+      print('disconnected');
+    }
+  }
+
   String getGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
@@ -67,7 +79,7 @@ class _HomeScreen extends State<HomeScreen> {
                       horizontal: 30, vertical: 15), // Buton boyutu
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                    BorderRadius.circular(30), // Yuvarlatılmış köşeler
+                        BorderRadius.circular(30), // Yuvarlatılmış köşeler
                   ), // Buton metin rengi
                   elevation: 8, // Gölge efekti
                 ),
@@ -87,11 +99,13 @@ class _HomeScreen extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => AsistanScreen(), // Asistan ekranına yönlendirme
+            builder: (context) =>
+                AsistanScreen(), // Asistan ekranına yönlendirme
           ));
         },
         backgroundColor: Colors.white,
-        child: const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
+        child:
+            const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
       ),
     );
   }
