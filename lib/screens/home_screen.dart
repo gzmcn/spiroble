@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:spiroble/screens/testScreen.dart';
+import 'package:spiroble/screens/asistanScreen.dart'; // Asistan ekranını import edin
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -66,12 +67,12 @@ class _HomeScreen extends State<HomeScreen> {
                       horizontal: 30, vertical: 15), // Buton boyutu
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.circular(30), // Yuvarlatılmış köşeler
+                    BorderRadius.circular(30), // Yuvarlatılmış köşeler
                   ), // Buton metin rengi
                   elevation: 8, // Gölge efekti
                 ),
                 child: Text(
-                  "Teste Basla",
+                  "Teste Başla",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -81,6 +82,16 @@ class _HomeScreen extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+      // Sağ alt köşeye FloatingActionButton ekliyoruz
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => AsistanScreen(), // Asistan ekranına yönlendirme
+          ));
+        },
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
       ),
     );
   }
