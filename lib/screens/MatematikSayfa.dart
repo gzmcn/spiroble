@@ -12,15 +12,24 @@ class MatematikSayfasi extends StatelessWidget {
   });
 
   // FEV1 (Forced Expiratory Volume in 1 second) hesaplama
-  double hesaplaFEV1(List<double> akisHizi, List<double> toplamVolum) {
-    // FEV1, ilk bir saniyede çıkan hacmi temsil eder
-    // İlk saniyede alınan toplam hacim ile hesaplanabilir.
+  double hesaplaFEV1(List<double> akisHizi, List<double> zaman) {
+    // İlk bir saniye (1000 ms) için toplam hacmi hesaplayacağız
     double totalVolume = 0;
-for (int i = 0; i < akisHizi.length - 1; i++) {
-  totalVolume += akisHizi[i] * (toplamVolum[i + 1] - toplamVolum[i]);
-}
 
-    return totalVolume; // Gerçek hesaplama için daha karmaşık yöntemler kullanılabilir.
+    for (int i = 0; i < akisHizi.length - 1; i++) {
+      // Zaman farkını hesapla (milisaniyeyi saniyeye çevir)
+      double deltaTime = (zaman[i + 1] - zaman[i]) / 1000.0;
+
+      // Akış hızı ile zaman farkını çarparak hacim artışını hesapla
+      totalVolume += akisHizi[i] * deltaTime;
+
+      // 1 saniyeyi geçtikten sonra işlemi durdur
+      if (zaman[i + 1] >= 1000) {
+        break;
+      }
+    }
+
+    return totalVolume;
   }
 
   // FVC (Forced Vital Capacity) hesaplama
@@ -32,7 +41,8 @@ for (int i = 0; i < akisHizi.length - 1; i++) {
   // PEF (Peak Expiratory Flow) hesaplama
   double hesaplaPEF(List<double> akisHizi) {
     // PEF, zirve ekspirasyon akış hızıdır, yani en yüksek akış hızını alırız.
-    return akisHizi.reduce((value, element) => value > element ? value : element);
+    return akisHizi
+        .reduce((value, element) => value > element ? value : element);
   }
 
   // FEF2575 (Forced Expiratory Flow at 25-75% of FVC) hesaplama
