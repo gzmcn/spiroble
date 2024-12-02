@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
 
-class BluetoothConnectionManager {
+class BluetoothConnectionManager with ChangeNotifier{
   // StreamController'lar
   final _connectionController = StreamController<bool>.broadcast();
   final _deviceController = StreamController<String?>.broadcast();
@@ -26,6 +27,8 @@ class BluetoothConnectionManager {
   void setConnectionState(String? deviceId, bool connected) {
     _connectedDeviceId = deviceId;
     _isConnected = connected;
+
+    notifyListeners();
 
     // Yeni durumları akışlara ekle
     _deviceController.sink.add(_connectedDeviceId);
@@ -231,6 +234,7 @@ class BluetoothConnectionManager {
             DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
           setConnectionState(deviceId, true);
+          notifyListeners();
 
           await Future.delayed(const Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
@@ -255,10 +259,12 @@ class BluetoothConnectionManager {
       _connectionSubscription = null;
       print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
       setConnectionState(deviceId, false); // Bağlantı durumu güncellendi
+      notifyListeners();
       deviceId = '';
     } catch (error) {
       print("Cihaz bağlantısı kesilirken hata oluştu: $error");
       setConnectionState(deviceId, true);
+      notifyListeners();
     }
   }
 
