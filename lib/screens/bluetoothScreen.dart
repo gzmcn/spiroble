@@ -3,6 +3,8 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'package:spiroble/screens/MatematikSayfa.dart';
+import 'package:spiroble/screens/TestDetailScreen.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -28,7 +30,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     ].request();
   }
 
-  
+  final List<double> akisHizi = [];
+  final List<double> toplamVolum = [];
+  final List<double> miliSaniye = [];
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +43,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       body: StreamBuilder<List<DiscoveredDevice>>(
         stream: _bleManager.DiscoveredDeviceStream,
         builder: (context, snapshot) {
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -55,33 +58,64 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             itemBuilder: (context, index) {
               final device = devices[index];
               return ListTile(
-                title: Text(device.name.isNotEmpty ? device.name : 'Cihaz: ${device.id.substring(0, 5)}'),
-                subtitle: Text('ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
+                title: Text(device.name.isNotEmpty
+                    ? device.name
+                    : 'Cihaz: ${device.id.substring(0, 5)}'),
+                subtitle: Text(
+                    'ID: ${device.id} - RSSI: ${device.rssi ?? "Bilinmiyor"}'),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    //global bir değişkende tutulmalı dinamik olsun
-                    if(_bleManager.checkConnection()){
+                    if (_bleManager.checkConnection()) {
                       _bleManager.disconnectToDevice(device.id);
-                    }else{
+                    } else {
                       _bleManager.connectToDevice(device.id);
                       print("bağlı");
 
                       String serviceUuid = BleUuids.Uuid3Services;
                       String characteristicUuid = BleUuids.Uuid3Characteristic;
-                      _bleManager.sendChar1(serviceUuid, characteristicUuid, device.id);
-                      // _bleController.notify(device.id);
+                      _bleManager.sendChar1(
+                          serviceUuid, characteristicUuid, device.id);
 
-                      _bleManager.notifyAsDoubles(device.id).listen((doubles) {
-                          print("Bildirim alındı: ${doubles[0]}, ${doubles[1]}, ${doubles[2]}");
+                      // Verilerin alınıp toplandığı süreyi belirtmek için
+                      List<double> akisHizi = [];
+                      List<double> toplamVolum = [];
+                      List<double> miliSaniye = [];
+
+                      // Notify as doubles and collect data for 10 seconds
+                      var subscription =
+                          _bleManager.notifyAsDoubles(device.id).listen(
+                        (doubles) {
+                          akisHizi.add(doubles[0]);
+                          toplamVolum.add(doubles[1]);
+                          miliSaniye.add(doubles[2]);
+
+                          print(
+                              "Bildirim alındı: ${doubles[0]}, ${doubles[1]}, ${doubles[2]}");
                         },
                         onError: (error) {
                           print("Hata: $error");
                         },
                       );
-                    }
 
+                      // Otomatik olarak 10 saniye sonra verilerin toplanmasını durdur
+                      Future.delayed(Duration(seconds: 10), () {
+                        subscription.cancel();
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => MatematikSayfasi(
+                                akisHizi: akisHizi,
+                                toplamVolum: toplamVolum,
+                                miliSaniye: miliSaniye)));
+
+                        print("Veri toplama tamamlandı.");
+                        print("akisHizi: $akisHizi");
+                        print("toplamVolum: $toplamVolum");
+                        print("miliSaniye: $miliSaniye");
+                      });
+                    }
                   },
-                  child:  Text( _bleManager.checkConnection() ? 'Bağlantıyı Kes' : 'Bağlan',),
+                  child: Text(
+                    _bleManager.checkConnection() ? 'Bağlantıyı Kes' : 'Bağlan',
+                  ),
                 ),
               );
             },
