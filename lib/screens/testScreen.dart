@@ -4,6 +4,7 @@ import 'package:spiroble/screens/spiroScreen.dart';
 import 'package:spiroble/bluetooth/ble_controller.dart';
 import 'dart:typed_data';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'AnimationScreen.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -101,7 +102,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
                         if (_bleController.connection) {
                           // If already connected, navigate to the test screen
                           Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => SpiroScreen(),
+                            builder: (context) => AnimationScreen(),
                           ));
                         } else {
                           // If not connected, attempt to connect to the "Blank" device
@@ -114,7 +115,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
 
                             // Now navigate to the SpiroScreen
                             Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => SpiroScreen(),
+                              builder: (context) => AnimationScreen(),
                             ));
                           } catch (e) {
                             print("Failed to connect to the device: $e");
