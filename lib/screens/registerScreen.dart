@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:spiroble/screens/InfoScreen1.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
@@ -127,7 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Kayıt başarılı
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => AppScreen()),
+        MaterialPageRoute(builder: (context) => InfoScreen1()),
       );
     } catch (e) {
       showDialog(
