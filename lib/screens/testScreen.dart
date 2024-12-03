@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:spiroble/screens/spiroScreen.dart';
-import 'package:spiroble/bluetooth/ble_controller.dart';
 import 'dart:typed_data';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'AnimationScreen.dart';
@@ -14,7 +13,7 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin {
-  final BleController _bleController = BleController();
+  final BluetoothConnectionManager _bleManager = BluetoothConnectionManager();
 
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -32,7 +31,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
     );
 
     // Start scanning for devices
-    _bleController.startScan();
+    _bleManager.startScan();
 
     // Check the connection status
     if (BluetoothConnectionManager().checkConnection()) {
@@ -54,7 +53,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<List<DiscoveredDevice>>(
-        stream: _bleController.deviceStream,
+        stream: _bleManager.DiscoveredDeviceStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -99,7 +98,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
                     child: ElevatedButton(
                       onPressed: () async {
                         // Check if the BluetoothController is already connected
-                        if (_bleController.connection) {
+                        if (_bleManager.checkConnection()) {
                           // If already connected, navigate to the test screen
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => AnimationScreen(),
@@ -107,7 +106,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
                         } else {
                           // If not connected, attempt to connect to the "Blank" device
                           try {
-                            await _bleController.connectToDevice(deviceToConnect.id);
+                            await _bleManager.connectToDevice(deviceToConnect.id);
 
                             // After successful connection, update the UI state
                             setState(() {});  // This triggers the UI to reflect the connection change
@@ -132,7 +131,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
                         elevation: 10,
                       ),
                       child: Text(
-                        _bleController.connection ? 'Teste Başla' : 'Bağlan',
+                        _bleManager.checkConnection() ? 'Teste Başla' : 'Bağlan',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,

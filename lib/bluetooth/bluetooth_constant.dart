@@ -7,7 +7,6 @@ class BleUuids {
 
 
   // Genel Karakteristik UUID'leri
-  
   static const Uuid3Services = '4FAFC201-1FB5-459E-8FCC-C5C9C331914B';
   static const Uuid3Characteristic = 'E3223119-9445-4E96-A4A1-85358C4046A2';
   

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../bluetooth/ble_controller.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'package:spiroble/bluetooth/bluetooth_constant.dart';
 
 
 class SpiroScreen extends StatefulWidget {
@@ -12,28 +12,21 @@ class SpiroScreen extends StatefulWidget {
 }
 
 class _SpiroScreenState extends State<SpiroScreen> {
-  late final BleController _bleController;
+  late final BluetoothConnectionManager _bleManager;
   double progress = 0.0; // Sıvı seviyesi başlangıcı
   final double maxHeight = 10.0; // Maksimum sıvı yüksekliği
+  final BleUuids _bleUuids = BleUuids();
+
 
   @override
   void initState() {
     super.initState();
-    _bleController = BleController(); // BLE bağlantısı için kontrolcü
+    _bleManager = BluetoothConnectionManager(); // BLE bağlantısı için kontrolcü
 
-    // Check the connection status
-    if (BluetoothConnectionManager().checkConnection()) {
-      // The device is already connected
-      print("Already connected to device: ${BluetoothConnectionManager().connectedDeviceId}");
-    } else {
-      // Device is not connected, show "Bağlan" button
-      print("No device connected. Show 'Bağlan' button.");
-    }
   }
 
   @override
   void dispose() {
-    _bleController.dispose(); // Kaynakları temizle
     super.dispose();
   }
 
@@ -47,10 +40,10 @@ class _SpiroScreenState extends State<SpiroScreen> {
     });
 
     // Start scanning for devices
-    await _bleController.startScan();
+    await _bleManager.startScan();
 
     String? deviceId;
-    await for (List<DiscoveredDevice> devices in _bleController.deviceStream) {
+    await for (List<DiscoveredDevice> devices in _bleManager.DiscoveredDeviceStream) {
       for (var device in devices) {
         if (device.name == "Spirometer") {
           print("Device 'Spirometer' found: ${device.id}");
@@ -72,11 +65,11 @@ class _SpiroScreenState extends State<SpiroScreen> {
 
       try {
         // Initialize the characteristic with the found deviceId
-        await _bleController.initializeCharacteristic(deviceId, serviceUuid, characteristicUuid);
+        await _bleManager.initializeCharacteristic(deviceId, serviceUuid, characteristicUuid);
         print("Characteristic initialized successfully.");
 
         // Send char1 after initializing the characteristic
-        await _bleController.sendChar1(serviceUuid,characteristicUuid, deviceId);
+        await _bleManager.sendChar1(serviceUuid,characteristicUuid, deviceId);
 
         // Update the Bluetooth connection state globally
         BluetoothConnectionManager().setConnectionState(deviceId, true);
@@ -132,7 +125,8 @@ class _SpiroScreenState extends State<SpiroScreen> {
                 onPressed: () {
                   incrementProgress(); // Butona basıldığında işlemleri başlat
                   if (deviceId != null) {
-                    _bleController.notify(deviceId!); // null değilse çağır
+                    _bleManager.sendChar1(BleUuids.Uuid3Services, BleUuids.Uuid3Characteristic, deviceId);
+                    _bleManager.notifyAsDoubles(deviceId); // null değilse çağır
                   } else {
                     print("Bağlı cihaz yok, işlem yapılamaz.");
                   }

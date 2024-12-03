@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
+import 'package:spiroble/bluetooth/bluetooth_constant.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
 class AnimationScreen extends StatefulWidget {
@@ -12,9 +15,10 @@ class AnimationScreen extends StatefulWidget {
 
 class _AnimationScreenState extends State<AnimationScreen>
     with SingleTickerProviderStateMixin {
-  final BluetoothConnectionManager _bleManager = BluetoothConnectionManager();
-  bool _isConnecting = false;
-  bool _isConnected = false;
+  late BluetoothConnectionManager _bleManager;
+
+  DiscoveredDevice? deviceToConnect;
+
 
   // Measurement data
   List<Map<String, dynamic>> measurements = [
@@ -49,8 +53,19 @@ class _AnimationScreenState extends State<AnimationScreen>
   void initState() {
     super.initState();
     _requestPermissions();
+    _bleManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
+    _bleManager.startScan();
+    _loadConnectionState();
     _initializeAnimation();
     _calculateSpirometryMetrics();
+  }
+
+  // Bluetooth bağlantı durumunu yükle
+  Future<void> _loadConnectionState() async {
+    await _bleManager.loadConnectionState();
+    Future.delayed(Duration(seconds: 1), () {
+      print("Bağlantı durumu: ${_bleManager.checkConnection()}");
+    });
   }
 
   Future<void> _requestPermissions() async {
@@ -79,11 +94,12 @@ class _AnimationScreenState extends State<AnimationScreen>
   }
 
   void _startTimer() {
+
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_timerCount == 0) {
         _timer.cancel();
         _controller.stop();
-        _connectToDevice();
+        _bleManager.connectToDevice(deviceToConnect!.id);
       } else {
         setState(() {
           _timerCount--;
@@ -92,36 +108,6 @@ class _AnimationScreenState extends State<AnimationScreen>
     });
   }
 
-  void _connectToDevice() async {
-    setState(() {
-      _isConnecting = true;
-    });
-
-    bool connected = true;
-
-    setState(() {
-      _isConnecting = false;
-      _isConnected = connected;
-    });
-
-    if (connected) {
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Spiromatike Bağlanıldı')),
-          );
-        });
-      }
-    } else {
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Bağlantı Başarısız')),
-          );
-        });
-      }
-    }
-  }
 
   void _denyConnection() {
     _bleManager.stopScan();
@@ -197,259 +183,263 @@ class _AnimationScreenState extends State<AnimationScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.purple[900],
-      body: Column(
-        children: [
-          // Timer and title
-          Expanded(
-            flex: 2,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Timer
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.green, width: 3),
-                  ),
-                  padding: EdgeInsets.all(15),
-                  child: Text(
-                    '$_timerCount\nSEC',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                // Title
-                Text(
-                  'Blow hard!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+    _bleManager = Provider.of<BluetoothConnectionManager>(context);
+    return StreamBuilder<List<DiscoveredDevice>>(
+      stream: _bleManager.DiscoveredDeviceStream,
+      builder: (context, snapshot) {
+
+
+        final devices = snapshot.data ?? [];
+
+        deviceToConnect = devices.firstWhere(
+              (device) => device.name == "Spirometer",
+          orElse: () => DiscoveredDevice(
+            id: "",
+            name: "",
+            manufacturerData: Uint8List(0),
+            serviceData: {},
+            rssi: 0,
+            serviceUuids: [],
           ),
-          // Ball animation
-          Expanded(
-            flex: 3,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Cylinder background
-                Container(
-                  width: 80,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.purple[700]!, Colors.purple[900]!],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                ),
-                // Expiration text
-                Positioned(
-                  top: 40,
-                  child: Text(
-                    'EXPIRATION',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // Inspiration text
-                Positioned(
-                  bottom: 40,
-                  child: Text(
-                    'INSPIRATION',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // Animated ball
-                AnimatedBuilder(
-                  animation: _ballAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, _ballAnimation.value * 200),
-                      child: child,
-                    );
-                  },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.orangeAccent,
-                          blurRadius: 10,
-                          spreadRadius: 1,
+        );
+
+        return Scaffold(
+          backgroundColor: Colors.purple[900],
+          body: Column(
+            children: [
+              // Timer and title
+              Expanded(
+                flex: 2,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Timer
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.green, width: 3),
+                      ),
+                      padding: EdgeInsets.all(15),
+                      child: Text(
+                        '$_timerCount\nSEC',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Stop Trial button
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _timer.cancel();
-                  _controller.stop();
-                  _denyConnection();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Stop Trial',
-                  style: TextStyle(
-                    color: Colors.purple[900],
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Spirometry Metrics Display
-          if (_isConnected &&
-              FVC != null &&
-              FEV1 != null &&
-              fev1FvcRatio != null &&
-              FEF2575 != null &&
-              PEF != null)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    "Spirometri Sonuçları",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  MetricCard(title: "FVC", value: "${FVC!.toStringAsFixed(2)} L"),
-                  MetricCard(title: "FEV1", value: "${FEV1!.toStringAsFixed(2)} L"),
-                  MetricCard(
-                      title: "FEV1/FVC",
-                      value: "${fev1FvcRatio!.toStringAsFixed(2)}%"),
-                  MetricCard(
-                      title: "FEF25-75",
-                      value: "${FEF2575!.toStringAsFixed(2)} L/s"),
-                  MetricCard(
-                      title: "PEF", value: "${PEF!.toStringAsFixed(2)} L/min"),
-                ],
-              ),
-            ),
-          // Bottom Buttons
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Deny Button
-                OutlinedButton(
-                  onPressed: _isConnecting ? null : _denyConnection,
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    child: Text(
-                      "Bağlanma",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
                       ),
                     ),
-                  ),
-                ),
-                // Allow Button
-                ElevatedButton(
-                  onPressed:
-                      _isConnecting || _isConnected ? null : _connectToDevice,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    child: Text(
-                      "İzin Ver",
+                    SizedBox(height: 10),
+                    // Title
+                    Text(
+                      'Blow hard!',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Ball animation
+              Expanded(
+                flex: 3,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Cylinder background
+                    Container(
+                      width: 80,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.purple[700]!, Colors.purple[900]!],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                    ),
+                    // Expiration text
+                    Positioned(
+                      top: 40,
+                      child: Text(
+                        'EXPIRATION',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    // Inspiration text
+                    Positioned(
+                      bottom: 40,
+                      child: Text(
+                        'INSPIRATION',
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    // Animated ball
+                    AnimatedBuilder(
+                      animation: _ballAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, _ballAnimation.value * 200),
+                          child: child,
+                        );
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orangeAccent,
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Stop Trial button
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _timer.cancel();
+                      _controller.stop();
+                      _denyConnection();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: Text(
+                      'Stop Trial',
+                      style: TextStyle(
+                        color: Colors.purple[900],
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          // Bottom Bar
-          Container(
-            color: Colors.grey[850],
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    print("Test Butonuna Tıklandı");
-                  },
-                  icon: Icon(Icons.search,
-                      color: Color.fromARGB(255, 182, 148, 0)),
-                  iconSize: 32,
+              ),
+              // Spirometry Metrics Display
+              if (_bleManager.checkConnection() &&
+                  FVC != null &&
+                  FEV1 != null &&
+                  fev1FvcRatio != null &&
+                  FEF2575 != null &&
+                  PEF != null)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Spirometri Sonuçları",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      MetricCard(title: "FVC", value: "${FVC!.toStringAsFixed(2)} L"),
+                      MetricCard(title: "FEV1", value: "${FEV1!.toStringAsFixed(2)} L"),
+                      MetricCard(
+                          title: "FEV1/FVC",
+                          value: "${fev1FvcRatio!.toStringAsFixed(2)}%"),
+                      MetricCard(
+                          title: "FEF25-75",
+                          value: "${FEF2575!.toStringAsFixed(2)} L/s"),
+                      MetricCard(
+                          title: "PEF", value: "${PEF!.toStringAsFixed(2)} L/min"),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    print("Profil Butonuna Tıklandı");
-                  },
-                  icon: Icon(Icons.person,
-                      color: Color.fromARGB(255, 182, 148, 0)),
-                  iconSize: 32,
+              // Bottom Buttons
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Allow Button
+                    ElevatedButton(
+                      onPressed: _bleManager.checkConnection() || deviceToConnect!.id.isEmpty
+                          ? null
+                          : () async {
+                        await _bleManager.connectToDevice(deviceToConnect!.id);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        child: Text(
+                          "İzin Ver",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              // Bottom Bar
+              Container(
+                color: Colors.grey[850],
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        print("Test Butonuna Tıklandı");
+                      },
+                      icon: Icon(Icons.search,
+                          color: Color.fromARGB(255, 182, 148, 0)),
+                      iconSize: 32,
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        print("Profil Butonuna Tıklandı");
+                      },
+                      icon: Icon(Icons.person,
+                          color: Color.fromARGB(255, 182, 148, 0)),
+                      iconSize: 32,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 }
