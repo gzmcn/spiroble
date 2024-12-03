@@ -29,6 +29,7 @@ dependencies:
   firebase_database: ^11.1.6
   fancy_button_flutter: ^1.0.3+1
   percent_indicator: ^4.2.4
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -48,9 +49,9 @@ flutter:
     - assets/logo.png
     - assets/lungs.svg
     - assets/breath.svg
-    - assets/spiroicons.svg
     - assets/entry.svg
-    - assets/spirometer.svg
     - assets/images/bluetooth_connected.jpg
+    - assets/parameters.csv
+    - assets/ikincitablo.csv
 
   uses-material-design: true
