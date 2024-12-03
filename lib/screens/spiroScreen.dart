@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../bluetooth/ble_controller.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
 
 class SpiroScreen extends StatefulWidget {
@@ -19,7 +20,15 @@ class _SpiroScreenState extends State<SpiroScreen> {
   void initState() {
     super.initState();
     _bleController = BleController(); // BLE bağlantısı için kontrolcü
-    _bleController.initialize(); // BLE başlatma işlemleri
+
+    // Check the connection status
+    if (BluetoothConnectionManager().checkConnection()) {
+      // The device is already connected
+      print("Already connected to device: ${BluetoothConnectionManager().connectedDeviceId}");
+    } else {
+      // Device is not connected, show "Bağlan" button
+      print("No device connected. Show 'Bağlan' button.");
+    }
   }
 
   @override
@@ -33,38 +42,44 @@ class _SpiroScreenState extends State<SpiroScreen> {
   Future<void> incrementProgress() async {
     setState(() {
       if (progress < maxHeight) {
-        progress += 1.0; // Increase level
+        progress += 1.0; // Increase progress
       }
     });
 
-    // Start scanning when the button is pressed
+    // Start scanning for devices
     await _bleController.startScan();
 
-    // Get the deviceId dynamically from the device stream
     String? deviceId;
-
-    // Listen to discovered devices
     await for (List<DiscoveredDevice> devices in _bleController.deviceStream) {
-      // You can choose a device from the list, for example, the first one
-      // Or, use a specific condition to choose a device
-      deviceId = devices.isNotEmpty ? devices.first.id : null;
+      for (var device in devices) {
+        if (device.name == "Spirometer") {
+          print("Device 'Spirometer' found: ${device.id}");
 
+          // Set the deviceId and stop the scan once the device is found
+          deviceId = device.id;
+          break;
+        }
+      }
       if (deviceId != null) {
-        print("Device ID found: $deviceId");
-        break; // Stop listening once the device is found
+        // If a device was found, break out of the loop
+        break;
       }
     }
 
     if (deviceId != null) {
-      String serviceUuid = "CF3970D0-9A76-4C78-AD8D-4F429F3B2408";
-      String characteristicUuid = "19F54122-33AF-4E8F-9F3A-D5CD075EFD49";
+      String serviceUuid = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
+      String characteristicUuid = "E3223119-9445-4E96-A4A1-85358C4046A2";
 
       try {
-        // Initialize the characteristic with the dynamically found deviceId
+        // Initialize the characteristic with the found deviceId
         await _bleController.initializeCharacteristic(deviceId, serviceUuid, characteristicUuid);
+        print("Characteristic initialized successfully.");
 
         // Send char1 after initializing the characteristic
-        await _bleController.sendChar1();
+        await _bleController.sendChar1(serviceUuid,characteristicUuid, deviceId);
+
+        // Update the Bluetooth connection state globally
+        BluetoothConnectionManager().setConnectionState(deviceId, true);
       } catch (error) {
         print("Error while initializing characteristic or sending char1: $error");
       }
@@ -76,8 +91,13 @@ class _SpiroScreenState extends State<SpiroScreen> {
 
 
 
+
+
+
+
   @override
   Widget build(BuildContext context) {
+    final deviceId = BluetoothConnectionManager().connectedDeviceId;
     return Scaffold(
       appBar: AppBar(
         title: const Text('SpiroScreen'),
@@ -111,6 +131,11 @@ class _SpiroScreenState extends State<SpiroScreen> {
               ElevatedButton(
                 onPressed: () {
                   incrementProgress(); // Butona basıldığında işlemleri başlat
+                  if (deviceId != null) {
+                    _bleController.notify(deviceId!); // null değilse çağır
+                  } else {
+                    print("Bağlı cihaz yok, işlem yapılamaz.");
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),

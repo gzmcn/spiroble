@@ -4,6 +4,8 @@ import 'package:spiroble/screens/bluetoothScreen.dart';
 import 'package:spiroble/screens/home_screen.dart';
 import 'package:spiroble/screens/user_screen.dart';
 import 'package:spiroble/screens/testScreen.dart';
+import 'package:spiroble/screens/AnimationScreen.dart';
+import 'package:spiroble/screens/testResultsScreen.dart';
 
 import 'package:spiroble/widgets/bottom_navigationMenu.dart';
 
@@ -31,13 +33,17 @@ class _HomeScreenState extends State<AppScreen> {
         return ProfileScreen();
 
       case 2:
-        return TestScreen();
+        return AnimationScreen();
 
       case 3:
         return ResultScreen();
 
       case 4:
         return BluetoothScreen();
+
+      case 5:
+          return HealthMonitorScreen();
+
       default:
         return Center(child: Text('Varsayılan Ekran')); // Varsayılan ekran
     }

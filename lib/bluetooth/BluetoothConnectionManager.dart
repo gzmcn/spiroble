@@ -1,13 +1,37 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/material.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
-import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
-import 'dart:typed_data';
 
-class BleController extends ChangeNotifier {
+class BluetoothConnectionManager {
+  // StreamController'lar
+  final _connectionController = StreamController<bool>.broadcast();
+  final _deviceController = StreamController<String?>.broadcast();
+
+  // Bağlantı durumu ve cihaz kimliği için yerel değişkenler
+  bool _isConnected = false;
+  String? _connectedDeviceId;
+
+  // Stream'ler (Dinleyicilere veri sağlar)
+  Stream<bool> get connectionStream => _connectionController.stream;
+  Stream<String?> get deviceStream => _deviceController.stream;
+
+  // Getter'lar (Mevcut durumu sorgulamak için)
+  bool checkConnection() => _isConnected;
+  String? get connectedDeviceId => _connectedDeviceId;
+
+  // Bağlantı durumunu ayarlama ve kontrolü
+  void setConnectionState(String? deviceId, bool connected) {
+    _connectedDeviceId = deviceId;
+    _isConnected = connected;
+
+    // Yeni durumları akışlara ekle
+    _deviceController.sink.add(_connectedDeviceId);
+    _connectionController.sink.add(_isConnected);
+  }
+
   final FlutterReactiveBle _ble = FlutterReactiveBle();
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
@@ -15,24 +39,39 @@ class BleController extends ChangeNotifier {
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
       StreamController.broadcast();
 
-  Stream<List<DiscoveredDevice>> get deviceStream =>
+  Stream<List<DiscoveredDevice>> get DiscoveredDeviceStream =>
       _deviceStreamController.stream;
 
   final List<DiscoveredDevice> _devices = [];
   late QualifiedCharacteristic _characteristic;
 
-  // dinamik veri kontrolü
-  bool _connection = false;
-  bool get connection => _connection;
+  // izinleri ayarlama ve düzenleme
+  Future<bool> _checkPermissions() async {
+    final permissions = [
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.locationWhenInUse,
+    ];
 
-  String deviceId = '';
-
-  void setConnection(bool value) {
-    _connection = value;
-    notifyListeners();
+    for (var permission in permissions) {
+      if (await permission.request().isDenied) {
+        print("${permission.value} izni verilmedi.");
+        return false;
+      }
+    }
+    print("Tüm izinler verildi.");
+    return true;
   }
 
-  // BLE cihazlarını taramaya başlama
+  //listelemek için streame ekliyoruz
+  void _addDeviceToStream(DiscoveredDevice device) {
+    if (!_devices.any((d) => d.id == device.id)) {
+      _devices.add(device);
+      _deviceStreamController.add(List.unmodifiable(_devices));
+    }
+  }
+
+  //TARAMAYI BAŞLATIYORUZ
   Future<void> startScan() async {
     if (!await _checkPermissions()) {
       print("Gerekli izinler verilmedi!");
@@ -53,81 +92,25 @@ class BleController extends ChangeNotifier {
     );
   }
 
-  void _addDeviceToStream(DiscoveredDevice device) {
-    if (!_devices.any((d) => d.id == device.id)) {
-      _devices.add(device);
-      _deviceStreamController.add(List.unmodifiable(_devices));
-    }
-  }
-
-  // BLE cihazlarını taramayı durdurma
+  //Taramayı durduruyoruz                         TEKRAR BAKILACAK ŞU ANLIK İLK ÇALIŞMA BEKLENİYOR
   void stopScan() {
     print("Tarama durduruluyor...");
     _scanSubscription?.cancel();
     _scanSubscription = null;
   }
 
-  // Tarama sırasında bulunan cihazları listeye ekleme
-
-  // Bağlantı kurma
-  Future<void> connectToDevice(String deviceId) async {
-    print("Cihaza bağlanılıyor: $deviceId");
-    _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
-      (connectionState) async {
-        print("Bağlantı durumu: ${connectionState.connectionState}");
-        if (connectionState.connectionState ==
-            DeviceConnectionState.connected) {
-          print("Bağlantı başarılı: $deviceId");
-          this.deviceId = deviceId;
-
-          await Future.delayed(Duration(seconds: 1)); // Gecikme ekleyin
-          await initializeCommunication(deviceId);
-          await notify(deviceId);
-          await uid3(deviceId);
-        } else if (connectionState.connectionState ==
-            DeviceConnectionState.disconnected) {
-          print("Cihaz bağlantısı kesildi: $deviceId");
-        }
+  void _startReceivingData() {
+    print("Veri alımı başlatılıyor...");
+    _ble.subscribeToCharacteristic(_characteristic).listen(
+      (data) {
+        print('Alınan veri: $data');
       },
       onError: (error) {
-        print("Bağlantı sırasında hata oluştu: $error");
+        print("Veri alımı sırasında hata oluştu: $error");
       },
     );
   }
 
-  Future<void> disconnectToDevice(String deviceId) async {
-    try {
-      await _connectionSubscription?.cancel();
-      _connectionSubscription = null;
-      print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
-      setConnection(false); // Bağlantı durumu güncellendi
-      deviceId = '';
-    } catch (error) {
-      print("Cihaz bağlantısı kesilirken hata oluştu: $error");
-      setConnection(true);
-    }
-  }
-
-  Future<void> initializeCharacteristic(
-      String deviceId, String serviceUuid, String characteristicUuid) async {
-    try {
-      // Attempt to parse the UUIDs
-      Uuid serviceUuidParsed = Uuid.parse(serviceUuid);
-      Uuid characteristicUuidParsed = Uuid.parse(characteristicUuid);
-
-      // Initialize the characteristic
-      _characteristic = QualifiedCharacteristic(
-        deviceId: deviceId,
-        serviceId: serviceUuidParsed,
-        characteristicId: characteristicUuidParsed,
-      );
-      print("Characteristic initialized successfully.");
-    } catch (e) {
-      print("Error parsing UUIDs: $e");
-    }
-  }
-
-  // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
   Future<void> initializeCommunication(String deviceId) async {
     Uuid serviceUuid =
         Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
@@ -151,32 +134,23 @@ class BleController extends ChangeNotifier {
       print("Veri okuma sırasında hata oluştu: $error");
     }
   }
-
-  // Bağlantı sonrası karakteristik hazırlıkları ve UUID'yi yazdırma
-  Future<void> notify(String deviceId) async {
-    Uuid serviceUuid = Uuid.parse(
-        BleUuids.notifyServiceUuid); // B6B22132-0DD2-4480-82C5-F8783DFA6C42
-    Uuid characteristicUuid = Uuid.parse(BleUuids
-        .notifycharacteristicUuid); // E23A9EDE-3257-4AAA-BF53-8FAC3289726F
-
-    print('Servis UUID: $serviceUuid');
-    print('Karakteristik UUID: $characteristicUuid');
-
-    _characteristic = QualifiedCharacteristic(
-      serviceId: serviceUuid,
-      characteristicId: characteristicUuid,
-      deviceId: deviceId,
-    );
-
+  //ne yaptığını bilmiyorum      İLERİDE TEKRAR KONTROL EDİLECEK
+  Future<void> initializeCharacteristic(
+      String deviceId, String serviceUuid, String characteristicUuid) async {
     try {
-      final response = await _ble.readCharacteristic(_characteristic);
-      print('İkinci veri: $response');
+      // Attempt to parse the UUIDs
+      Uuid serviceUuidParsed = Uuid.parse(serviceUuid);
+      Uuid characteristicUuidParsed = Uuid.parse(characteristicUuid);
 
-      if (response.isNotEmpty && response[0] == 1) {
-        _startReceivingData();
-      }
-    } catch (error) {
-      print("Veri okuma sırasında hata oluştu: $error");
+      // Initialize the characteristic
+      _characteristic = QualifiedCharacteristic(
+        deviceId: deviceId,
+        serviceId: serviceUuidParsed,
+        characteristicId: characteristicUuidParsed,
+      );
+      print("Characteristic initialized successfully.");
+    } catch (e) {
+      print("Error parsing UUIDs: $e");
     }
   }
 
@@ -248,6 +222,47 @@ class BleController extends ChangeNotifier {
     }
   }
 
+  Future<void> connectToDevice(String deviceId) async {
+    print("Cihaza bağlanılıyor: $deviceId");
+    _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
+      (connectionState) async {
+        print("Bağlantı durumu: ${connectionState.connectionState}");
+        if (connectionState.connectionState ==
+            DeviceConnectionState.connected) {
+          print("Bağlantı başarılı: $deviceId");
+          setConnectionState(deviceId, true);
+
+          await Future.delayed(const Duration(seconds: 1)); // Gecikme ekleyin
+          await initializeCommunication(deviceId);
+          await notifyAsDoubles(deviceId);
+          await uid3(deviceId);
+        } else if (connectionState.connectionState ==
+            DeviceConnectionState.disconnected) {
+          setConnectionState(deviceId, false);
+          print("Cihaz bağlantısı kesildi: $deviceId");
+        }
+      },
+      onError: (error) {
+        print("Bağlantı sırasında hata oluştu: $error");
+      },
+    );
+  }
+
+  //Silinecek ileride
+  Future<void> disconnectToDevice(String deviceId) async {
+    try {
+      await _connectionSubscription?.cancel();
+      _connectionSubscription = null;
+      print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
+      setConnectionState(deviceId, false); // Bağlantı durumu güncellendi
+      deviceId = '';
+    } catch (error) {
+      print("Cihaz bağlantısı kesilirken hata oluştu: $error");
+      setConnectionState(deviceId, true);
+    }
+  }
+
+  
   Future<void> sendChar1(
       String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
@@ -279,36 +294,13 @@ class BleController extends ChangeNotifier {
     }
   }
 
-  // Cihazdan veri okuma işlemini başlatma
-  void _startReceivingData() {
-    print("Veri alımı başlatılıyor...");
-    _ble.subscribeToCharacteristic(_characteristic).listen(
-      (data) {
-        print('Alınan veri: $data');
-      },
-      onError: (error) {
-        print("Veri alımı sırasında hata oluştu: $error");
-      },
-    );
+
+  void dispose() {    
+    print("Kaynaklar temizleniyor...");
+    _scanSubscription?.cancel();
+    _deviceController.close();
   }
 
-  // İzin kontrolü
-  Future<bool> _checkPermissions() async {
-    final permissions = [
-      Permission.bluetoothScan,
-      Permission.bluetoothConnect,
-      Permission.locationWhenInUse,
-    ];
-
-    for (var permission in permissions) {
-      if (await permission.request().isDenied) {
-        print("${permission.value} izni verilmedi.");
-        return false;
-      }
-    }
-    print("Tüm izinler verildi.");
-    return true;
-  }
-
-  // Kaynakları temizlemek için dispose metodu
+  // Kaynakları serbest bırakma
+ 
 }
