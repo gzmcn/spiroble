@@ -71,7 +71,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
 
           // Find the device with the name "Blank"
           final deviceToConnect = devices.firstWhere(
-                (device) => device.name == "Spirometer",
+                (device) => device.name == "",
             orElse: () => DiscoveredDevice(
               id: "",
               name: "",
