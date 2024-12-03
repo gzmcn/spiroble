@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/Screens/ResetPasswordScreen.dart';
 import 'package:spiroble/Screens/registerScreen.dart';
 import 'package:spiroble/screens/InfoScreen1.dart';
 import 'package:spiroble/screens/StartSplashScreen.dart';
@@ -129,8 +130,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (ctx) => RegisterScreen()));
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (ctx) => ResetPasswordScreen()));
                 },
                 child: Text(
                   'Sifremi unuttum',
