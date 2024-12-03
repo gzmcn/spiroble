@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:spiroble/screens/testScreen.dart';
+import 'package:spiroble/screens/testResultsScreen.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
 class HomeScreen extends StatefulWidget {
