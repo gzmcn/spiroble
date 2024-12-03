@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
 
-class BluetoothConnectionManager {
+class BluetoothConnectionManager with ChangeNotifier{
   // StreamController'lar
   final _connectionController = StreamController<bool>.broadcast();
   final _deviceController = StreamController<String?>.broadcast();
@@ -26,10 +27,12 @@ class BluetoothConnectionManager {
   void setConnectionState(String? deviceId, bool connected) {
     _connectedDeviceId = deviceId;
     _isConnected = connected;
+    saveConnectionState();
 
     // Yeni durumları akışlara ekle
     _deviceController.sink.add(_connectedDeviceId);
     _connectionController.sink.add(_isConnected);
+    notifyListeners();
   }
 
   final FlutterReactiveBle _ble = FlutterReactiveBle();
@@ -222,6 +225,21 @@ class BluetoothConnectionManager {
     }
   }
 
+  // Bağlantı durumu ve cihaz ID'sini kaydet
+  Future<void> saveConnectionState() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isConnected', _isConnected);
+    prefs.setString('connectedDeviceId', _connectedDeviceId ?? '');
+  }
+
+  // Bağlantı durumu ve cihaz ID'sini yükle
+  Future<void> loadConnectionState() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isConnected = prefs.getBool('isConnected') ?? false;
+    _connectedDeviceId = prefs.getString('connectedDeviceId');
+    notifyListeners();
+  }
+
   Future<void> connectToDevice(String deviceId) async {
     print("Cihaza bağlanılıyor: $deviceId");
     _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
@@ -231,6 +249,7 @@ class BluetoothConnectionManager {
             DeviceConnectionState.connected) {
           print("Bağlantı başarılı: $deviceId");
           setConnectionState(deviceId, true);
+          notifyListeners();
 
           await Future.delayed(const Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
@@ -240,6 +259,7 @@ class BluetoothConnectionManager {
             DeviceConnectionState.disconnected) {
           setConnectionState(deviceId, false);
           print("Cihaz bağlantısı kesildi: $deviceId");
+          notifyListeners();
         }
       },
       onError: (error) {
@@ -255,10 +275,12 @@ class BluetoothConnectionManager {
       _connectionSubscription = null;
       print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
       setConnectionState(deviceId, false); // Bağlantı durumu güncellendi
+      notifyListeners();
       deviceId = '';
     } catch (error) {
       print("Cihaz bağlantısı kesilirken hata oluştu: $error");
       setConnectionState(deviceId, true);
+      notifyListeners();
     }
   }
 

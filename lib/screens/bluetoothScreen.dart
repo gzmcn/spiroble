@@ -5,6 +5,7 @@ import 'package:spiroble/Bluetooth_Services/bluetooth_constant.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'package:spiroble/screens/MatematikSayfa.dart';
 import 'package:spiroble/screens/TestDetailScreen.dart';
+import 'package:provider/provider.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -12,27 +13,38 @@ class BluetoothScreen extends StatefulWidget {
 }
 
 class _BluetoothScreenState extends State<BluetoothScreen> {
-  final BluetoothConnectionManager _bleManager = BluetoothConnectionManager();
+  late BluetoothConnectionManager _bleManager;
 
   @override
   void initState() {
     super.initState();
+    _bleManager =
+        Provider.of<BluetoothConnectionManager>(context, listen: false);
     _requestPermissions();
     _bleManager.startScan();
+    _loadConnectionState();
   }
 
+  // Bluetooth izinlerini istemek için
   Future<void> _requestPermissions() async {
     await [
       Permission.bluetooth,
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      Permission.location
+      Permission.location,
     ].request();
   }
 
   final List<double> akisHizi = [];
   final List<double> toplamVolum = [];
   final List<double> miliSaniye = [];
+  // Bluetooth bağlantı durumunu yükle
+  Future<void> _loadConnectionState() async {
+    await _bleManager.loadConnectionState();
+    Future.delayed(Duration(seconds: 1), () {
+      print("Bağlantı durumu: ${_bleManager.checkConnection()}");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
