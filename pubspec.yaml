@@ -1,5 +1,5 @@
 name: spiroble
-description: "A new Flutter project."
+description: 'A new Flutter project.'
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -8,6 +8,8 @@ environment:
   sdk: ^3.5.2
 
 dependencies:
+  csv: ^5.0.0
+  path_provider: ^2.0.14
   firebase_auth: ^5.2.1
   firebase_core: ^3.4.1
   firebase_storage: ^12.3.0
@@ -38,7 +40,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/spiroicons.svg"  # Doğru ikon dosyasını buraya yerleştirin
+  image_path: 'assets/spiroicons.svg' # Doğru ikon dosyasını buraya yerleştirin
 
 flutter_lints: ^4.0.0
 
@@ -50,4 +52,11 @@ flutter:
     - assets/spiroicons.svg
     - assets/entry.svg
     - assets/spirometer.svg
+    - assets/
+    - assets/parameters.csv
+    - assets/ikincitablo.csv
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
   uses-material-design: true

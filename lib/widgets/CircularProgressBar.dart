@@ -58,7 +58,7 @@ class CircularProgressBarPainter extends CustomPainter {
           ? Colors.green
           : Colors.black
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8.0
+      ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.round;
 
     // Draw the background circle
@@ -82,8 +82,8 @@ class CircularProgressBarPainter extends CustomPainter {
       text: text, // Use the passed text
       style: TextStyle(
         color: Colors.black,
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
       ),
     );
 
