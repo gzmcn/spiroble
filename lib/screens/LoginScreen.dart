@@ -95,7 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     _isPasswordVisible = !_isPasswordVisible;
                   });
                 },
-                
               ),
               SizedBox(height: 45),
               // Sign In Button
@@ -125,6 +124,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: Text(
                   'Hesabınız yok mu?',
+                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (ctx) => RegisterScreen()));
+                },
+                child: Text(
+                  'Sifremi unuttum',
                   style: TextStyle(color: Colors.white.withOpacity(0.5)),
                 ),
               ),
