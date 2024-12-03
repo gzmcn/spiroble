@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/Screens/ResetPasswordScreen.dart';
+import 'package:spiroble/Screens/registerScreen.dart';
 import 'package:spiroble/screens/InfoScreen1.dart';
 import 'package:spiroble/screens/StartSplashScreen.dart';
 import 'package:spiroble/screens/appScreen.dart';
@@ -114,6 +116,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 child: Text('Giriş Yap'),
+              ),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (ctx) => RegisterScreen()));
+                },
+                child: Text(
+                  'Hesabınız yok mu?',
+                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (ctx) => ResetPasswordScreen()));
+                },
+                child: Text(
+                  'Sifremi unuttum',
+                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                ),
               ),
             ],
           ),

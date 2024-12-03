@@ -1,24 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/Screens/appScreen.dart';
+import 'package:spiroble/Screens/registerScreen.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
-import 'package:spiroble/screens/registerScreen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
+  void _checkUserSession(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      // Oturum açmış kullanıcı varsa HomeScreen'e yönlendirilir
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => AppScreen()),
+      );
+    } else {
+      // Oturum açmamış kullanıcı için bir şey yapmayın veya bilgilendirme yapabilirsiniz.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Oturum kontrolü
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkUserSession(context);
+    });
+
     return Scaffold(
-      backgroundColor: Colors.white, // Base background color
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Upper Section with Background Color or Gradient
+          // Üst alan: Arka plan gradienti
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xff51A8FF), // Example color
-                    Color(0xff123456), // Another color for gradient
+                    Color(0xff51A8FF),
+                    Color(0xff123456),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -26,14 +46,12 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // Lower Section with Border Radius
+          // Alt alan: Beyaz bölge
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              width: double.infinity, // Make it full width
-              height:
-                  MediaQuery.of(context).size.height * 0.4, // Adjusted height
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.4,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -53,7 +71,6 @@ class WelcomeScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Your lower section widgets go here
                     Text(
                       'SPIROMATIK\'E',
                       style: TextStyle(
@@ -93,7 +110,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           child: Text(
                             'Giriş Yap',
-                            textAlign: TextAlign.center, // ✅ Correct placement
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.lightBlue[600],
                               fontWeight: FontWeight.bold,
@@ -118,7 +135,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           child: Text(
                             'Kayıt Ol',
-                            textAlign: TextAlign.center, // ✅ Correct placement
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.lightBlue[600],
                               fontWeight: FontWeight.bold,
@@ -133,10 +150,8 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // Positioned BouncingHeart at the Middle of the Upper Section
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.25, // Adjust as needed
+            top: MediaQuery.of(context).size.height * 0.25,
             left: 0,
             right: 0,
             child: Center(
