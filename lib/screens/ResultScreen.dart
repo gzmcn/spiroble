@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:spiroble/screens/TestDetailScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,89 +26,82 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
-  List<Map<String, String>> measurements = []; // Başlangıçta boş liste
+  final DatabaseReference _databaseRef =
+      FirebaseDatabase.instance.ref("sonuclar");
+  List<Map<String, dynamic>> measurements = []; // Firebase'den alınan veriler
 
   @override
   void initState() {
     super.initState();
-    fetchMeasurements(); // Başlangıçta veri çekmeye başla
+    fetchMeasurements(); // Firebase'den veri çekme
   }
 
-  // Backend'den veri çekme simülasyonu
+  // Firebase'den verileri çekme
   Future<void> fetchMeasurements() async {
-    // Bu kısımda gerçek API çağrısı yapılacak
-    await Future.delayed(Duration(seconds: 2)); // 2 saniye bekle
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('Kullanıcı giriş yapmamış!');
+      return;
+    }
+    String userId = user.uid;
 
-    setState(() {
-      // Backend'den gelen veriler ile listeyi güncelle
-      measurements = [
-        {
-          "emoji": "🔥",
-          "fvc": "3.13 L",
-          "pef": "451 L/m",
-          "fev1": "1.20",
-          "date": "12 Mar 2021"
-        },
-        {
-          "emoji": "🔥",
-          "fvc": "3.32 L",
-          "pef": "375 L/m",
-          "fev1": "1.22",
-          "date": "11 Mar 2021"
-        },
-        {
-          "emoji": "🔥",
-          "fvc": "4.11 L",
-          "pef": "429 L/m",
-          "fev1": "1.34",
-          "date": "10 Mar 2021"
-        },
-        {
-          "emoji": "🔥",
-          "fvc": "4.12 L",
-          "pef": "429 L/m",
-          "fev1": "1.34",
-          "date": "10 Mar 2021"
-        }
-      ];
+    _databaseRef.child(userId).onValue.listen((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        setState(() {
+          measurements = data.entries.map((e) {
+            final key = e.key;
+            final value = Map<String, dynamic>.from(e.value);
+            return {
+              'id': key,
+              'fvc': value['fvc'],
+              'fev1': value['fev1'],
+              'pef': value['pef'],
+              'timestamp': value['timestamp'],
+              'emoji': "🔥", // Varsayılan emoji
+            };
+          }).toList();
+        });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900], // Koyu zemin
+      backgroundColor: Colors.grey[900], // Koyu tema arka planı
       body: Column(
         children: [
-          // Üst kısım: Siyah gölgeli başlık ve altın menü butonları
+          // Başlık ve menü butonları
           Container(
-            color: Colors.grey[850], // Koyu zemin
+            color: Colors.grey[850],
             child: Column(
               children: [
-                // Modern Başlık
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
                       Text(
-                        "Günlük Ölçüm Değerleri",
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black45,
-                                  blurRadius: 6,
-                                  offset: Offset(2, 2),
-                                ),
-                              ],
-                              color: Colors.white,
+                        "Test Sonuçları",
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              blurRadius: 6,
+                              offset: Offset(2, 2),
                             ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Altın Renkli Menü Butonları
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -159,8 +153,8 @@ class _ResultScreenState extends State<ResultScreen> {
               ],
             ),
           ),
+          // Ölçüm kartları
           Expanded(
-            // Ölçüm değerleri listesi
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: measurements.isEmpty
@@ -168,40 +162,21 @@ class _ResultScreenState extends State<ResultScreen> {
                   : ListView.builder(
                       itemCount: measurements.length,
                       itemBuilder: (context, index) {
+                        final DateTime timestamp =
+                            DateTime.parse(measurements[index]['timestamp']);
+                        final String formattedDate =
+                            DateFormat('dd MMM yyyy HH:mm').format(timestamp);
+
                         final measurement = measurements[index];
                         return ElevatedMeasurementCard(
-                          emoji: measurement['emoji']!,
-                          fvc: measurement['fvc']!,
-                          pef: measurement['pef']!,
-                          fev1: measurement['fev1']!,
-                          date: measurement['date']!,
+                          emoji: measurement['emoji'],
+                          fvc: measurement['fvc'].toString(),
+                          pef: measurement['pef'].toString(),
+                          fev1: measurement['fev1'].toString(),
+                          date: formattedDate,
                         );
                       },
                     ),
-            ),
-          ),
-          // Alt Kısım: Profil ve Arama Butonları
-          Container(
-            color: Colors.grey[850],
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    print("Test Butonuna Tıklandı");
-                  },
-                  icon: Icon(Icons.search, color: Color.fromARGB(255, 182, 148, 0)),
-                  iconSize: 32,
-                ),
-                IconButton(
-                  onPressed: () {
-                    print("Profil Butonuna Tıklandı");
-                  },
-                  icon: Icon(Icons.person, color: Color.fromARGB(255, 182, 148, 0)),
-                  iconSize: 32,
-                ),
-              ],
             ),
           ),
         ],
@@ -231,7 +206,7 @@ class ElevatedMeasurementCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.grey[800], // Koyu arka plan
+        color: Colors.grey[800],
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
