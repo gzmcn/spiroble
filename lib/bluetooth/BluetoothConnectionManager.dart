@@ -7,7 +7,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/bluetooth/bluetooth_constant.dart';
 
-class BluetoothConnectionManager with ChangeNotifier{
+class BluetoothConnectionManager with ChangeNotifier {
   // StreamController'lar
   final _connectionController = StreamController<bool>.broadcast();
   final _deviceController = StreamController<String?>.broadcast();
@@ -28,7 +28,6 @@ class BluetoothConnectionManager with ChangeNotifier{
   bool checkConnecting() => _isConnecting;
   String? get connectedDeviceId => _connectedDeviceId;
 
-
   void checkConnectionOnLoad() {
     if (_isConnected) {
       print("Cihaz bağlı: $_connectedDeviceId");
@@ -45,8 +44,6 @@ class BluetoothConnectionManager with ChangeNotifier{
       }
     });
   }
-
-
 
   // Bağlantı durumunu ayarlama ve kontrolü
   void setConnectionState(String? deviceId, bool connected) {
@@ -65,7 +62,7 @@ class BluetoothConnectionManager with ChangeNotifier{
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
 
   final StreamController<List<DiscoveredDevice>> _deviceStreamController =
-  StreamController.broadcast();
+      StreamController.broadcast();
 
   Stream<List<DiscoveredDevice>> get DiscoveredDeviceStream =>
       _deviceStreamController.stream;
@@ -105,8 +102,9 @@ class BluetoothConnectionManager with ChangeNotifier{
 
     print("Tarama başlatılıyor...");
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
-          (device) {
+      (device) {
         _addDeviceToStream(device);
+        isLoading.value = true; // ULAS
       },
       onError: (error) {
         print("Tarama sırasında hata oluştu: $error");
@@ -129,7 +127,7 @@ class BluetoothConnectionManager with ChangeNotifier{
   void _startReceivingData() {
     print("Veri alımı başlatılıyor...");
     _ble.subscribeToCharacteristic(_characteristic).listen(
-          (data) {
+      (data) {
         print('Alınan veri: $data');
       },
       onError: (error) {
@@ -140,9 +138,9 @@ class BluetoothConnectionManager with ChangeNotifier{
 
   Future<void> initializeCommunication(String deviceId) async {
     Uuid serviceUuid =
-    Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
+        Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
     Uuid characteristicUuid =
-    Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
+        Uuid.parse(BleUuids.initializeCommunicationServiceCharacteristicUuid);
 
     _characteristic = QualifiedCharacteristic(
       serviceId: serviceUuid,
@@ -161,6 +159,7 @@ class BluetoothConnectionManager with ChangeNotifier{
       print("Veri okuma sırasında hata oluştu: $error");
     }
   }
+
   //ne yaptığını bilmiyorum      İLERİDE TEKRAR KONTROL EDİLECEK
   Future<void> initializeCharacteristic(
       String deviceId, String serviceUuid, String characteristicUuid) async {
@@ -264,11 +263,10 @@ class BluetoothConnectionManager with ChangeNotifier{
     notifyListeners();
   }
 
-
   Future<void> connectToDevice(String deviceId) async {
     print("Cihaza bağlanılıyor: $deviceId");
     _connectionSubscription = _ble.connectToDevice(id: deviceId).listen(
-          (connectionState) async {
+      (connectionState) async {
         print("Bağlantı durumu: ${connectionState.connectionState}");
         if (connectionState.connectionState ==
             DeviceConnectionState.connected) {
@@ -309,7 +307,6 @@ class BluetoothConnectionManager with ChangeNotifier{
     }
   }
 
-
   Future<void> sendChar1(
       String serviceUuid, String characteristicUuid, String deviceId) async {
     try {
@@ -341,7 +338,6 @@ class BluetoothConnectionManager with ChangeNotifier{
     }
   }
 
-
   void dispose() {
     print("Kaynaklar temizleniyor...");
     _scanSubscription?.cancel();
@@ -349,5 +345,4 @@ class BluetoothConnectionManager with ChangeNotifier{
   }
 
 // Kaynakları serbest bırakma
-
 }
