@@ -56,5 +56,6 @@ flutter:
     - assets/images/bluetooth_connected.jpg
     - assets/parameters.csv
     - assets/ikincitablo.csv
+    - assets/spiroicon.png
 
   uses-material-design: true
