@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
@@ -120,7 +122,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
     );
   }
 
-  void _calculateMetrics() {
+  Future<void> _calculateMetrics() async {
     if (measurements.isEmpty) return;
 
     // Ensure there are measurements with time <= 1000 ms and <= 6000 ms
@@ -154,6 +156,32 @@ class _AnimationScreenState extends State<AnimationScreen> {
             fev2575Measurements.length
         : 0.0;
     fev1Fvc = fvc != 0.0 ? fev1 / fvc : 0.0;
+
+
+    
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('Kullanıcı giriş yapmamış!');
+      return;
+    }
+    String userId = user.uid; //s
+
+    final databaseRef = FirebaseDatabase.instance.ref();
+
+    try {
+      await databaseRef.child('sonuclar/$userId').push().set({
+        'fef2575': fev2575,
+        'fvc': fvc,
+        'fev1': fev1,
+        'pef': pef,
+        'fev1Fvc': fev1Fvc,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+      print('Sonuç başarıyla kaydedildi!');
+    } catch (e) {
+      print('Sonuç kaydedilirken bir hata oluştu: $e');
+    }
+  
 
     // Debug: Print calculated metrics
     print(
