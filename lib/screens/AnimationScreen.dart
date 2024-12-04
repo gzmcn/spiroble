@@ -24,10 +24,14 @@ class _AnimationScreenState extends State<AnimationScreen> {
   double fev2575 = 0.0;
   double fev1Fvc = 0.0;
 
+  // Reference Start Time
+  double? referenceStartTime;
+
   @override
   void initState() {
     super.initState();
-    _bleManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
+    _bleManager =
+        Provider.of<BluetoothConnectionManager>(context, listen: false);
   }
 
   @override
@@ -46,18 +50,52 @@ class _AnimationScreenState extends State<AnimationScreen> {
 
       setState(() {
         isAnimating = true;
+        // Reset measurements and reference start time when starting animation
+        measurements.clear();
+        referenceStartTime = null;
       });
 
-      _dataSubscription = _bleManager.notifyAsDoubles(_bleManager.connectedDeviceId!).listen((data) {
-        // Debug: Print received data
-        print('Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+      _dataSubscription = _bleManager
+          .notifyAsDoubles(_bleManager.connectedDeviceId!)
+          .listen((data) {
+        // Ensure data has at least 3 elements: flowRate, volume, time
+        if (data.length < 3) {
+          print('Invalid data received: $data');
+          return;
+        }
+
+        double flowRate = data[0];
+        double volume = data[1];
+        double time = data[2];
+
+        // Initialize referenceStartTime with the first received time
+        if (referenceStartTime == null) {
+          referenceStartTime = time;
+          print('Reference Start Time set to: $referenceStartTime ms');
+        }
+
+        // Calculate relative time
+        double relativeTime = time - referenceStartTime!;
+
+        // Avoid negative relative times
+        if (relativeTime < 0) {
+          relativeTime = 0;
+        }
+
+        // Create a new Measurement with relative time
+        Measurement measurement = Measurement(
+          flowRate: flowRate,
+          volume: volume,
+          time: relativeTime,
+        );
+
+        // Debug: Print received and relative data
+        print(
+            'Received Data - Flow Rate: $flowRate, Volume: $volume, Time: $relativeTime ms');
 
         setState(() {
-          measurements.add(Measurement(
-            flowRate: data[0],
-            volume: data[1],
-            time: data[2],
-          ));
+          measurements.add(measurement);
+          // Limit the number of measurements to prevent performance issues
           if (measurements.length > 10000) {
             measurements.removeAt(0);
           }
@@ -85,18 +123,20 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void _calculateMetrics() {
     if (measurements.isEmpty) return;
 
-    // Ensure there are measurements with time <= 1000 and <= 6000
+    // Ensure there are measurements with time <= 1000 ms and <= 6000 ms
     Measurement? fev1Measurement = measurements.firstWhere(
-          (m) => m.time <= 1000,
+      (m) => m.time <= 1000,
       orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0),
     );
 
     Measurement? fev6Measurement = measurements.firstWhere(
-          (m) => m.time <= 6000,
+      (m) => m.time <= 6000,
       orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0),
     );
 
-    List<Measurement> fev2575Measurements = measurements.where((m) => m.time >= 2500 && m.time <= 7500).toList();
+    // Measurements between 2500 ms and 7500 ms for fev2575
+    List<Measurement> fev2575Measurements =
+        measurements.where((m) => m.time >= 2500 && m.time <= 7500).toList();
 
     // Debug: Print the metrics calculation steps
     print('Calculating Metrics...');
@@ -110,12 +150,14 @@ class _AnimationScreenState extends State<AnimationScreen> {
     pef = measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
     fev6 = fev6Measurement.volume;
     fev2575 = fev2575Measurements.isNotEmpty
-        ? fev2575Measurements.fold(0.0, (sum, m) => sum + m.volume) / fev2575Measurements.length
+        ? fev2575Measurements.fold(0.0, (sum, m) => sum + m.volume) /
+            fev2575Measurements.length
         : 0.0;
     fev1Fvc = fvc != 0.0 ? fev1 / fvc : 0.0;
 
     // Debug: Print calculated metrics
-    print('Calculated Metrics - FVC: $fvc, FEV1: $fev1, PEF: $pef, FEV6: $fev6, FEV2575: $fev2575, FEV1/FVC: $fev1Fvc');
+    print(
+        'Calculated Metrics - FVC: $fvc, FEV1: $fev1, PEF: $pef, FEV6: $fev6, FEV2575: $fev2575, FEV1/FVC: $fev1Fvc');
   }
 
   @override
@@ -143,7 +185,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
                   onPressed: isAnimating ? _stopAnimation : null,
                   child: Text('Stop Animation'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent, // Replaced 'primary' with 'backgroundColor'
+                    backgroundColor: Colors
+                        .redAccent, // Replaced 'primary' with 'backgroundColor'
                     foregroundColor: Colors.white, // Optional: Set text color
                   ),
                 ),
@@ -174,7 +217,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
       child: Center(
         child: SizedBox(
           width: double.infinity, // Make the graph take full width
-          height: 300, // Increase the height for better visibility
+          height: 300, // Increased height for better visibility
           child: CustomPaint(
             painter: FlowVolumePainter(measurements: measurements),
             child: Container(),
@@ -221,9 +264,12 @@ class FlowVolumePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (measurements.isEmpty) return;
 
-    double maxFlow = measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
-    double maxVolume = measurements.map((m) => m.volume.abs()).reduce((a, b) => a > b ? a : b);
-    double maxTime = measurements.map((m) => m.time).reduce((a, b) => a > b ? a : b);
+    double maxFlow =
+        measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
+    double maxVolume =
+        measurements.map((m) => m.volume.abs()).reduce((a, b) => a > b ? a : b);
+    double maxTime =
+        measurements.map((m) => m.time).reduce((a, b) => a > b ? a : b);
 
     // Adjust scaling factors if necessary
     double flowScale = maxFlow != 0 ? size.height / maxFlow : 1;
@@ -244,8 +290,10 @@ class FlowVolumePainter extends CustomPainter {
 
     for (int i = 0; i < measurements.length; i++) {
       double x = (measurements[i].time / maxTime) * size.width;
-      double yFlow = size.height - (measurements[i].flowRate * flowScale); // Adjusted for scaling
-      double yVolume = size.height - (measurements[i].volume.abs() * volumeScale); // Adjusted for scaling
+      double yFlow = size.height -
+          (measurements[i].flowRate * flowScale); // Adjusted for scaling
+      double yVolume = size.height -
+          (measurements[i].volume.abs() * volumeScale); // Adjusted for scaling
 
       if (i == 0) {
         flowPath.moveTo(x, yFlow);
@@ -256,6 +304,7 @@ class FlowVolumePainter extends CustomPainter {
       }
     }
 
+    // Draw the flow and volume paths
     canvas.drawPath(flowPath, flowPaint);
     canvas.drawPath(volumePath, volumePaint);
   }
