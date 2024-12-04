@@ -24,9 +24,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
   double fev2575 = 0.0;
   double fev1Fvc = 0.0;
 
-  // Reference Start Time
-  double? referenceStartTime;
-
   @override
   void initState() {
     super.initState();
@@ -50,52 +47,21 @@ class _AnimationScreenState extends State<AnimationScreen> {
 
       setState(() {
         isAnimating = true;
-        // Reset measurements and reference start time when starting animation
-        measurements.clear();
-        referenceStartTime = null;
       });
 
       _dataSubscription = _bleManager
           .notifyAsDoubles(_bleManager.connectedDeviceId!)
           .listen((data) {
-        // Ensure data has at least 3 elements: flowRate, volume, time
-        if (data.length < 3) {
-          print('Invalid data received: $data');
-          return;
-        }
-
-        double flowRate = data[0];
-        double volume = data[1];
-        double time = data[2];
-
-        // Initialize referenceStartTime with the first received time
-        if (referenceStartTime == null) {
-          referenceStartTime = time;
-          print('Reference Start Time set to: $referenceStartTime ms');
-        }
-
-        // Calculate relative time
-        double relativeTime = time - referenceStartTime!;
-
-        // Avoid negative relative times
-        if (relativeTime < 0) {
-          relativeTime = 0;
-        }
-
-        // Create a new Measurement with relative time
-        Measurement measurement = Measurement(
-          flowRate: flowRate,
-          volume: volume,
-          time: relativeTime,
-        );
-
-        // Debug: Print received and relative data
+        // Debug: Print received data
         print(
-            'Received Data - Flow Rate: $flowRate, Volume: $volume, Time: $relativeTime ms');
+            'Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
 
         setState(() {
-          measurements.add(measurement);
-          // Limit the number of measurements to prevent performance issues
+          measurements.add(Measurement(
+            flowRate: data[0],
+            volume: data[1],
+            time: data[2],
+          ));
           if (measurements.length > 10000) {
             measurements.removeAt(0);
           }
@@ -123,41 +89,96 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void _calculateMetrics() {
     if (measurements.isEmpty) return;
 
-    // Ensure there are measurements with time <= 1000 ms and <= 6000 ms
-    Measurement? fev1Measurement = measurements.firstWhere(
-      (m) => m.time <= 1000,
-      orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0),
-    );
-
-    Measurement? fev6Measurement = measurements.firstWhere(
-      (m) => m.time <= 6000,
-      orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0),
-    );
-
-    // Measurements between 2500 ms and 7500 ms for fev2575
-    List<Measurement> fev2575Measurements =
-        measurements.where((m) => m.time >= 2500 && m.time <= 7500).toList();
-
-    // Debug: Print the metrics calculation steps
-    print('Calculating Metrics...');
-    print('FVC: ${measurements.last.volume}');
-    print('FEV1 Measurement: ${fev1Measurement.volume}');
-    print('FEV6 Measurement: ${fev6Measurement.volume}');
-    print('FEV2575 Measurements Count: ${fev2575Measurements.length}');
-
+    // Calculate FVC as the last volume measurement
     fvc = measurements.last.volume;
-    fev1 = fev1Measurement.volume;
+
+    // Calculate FEV1 using linear interpolation at 1000 ms
+    fev1 = _interpolateVolume(1000);
+
+    // Calculate FEV6 using linear interpolation at 6000 ms
+    fev6 = _interpolateVolume(6000);
+
+    // Calculate PEF as the maximum flow rate
     pef = measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
-    fev6 = fev6Measurement.volume;
-    fev2575 = fev2575Measurements.isNotEmpty
-        ? fev2575Measurements.fold(0.0, (sum, m) => sum + m.volume) /
-            fev2575Measurements.length
-        : 0.0;
-    fev1Fvc = fvc != 0.0 ? fev1 / fvc : 0.0;
+
+    // Calculate FEF25-75
+    double fef25 = 0.25 * fvc;
+    double fef75 = 0.75 * fvc;
+
+    double t25 = _interpolateTimeForVolume(fef25);
+    double t75 = _interpolateTimeForVolume(fef75);
+
+    // Get flow rates at t25 and t75
+    double flowAt25 = _interpolateFlowRate(t25);
+    double flowAt75 = _interpolateFlowRate(t75);
+
+    // Calculate FEF25-75 as the average of flow rates at 25% and 75% FVC
+    fev2575 = (flowAt25 + flowAt75) / 2;
+
+    // Calculate FEV1/FVC ratio
+    fev1Fvc = fvc != 0.0 ? (fev1 / fvc) * 100 : 0.0;
 
     // Debug: Print calculated metrics
-    print(
-        'Calculated Metrics - FVC: $fvc, FEV1: $fev1, PEF: $pef, FEV6: $fev6, FEV2575: $fev2575, FEV1/FVC: $fev1Fvc');
+    print('Calculating Metrics...');
+    print('FVC: $fvc');
+    print('FEV1: $fev1');
+    print('FEV6: $fev6');
+    print('PEF: $pef');
+    print('FEF25-75: $fev2575');
+    print('FEV1/FVC: $fev1Fvc%');
+  }
+
+  /// Helper method to interpolate volume at a specific time
+  double _interpolateVolume(double targetTime) {
+    for (int i = 0; i < measurements.length - 1; i++) {
+      Measurement current = measurements[i];
+      Measurement next = measurements[i + 1];
+
+      if (current.time <= targetTime && next.time >= targetTime) {
+        double timeDiff = next.time - current.time;
+        if (timeDiff == 0) return current.volume;
+        double volumeDiff = next.volume - current.volume;
+        double fraction = (targetTime - current.time) / timeDiff;
+        return current.volume + (volumeDiff * fraction);
+      }
+    }
+    // If targetTime is beyond the measurements, return the last volume
+    return measurements.last.volume;
+  }
+
+  /// Helper method to interpolate time for a specific volume
+  double _interpolateTimeForVolume(double targetVolume) {
+    for (int i = 0; i < measurements.length - 1; i++) {
+      Measurement current = measurements[i];
+      Measurement next = measurements[i + 1];
+
+      if (current.volume <= targetVolume && next.volume >= targetVolume) {
+        double volumeDiff = next.volume - current.volume;
+        if (volumeDiff == 0) return current.time;
+        double fraction = (targetVolume - current.volume) / volumeDiff;
+        return current.time + ((next.time - current.time) * fraction);
+      }
+    }
+    // If targetVolume is beyond the measurements, return the last time
+    return measurements.last.time;
+  }
+
+  /// Helper method to interpolate flow rate at a specific time
+  double _interpolateFlowRate(double targetTime) {
+    for (int i = 0; i < measurements.length - 1; i++) {
+      Measurement current = measurements[i];
+      Measurement next = measurements[i + 1];
+
+      if (current.time <= targetTime && next.time >= targetTime) {
+        double timeDiff = next.time - current.time;
+        if (timeDiff == 0) return current.flowRate;
+        double flowDiff = next.flowRate - current.flowRate;
+        double fraction = (targetTime - current.time) / timeDiff;
+        return current.flowRate + (flowDiff * fraction);
+      }
+    }
+    // If targetTime is beyond the measurements, return the last flow rate
+    return measurements.last.flowRate;
   }
 
   @override
@@ -217,7 +238,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
       child: Center(
         child: SizedBox(
           width: double.infinity, // Make the graph take full width
-          height: 300, // Increased height for better visibility
+          height: 300, // Increase the height for better visibility
           child: CustomPaint(
             painter: FlowVolumePainter(measurements: measurements),
             child: Container(),
@@ -304,7 +325,6 @@ class FlowVolumePainter extends CustomPainter {
       }
     }
 
-    // Draw the flow and volume paths
     canvas.drawPath(flowPath, flowPaint);
     canvas.drawPath(volumePath, volumePaint);
   }
