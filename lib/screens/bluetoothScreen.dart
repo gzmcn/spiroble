@@ -20,9 +20,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     _requestPermissions();
     _bleManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
     _bleManager.connectedDeviceId;
-    _bleManager.checkConnectionOnLoad();
+
     _bleManager.startScan();
     _loadConnectionState();
+    _bleManager.checkConnectionOnLoad();
   }
 
   Future<void> _requestPermissions() async {
@@ -207,7 +208,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
                     // Allow Button
                     ElevatedButton(
-                      onPressed: _bleManager.checkConnection() || deviceToConnect.id.isEmpty
+                      onPressed: _bleManager.checkConnection()
                           ? null
                           : () async {
                         await _bleManager.connectToDevice(deviceToConnect.id);

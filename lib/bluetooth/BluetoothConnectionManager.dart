@@ -28,7 +28,10 @@ class BluetoothConnectionManager with ChangeNotifier {
   bool checkConnecting() => _isConnecting;
   String? get connectedDeviceId => _connectedDeviceId;
 
-  void checkConnectionOnLoad() {
+  void checkConnectionOnLoad() async{
+
+    await Future.delayed(Duration(seconds: 3));
+
     if (_isConnected) {
       print("Cihaz bağlı: $_connectedDeviceId");
     } else {
@@ -273,6 +276,7 @@ class BluetoothConnectionManager with ChangeNotifier {
           print("Bağlantı başarılı: $deviceId");
           setConnectionState(deviceId, true);
           notifyListeners();
+          isLoading.value = false;
 
           await Future.delayed(const Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
@@ -282,11 +286,13 @@ class BluetoothConnectionManager with ChangeNotifier {
             DeviceConnectionState.disconnected) {
           setConnectionState(deviceId, false);
           print("Cihaz bağlantısı kesildi: $deviceId");
+          isLoading.value = false;
           notifyListeners();
         }
       },
       onError: (error) {
         print("Bağlantı sırasında hata oluştu: $error");
+        isLoading.value = false;
       },
     );
   }
@@ -298,11 +304,13 @@ class BluetoothConnectionManager with ChangeNotifier {
       _connectionSubscription = null;
       print("Cihaz bağlantısı başarıyla kesildi: $deviceId");
       setConnectionState(deviceId, false); // Bağlantı durumu güncellendi
+      isLoading.value = false;
       notifyListeners();
       deviceId = '';
     } catch (error) {
       print("Cihaz bağlantısı kesilirken hata oluştu: $error");
       setConnectionState(deviceId, true);
+      isLoading.value = false;
       notifyListeners();
     }
   }
