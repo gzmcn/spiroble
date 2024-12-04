@@ -24,6 +24,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     _bleManager.startScan();
     _loadConnectionState();
     _bleManager.checkConnectionOnLoad();
+
+    if(_bleManager.checkConnecting()){
+      _bleManager.isLoading.value = false;
+    }
   }
 
   Future<void> _requestPermissions() async {
@@ -206,44 +210,44 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                       ),
                     ),
 
-                    // Allow Button
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (_bleManager.checkConnection()) {
-                          _bleManager.isLoading.value = false;
-                          null;
-                        } else {
-                          _bleManager.startScan();
-
-                          if(deviceToConnect.id== null){
+                    // ElevatedButton durumuna bağlı olarak göster/gizle
+                    Visibility(
+                      visible: !_bleManager.checkConnection(), // Bağlı değilse buton görünür
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_bleManager.checkConnection()) {
                             _bleManager.isLoading.value = false;
-                            print("cihaz bulunamadı");
-                          }
-                          else{
-                            await _bleManager.connectToDevice(deviceToConnect.id);
-                            _bleManager.isLoading.value = false;
-                          }
-                        }
+                          } else {
+                            _bleManager.startScan();
 
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                            if (deviceToConnect.id == null) {
+                              _bleManager.isLoading.value = false;
+                              print("Cihaz bulunamadı");
+                            } else {
+                              await _bleManager.connectToDevice(deviceToConnect.id);
+                              _bleManager.isLoading.value = false;
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                      ),
-                      child: Padding(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        child: Text(
-                          "Bağlan",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          child: Text(
+                            _bleManager.checkConnection() ? "Bağlantı başarılı!" : "Bağlan",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),
                     ),
+
                   ],
                 ),
               ),

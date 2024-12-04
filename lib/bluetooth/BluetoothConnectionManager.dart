@@ -30,7 +30,6 @@ class BluetoothConnectionManager with ChangeNotifier {
 
   void checkConnectionOnLoad() async{
 
-    await Future.delayed(Duration(seconds: 3));
 
     if (_isConnected) {
       print("Cihaz bağlı: $_connectedDeviceId");
@@ -281,8 +280,6 @@ class BluetoothConnectionManager with ChangeNotifier {
 
           await Future.delayed(const Duration(seconds: 1)); // Gecikme ekleyin
           await initializeCommunication(deviceId);
-          await notifyAsDoubles(deviceId);
-          await uid3(deviceId);
         } else if (connectionState.connectionState ==
             DeviceConnectionState.disconnected) {
           setConnectionState(deviceId, false);

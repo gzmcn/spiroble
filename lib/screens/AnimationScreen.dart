@@ -29,6 +29,9 @@ class _AnimationScreenState extends State<AnimationScreen> {
     super.initState();
     _bleManager =
         Provider.of<BluetoothConnectionManager>(context, listen: false);
+
+    // ölçüm sırasında bağlantı kesilirse buraya bi check at ekrana hata çıkar
+
   }
 
   @override
@@ -38,39 +41,42 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   void _startAnimation() async {
-    if (_bleManager.connectedDeviceId != null) {
-      await _bleManager.sendChar1(
-        BleUuids.Uuid3Services,
-        BleUuids.Uuid3Characteristic,
-        _bleManager.connectedDeviceId!,
-      );
-
-      setState(() {
-        isAnimating = true;
-      });
-
-      _dataSubscription = _bleManager
-          .notifyAsDoubles(_bleManager.connectedDeviceId!)
-          .listen((data) {
-        // Debug: Print received data
-        print(
-            'Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+    if(_bleManager.checkConnection()) {
+      if (_bleManager.connectedDeviceId != null) {
+        await _bleManager.sendChar1(
+          BleUuids.Uuid3Services,
+          BleUuids.Uuid3Characteristic,
+          _bleManager.connectedDeviceId!,
+        );
 
         setState(() {
-          measurements.add(Measurement(
-            flowRate: data[0],
-            volume: data[1],
-            time: data[2],
-          ));
-          if (measurements.length > 10000) {
-            measurements.removeAt(0);
-          }
-          _calculateMetrics();
+          isAnimating = true;
         });
-      }, onError: (error) {
-        print('Error receiving data: $error');
-      });
-    } else {
+
+        _dataSubscription = _bleManager
+            .notifyAsDoubles(_bleManager.connectedDeviceId!)
+            .listen((data) {
+          // Debug: Print received data
+          print(
+              'Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+
+          setState(() {
+            measurements.add(Measurement(
+              flowRate: data[0],
+              volume: data[1],
+              time: data[2],
+            ));
+            if (measurements.length > 10000) {
+              measurements.removeAt(0);
+            }
+            _calculateMetrics();
+          });
+        }, onError: (error) {
+          print('Error receiving data: $error');
+        });
+      }
+    }
+    else {
       print('No device connected.');
     }
   }
