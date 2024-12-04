@@ -13,6 +13,7 @@ class BluetoothConnectionManager with ChangeNotifier{
 
   // Bağlantı durumu ve cihaz kimliği için yerel değişkenler
   bool _isConnected = false;
+  bool _isConnecting = false;
   String? _connectedDeviceId;
 
   // Stream'ler (Dinleyicilere veri sağlar)
@@ -21,8 +22,26 @@ class BluetoothConnectionManager with ChangeNotifier{
 
   // Getter'lar (Mevcut durumu sorgulamak için)
   bool checkConnection() => _isConnected;
+  bool checkConnecting() => _isConnecting;
   String? get connectedDeviceId => _connectedDeviceId;
 
+
+  void checkConnectionOnLoad() {
+    if (_isConnected) {
+      print("Cihaz bağlı: $_connectedDeviceId");
+    } else {
+      print("Cihaz bağlantısı kesik.");
+    }
+
+    // Bağlantı durumunu dinlemek için stream kullanabilirsiniz
+    connectionStream.listen((isConnected) {
+      if (isConnected) {
+        print("Bağlantı yeniden kuruldu: $_connectedDeviceId");
+      } else {
+        print("Bağlantı kesildi.");
+      }
+    });
+  }
 
 
 

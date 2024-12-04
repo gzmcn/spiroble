@@ -28,6 +28,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void initState() {
     super.initState();
     _bleManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
+
   }
 
   @override

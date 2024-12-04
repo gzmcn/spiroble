@@ -19,6 +19,8 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     super.initState();
     _requestPermissions();
     _bleManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
+    _bleManager.connectedDeviceId;
+    _bleManager.checkConnectionOnLoad();
     _bleManager.startScan();
     _loadConnectionState();
   }
@@ -43,7 +45,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
   void _denyConnection() {
     // Implement deny functionality, e.g., stop scanning or navigate back
+
     _bleManager.stopScan();
+    _bleManager.disconnectToDevice(_bleManager.connectedDeviceId!);
+    print("BAGLANTIYI KOPARDIK");
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Bağlantı İptal Edildi')),
     );
@@ -174,7 +179,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   children: [
                     // Deny Button
                     OutlinedButton(
-                      onPressed: _bleManager.checkConnection() ? null : _denyConnection,
+                      onPressed: _bleManager.checkConnection() ? _denyConnection : null,
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: Colors.grey),
                         shape: RoundedRectangleBorder(
