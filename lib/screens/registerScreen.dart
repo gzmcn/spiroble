@@ -76,11 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.lightBlue],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Color(0xFF3A2A6B), // Arka plan rengini değiştirdik
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -276,3 +272,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 }
+

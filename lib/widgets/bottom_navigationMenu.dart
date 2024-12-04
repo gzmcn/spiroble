@@ -47,10 +47,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
           icon: Icon(Icons.bluetooth, color: theme.colorScheme.onSurface),
           label: '',
         ),
-        NavigationDestination(
-          icon: Icon(Icons.bluetooth, color: theme.colorScheme.onSurface),
-          label: '',
-        ),
+
       ],
       labelBehavior: NavigationDestinationLabelBehavior
           .alwaysHide, // Ensures no label is shown

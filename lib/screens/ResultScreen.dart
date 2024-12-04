@@ -27,7 +27,7 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   final DatabaseReference _databaseRef =
-      FirebaseDatabase.instance.ref("sonuclar");
+  FirebaseDatabase.instance.ref("sonuclar");
   List<Map<String, dynamic>> measurements = []; // Firebase'den alınan veriler
 
   @override
@@ -85,7 +85,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       Text(
                         "Test Sonuçları",
                         style:
-                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        Theme.of(context).textTheme.headlineLarge?.copyWith(
                           color: Colors.white,
                           shadows: [
                             Shadow(
@@ -160,23 +160,23 @@ class _ResultScreenState extends State<ResultScreen> {
               child: measurements.isEmpty
                   ? Center(child: CircularProgressIndicator())
                   : ListView.builder(
-                      itemCount: measurements.length,
-                      itemBuilder: (context, index) {
-                        final DateTime timestamp =
-                            DateTime.parse(measurements[index]['timestamp']);
-                        final String formattedDate =
-                            DateFormat('dd MMM yyyy HH:mm').format(timestamp);
+                itemCount: measurements.length,
+                itemBuilder: (context, index) {
+                  final DateTime timestamp =
+                  DateTime.parse(measurements[index]['timestamp']);
+                  final String formattedDate =
+                  DateFormat('dd MMM yyyy HH:mm').format(timestamp);
 
-                        final measurement = measurements[index];
-                        return ElevatedMeasurementCard(
-                          emoji: measurement['emoji'],
-                          fvc: measurement['fvc'].toString(),
-                          pef: measurement['pef'].toString(),
-                          fev1: measurement['fev1'].toString(),
-                          date: formattedDate,
-                        );
-                      },
-                    ),
+                  final measurement = measurements[index];
+                  return ElevatedMeasurementCard(
+                    emoji: measurement['emoji'],
+                    fvc: measurement['fvc'].toString(),
+                    pef: measurement['pef'].toString(),
+                    fev1: measurement['fev1'].toString(),
+                    date: formattedDate,
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -308,3 +308,5 @@ class ElevatedMeasurementCard extends StatelessWidget {
     );
   }
 }
+
+

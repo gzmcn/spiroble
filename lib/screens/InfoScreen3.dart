@@ -15,10 +15,10 @@ class InfoScreen3 extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.white, Colors.blue.shade500],
+                colors: [Colors.white, Color(0xFF3A2A6B)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                stops: [0.2, 1], // Geçiş üstten başlasın
+                stops: [0.1, 1], // Geçiş üstten başlasın
               ),
             ),
           ),
@@ -89,3 +89,4 @@ class InfoScreen3 extends StatelessWidget {
     );
   }
 }
+

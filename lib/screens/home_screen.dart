@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/testScreen.dart';
 import 'package:spiroble/screens/asistanScreen.dart'; // Asistan ekranını import edin
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
@@ -26,11 +27,11 @@ class _HomeScreen extends State<HomeScreen> {
   String getGreetingMessage() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return "günaydın!";
+      return "Günaydın!";
     } else if (hour < 18) {
-      return "iyi günler!";
+      return "İyi günler!";
     } else {
-      return "iyi akşamlar!";
+      return "İyi akşamlar!";
     }
   }
 
@@ -40,7 +41,7 @@ class _HomeScreen extends State<HomeScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFA0BAFD), Colors.deepOrange.shade700],
+            colors: [const Color(0xFFFFFFFF), Color(0xFF3A2A6B)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -61,7 +62,7 @@ class _HomeScreen extends State<HomeScreen> {
               Text(
                 "Bugün harika bir gün olacak!",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   color: Colors.white70,
                 ),
               ),
@@ -69,24 +70,24 @@ class _HomeScreen extends State<HomeScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => TestScreen(),
+                    builder: (context) => LoginScreen(),
                   ));
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                   backgroundColor: const Color.fromARGB(255, 251, 251, 251),
                   padding: EdgeInsets.symmetric(
-                      horizontal: 30, vertical: 15), // Buton boyutu
+                      horizontal: 28, vertical: 14), // Buton boyutu
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.circular(30), // Yuvarlatılmış köşeler
+                    BorderRadius.circular(30), // Yuvarlatılmış köşeler
                   ), // Buton metin rengi
                   elevation: 8, // Gölge efekti
                 ),
                 child: Text(
                   "Teste Başla",
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -105,7 +106,7 @@ class _HomeScreen extends State<HomeScreen> {
         },
         backgroundColor: Colors.white,
         child:
-            const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
+        const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
       ),
     );
   }

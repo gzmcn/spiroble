@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:spiroble/screens/hosgeldiniz.dart';  // Make sure WelcomeScreen is imported
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/screens/hosgeldiniz.dart'; // Hoşgeldiniz ekranı
+import 'package:spiroble/screens/home_screen.dart'; // HomeScreen ekranı
+import 'package:flutter_svg/flutter_svg.dart'; // SVG desteğini dahil ettik
 
-class StartSplashScreen extends StatefulWidget {
-  const StartSplashScreen({Key? key}) : super(key: key);
-
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<StartSplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // 3 seconds after splash screen, navigate to WelcomeScreen
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-      );
-    });
-  }
-
+class StartSplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Splash ekran süresi ve geçiş
+    Future.delayed(Duration(seconds: 0), () {
+      // Kullanıcı giriş kontrolü
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Eğer kullanıcı giriş yapmışsa, HomeScreen'e geçiş
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => HomeScreen()),
+        );
+      } else {
+        // Eğer kullanıcı giriş yapmamışsa, WelcomeScreen'e geçiş
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => WelcomeScreen()),
+        );
+      }
+    });
+
     return Scaffold(
       body: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(110), // Round corner radius
-          child: SvgPicture.asset(
-            'assets/spiroicons.svg',  // Icon asset path
-            width: 225,  // Icon size
-            height: 225,  // Icon size
+        child: ClipOval(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20), // Köşe yuvarlatma
+            ),
+            child: SvgPicture.asset(
+              'assets/spiroiconnew.svg', // SVG dosyasının yolu
+              width: 150,  // Genişlik
+              height: 150, // Yükseklik
+            ),
           ),
         ),
       ),
