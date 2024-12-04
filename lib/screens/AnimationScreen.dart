@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'package:spiroble/bluetooth/bluetooth_constant.dart';
 
 class AnimationScreen extends StatefulWidget {
   @override
@@ -38,10 +39,14 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void _startAnimation() async {
     if (_bleManager.connectedDeviceId != null) {
       await _bleManager.sendChar1(
-        BleUuids.notifyServiceUuid,
-        BleUuids.notifycharacteristicUuid,
+        BleUuids.Uuid3Services,
+        BleUuids.Uuid3Characteristic,
         _bleManager.connectedDeviceId!,
       );
+
+      await _bleManager.notifyAsDoubles(_bleManager.connectedDeviceId!);
+
+
       setState(() {
         isAnimating = true;
       });
