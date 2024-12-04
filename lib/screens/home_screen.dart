@@ -41,7 +41,7 @@ class _HomeScreen extends State<HomeScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFFFFFFFF), Color(0xFF3A2A6B)],
+            colors: [const Color(0xFF3A2A6B), Color(0xFF3A2A6B)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
