@@ -139,7 +139,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                         Text(
                           _bleManager.checkConnection()
                               ? "Bağlantı başarılı!"
-                              : "Tekrar deneyiniz",
+                              : "Bağlantı yok, tekrar deneyiniz",
                           style: TextStyle(
                             color: Colors.black54,
                             fontSize: 16,
@@ -208,10 +208,23 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
                     // Allow Button
                     ElevatedButton(
-                      onPressed: _bleManager.checkConnection()
-                          ? null
-                          : () async {
-                        await _bleManager.connectToDevice(deviceToConnect.id);
+                      onPressed: () async {
+                        if (_bleManager.checkConnection()) {
+                          _bleManager.isLoading.value = false;
+                          null;
+                        } else {
+                          _bleManager.startScan();
+
+                          if(deviceToConnect.id== null){
+                            _bleManager.isLoading.value = false;
+                            print("cihaz bulunamadı");
+                          }
+                          else{
+                            await _bleManager.connectToDevice(deviceToConnect.id);
+                            _bleManager.isLoading.value = false;
+                          }
+                        }
+
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,

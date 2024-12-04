@@ -17,7 +17,7 @@ class BluetoothConnectionManager with ChangeNotifier {
   bool _isConnecting = false;
   String? _connectedDeviceId;
 
-  final ValueNotifier<bool> isLoading = ValueNotifier(false);
+   ValueNotifier<bool> isLoading = ValueNotifier(false);
 
   // Stream'ler (Dinleyicilere veri sağlar)
   Stream<bool> get connectionStream => _connectionController.stream;
@@ -107,7 +107,7 @@ class BluetoothConnectionManager with ChangeNotifier {
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
       (device) {
         _addDeviceToStream(device);
-        isLoading.value = true; // ULAS
+        isLoading.value = true;
       },
       onError: (error) {
         print("Tarama sırasında hata oluştu: $error");
@@ -125,6 +125,7 @@ class BluetoothConnectionManager with ChangeNotifier {
     print("Tarama durduruluyor...");
     _scanSubscription?.cancel();
     _scanSubscription = null;
+    isLoading.value = false;
   }
 
   void _startReceivingData() {

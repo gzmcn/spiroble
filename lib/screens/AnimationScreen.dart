@@ -134,7 +134,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
       Measurement current = measurements[i];
       Measurement next = measurements[i + 1];
 
-      if (current.time <= targetTime && next.time >= targetTime) {
+      if (current.time <= targetTime && next.time <= targetTime) {
         double timeDiff = next.time - current.time;
         if (timeDiff == 0) return current.volume;
         double volumeDiff = next.volume - current.volume;
