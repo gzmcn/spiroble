@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/widgets.dart';
@@ -15,6 +16,8 @@ class BluetoothConnectionManager with ChangeNotifier{
   bool _isConnected = false;
   bool _isConnecting = false;
   String? _connectedDeviceId;
+
+  final ValueNotifier<bool> isLoading = ValueNotifier(false);
 
   // Stream'ler (Dinleyicilere veri sağlar)
   Stream<bool> get connectionStream => _connectionController.stream;
@@ -98,10 +101,7 @@ class BluetoothConnectionManager with ChangeNotifier{
 
   //TARAMAYI BAŞLATIYORUZ
   Future<void> startScan() async {
-    if (!await _checkPermissions()) {
-      print("Gerekli izinler verilmedi!");
-      return;
-    }
+    isLoading.value = true;
 
     print("Tarama başlatılıyor...");
     _scanSubscription = _ble.scanForDevices(withServices: []).listen(
@@ -110,9 +110,11 @@ class BluetoothConnectionManager with ChangeNotifier{
       },
       onError: (error) {
         print("Tarama sırasında hata oluştu: $error");
+        isLoading.value = false;
       },
       onDone: () {
         print("Tarama tamamlandı.");
+        isLoading.value = false;
       },
     );
   }

@@ -28,7 +28,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void initState() {
     super.initState();
     _bleManager = Provider.of<BluetoothConnectionManager>(context, listen: false);
-
   }
 
   @override
@@ -45,13 +44,14 @@ class _AnimationScreenState extends State<AnimationScreen> {
         _bleManager.connectedDeviceId!,
       );
 
-      await _bleManager.notifyAsDoubles(_bleManager.connectedDeviceId!);
-
-
       setState(() {
         isAnimating = true;
       });
+
       _dataSubscription = _bleManager.notifyAsDoubles(_bleManager.connectedDeviceId!).listen((data) {
+        // Debug: Print received data
+        print('Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+
         setState(() {
           measurements.add(Measurement(
             flowRate: data[0],
@@ -63,7 +63,11 @@ class _AnimationScreenState extends State<AnimationScreen> {
           }
           _calculateMetrics();
         });
+      }, onError: (error) {
+        print('Error receiving data: $error');
       });
+    } else {
+      print('No device connected.');
     }
   }
 
@@ -81,15 +85,37 @@ class _AnimationScreenState extends State<AnimationScreen> {
   void _calculateMetrics() {
     if (measurements.isEmpty) return;
 
+    // Ensure there are measurements with time <= 1000 and <= 6000
+    Measurement? fev1Measurement = measurements.firstWhere(
+          (m) => m.time <= 1000,
+      orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0),
+    );
+
+    Measurement? fev6Measurement = measurements.firstWhere(
+          (m) => m.time <= 6000,
+      orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0),
+    );
+
+    List<Measurement> fev2575Measurements = measurements.where((m) => m.time >= 2500 && m.time <= 7500).toList();
+
+    // Debug: Print the metrics calculation steps
+    print('Calculating Metrics...');
+    print('FVC: ${measurements.last.volume}');
+    print('FEV1 Measurement: ${fev1Measurement.volume}');
+    print('FEV6 Measurement: ${fev6Measurement.volume}');
+    print('FEV2575 Measurements Count: ${fev2575Measurements.length}');
+
     fvc = measurements.last.volume;
-    fev1 = measurements.firstWhere((m) => m.time <= 1000, orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0)).volume;
+    fev1 = fev1Measurement.volume;
     pef = measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
-    fev6 = measurements.firstWhere((m) => m.time <= 6000, orElse: () => Measurement(volume: 0.0, flowRate: 0.0, time: 0)).volume;
-    fev2575 = measurements
-            .where((m) => m.time >= 2500 && m.time <= 7500)
-            .fold(0.0, (sum, m) => sum + m.volume) /
-        5000;
+    fev6 = fev6Measurement.volume;
+    fev2575 = fev2575Measurements.isNotEmpty
+        ? fev2575Measurements.fold(0.0, (sum, m) => sum + m.volume) / fev2575Measurements.length
+        : 0.0;
     fev1Fvc = fvc != 0.0 ? fev1 / fvc : 0.0;
+
+    // Debug: Print calculated metrics
+    print('Calculated Metrics - FVC: $fvc, FEV1: $fev1, PEF: $pef, FEV6: $fev6, FEV2575: $fev2575, FEV1/FVC: $fev1Fvc');
   }
 
   @override
@@ -107,13 +133,18 @@ class _AnimationScreenState extends State<AnimationScreen> {
                 ElevatedButton(
                   onPressed: isAnimating ? null : _startAnimation,
                   child: Text('Start Animation'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue, // Example background color
+                    foregroundColor: Colors.white, // Example text color
+                  ),
                 ),
                 SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: isAnimating ? _stopAnimation : null,
                   child: Text('Stop Animation'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
+                    backgroundColor: Colors.redAccent, // Replaced 'primary' with 'backgroundColor'
+                    foregroundColor: Colors.white, // Optional: Set text color
                   ),
                 ),
               ],
@@ -140,9 +171,15 @@ class _AnimationScreenState extends State<AnimationScreen> {
   Widget _buildAnimation() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: CustomPaint(
-        painter: FlowVolumePainter(measurements: measurements),
-        child: Container(),
+      child: Center(
+        child: SizedBox(
+          width: double.infinity, // Make the graph take full width
+          height: 300, // Increase the height for better visibility
+          child: CustomPaint(
+            painter: FlowVolumePainter(measurements: measurements),
+            child: Container(),
+          ),
+        ),
       ),
     );
   }
@@ -188,6 +225,10 @@ class FlowVolumePainter extends CustomPainter {
     double maxVolume = measurements.map((m) => m.volume.abs()).reduce((a, b) => a > b ? a : b);
     double maxTime = measurements.map((m) => m.time).reduce((a, b) => a > b ? a : b);
 
+    // Adjust scaling factors if necessary
+    double flowScale = maxFlow != 0 ? size.height / maxFlow : 1;
+    double volumeScale = maxVolume != 0 ? size.height / maxVolume : 1;
+
     Paint flowPaint = Paint()
       ..color = Colors.blue
       ..strokeWidth = 2
@@ -203,8 +244,8 @@ class FlowVolumePainter extends CustomPainter {
 
     for (int i = 0; i < measurements.length; i++) {
       double x = (measurements[i].time / maxTime) * size.width;
-      double yFlow = size.height - (measurements[i].flowRate / maxFlow) * size.height;
-      double yVolume = size.height - (measurements[i].volume.abs() / maxVolume) * size.height;
+      double yFlow = size.height - (measurements[i].flowRate * flowScale); // Adjusted for scaling
+      double yVolume = size.height - (measurements[i].volume.abs() * volumeScale); // Adjusted for scaling
 
       if (i == 0) {
         flowPath.moveTo(x, yFlow);

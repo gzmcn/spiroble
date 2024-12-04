@@ -150,11 +150,17 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     SizedBox(height: 20),
 
                     // Loading Animation (Circular Progress Indicator)
-                    if (_bleManager.checkConnection())
-                      CircularProgressIndicator(
-                        color: Colors.blueAccent,
-                        strokeWidth: 3,
-                      ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _bleManager.isLoading, // isLoading burada ValueNotifier olmalı
+                      builder: (context, isLoading, child) {
+                        return isLoading
+                            ? CircularProgressIndicator(
+                          color: Colors.blueAccent,
+                          strokeWidth: 3,
+                        )
+                            : Container(); // Yükleme tamamlanınca boş bir container
+                      },
+                    ),
 
                     SizedBox(height: 40),
 
