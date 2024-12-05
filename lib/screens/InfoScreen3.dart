@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:spiroble/screens/appScreen.dart';
+import 'package:spiroble/screens/appScreen.dart'; // AppScreen'in importu
 
 class InfoScreen3 extends StatelessWidget {
   const InfoScreen3({Key? key}) : super(key: key);
@@ -25,8 +26,7 @@ class InfoScreen3 extends StatelessWidget {
           Align(
             alignment: Alignment.topCenter,
             child: Padding(
-              padding: const EdgeInsets.only(
-                  top: 160.0), // Üstten 140px boşluk bırakıyoruz
+              padding: const EdgeInsets.only(top: 160.0),
               child: SvgPicture.asset(
                 'assets/entry.svg', // İkon dosyasının yolu
                 width: 80,
@@ -59,12 +59,10 @@ class InfoScreen3 extends StatelessWidget {
                 children: [
                   ElevatedButton.icon(
                     onPressed: () {
-                      // Atla butonu ile HomeScreen'e geçiş
+                      // AppScreen'e kayma animasyonu ile geçiş
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => AppScreen(),
-                        ),
+                        _createRoute(),
                       );
                     },
                     icon: const Icon(Icons.arrow_forward),
@@ -85,6 +83,24 @@ class InfoScreen3 extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // Kayma animasyonu için PageRouteBuilder
+  PageRouteBuilder _createRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => AppScreen(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Aşağıdan yukarı kayma animasyonu
+        const begin = Offset(0.0, 1.0); // Aşağıdan yukarı kayma
+        const end = Offset.zero;
+        const curve = Curves.easeInOut;
+
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(position: offsetAnimation, child: child);
+      },
     );
   }
 }
