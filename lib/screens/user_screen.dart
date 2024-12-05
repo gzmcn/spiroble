@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -8,7 +7,6 @@ import 'package:spiroble/widgets/CircularProgressBar.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 import 'package:fancy_button_flutter/fancy_button_flutter.dart';
 import 'dart:convert';
-import 'package:csv/csv.dart';
 import 'dart:math';
 
 class ProfileScreen extends StatefulWidget {
@@ -92,15 +90,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       // Dosyaları yükle
       final parametersData =
-      await rootBundle.loadString('assets/parameters.csv');
+          await rootBundle.loadString('assets/parameters.csv');
       final secondTableData =
-      await rootBundle.loadString('assets/ikincitablo.csv');
+          await rootBundle.loadString('assets/ikincitablo.csv');
 
       // CSV verilerini ayrıştır ve tür dönüşümü yap
       List<List<double>> parametersTable = const LineSplitter()
           .convert(parametersData)
           .map((line) =>
-          line.split(',').map((e) => double.tryParse(e) ?? 0.0).toList())
+              line.split(',').map((e) => double.tryParse(e) ?? 0.0).toList())
           .toList();
       List<List<dynamic>> secondTable = const LineSplitter()
           .convert(secondTableData)
@@ -143,19 +141,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Cinsiyete göre sabitler
         var labels = gender == 'Erkek'
             ? [
-          'FEV1 males',
-          'FVC males',
-          'FEV1FVC males',
-          'FEF2575 males',
-          'FEF75 males'
-        ]
+                'FEV1 males',
+                'FVC males',
+                'FEV1FVC males',
+                'FEF2575 males',
+                'FEF75 males'
+              ]
             : [
-          'FEV1 females',
-          'FVC females',
-          'FEV1FVC females',
-          'FEF2575 females',
-          'FEF75 females'
-        ];
+                'FEV1 females',
+                'FVC females',
+                'FEV1FVC females',
+                'FEF2575 females',
+                'FEF75 females'
+              ];
 
         for (var label in labels) {
           // Sabitler a0, a1, a2, a3, a4, a5 değerlerini al
@@ -421,7 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             SizedBox(
                 height:
-                16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
+                    16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
 
             // Save Button
             Padding(
@@ -438,9 +436,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_color: Color(0xFFA0BAFD),
               ),
             ),
-            SizedBox(
-                height:
-                12),
+            SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -471,31 +467,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.all(16),
                   child: results.isNotEmpty
                       ? Wrap(
-                    spacing: 16, // Horizontal space between items
-                    runSpacing: 16, // Vertical space between lines
-                    children: results.entries.map((entry) {
-                      // Remove the 'males' part from the entry.key
-                      String updatedKey = entry.key;
-                      if (entry.key.contains('males'))
-                        updatedKey =
-                            entry.key.replaceAll('males', '').trim();
-                      else
-                        updatedKey =
-                            entry.key.replaceAll('females', '').trim();
+                          spacing: 16, // Horizontal space between items
+                          runSpacing: 16, // Vertical space between lines
+                          children: results.entries.map((entry) {
+                            // Remove the 'males' part from the entry.key
+                            String updatedKey = entry.key;
+                            if (entry.key.contains('males'))
+                              updatedKey =
+                                  entry.key.replaceAll('males', '').trim();
+                            else
+                              updatedKey =
+                                  entry.key.replaceAll('females', '').trim();
 
-                      return Container(
-                        width: 100, // You can adjust the width as needed
-                        child: CustomCircularProgressBar(
-                          progress: entry.value, // Use M value here
-                          maxValue:
-                          100, // Adjust this based on the M value range
-                          minValue: 0,
-                          text:
-                          '$updatedKey \n ${entry.value.toStringAsFixed(2)}', // Display label and value
-                        ),
-                      );
-                    }).toList(),
-                  )
+                            return Container(
+                              width: 100, // You can adjust the width as needed
+                              child: CustomCircularProgressBar(
+                                progress: entry.value, // Use M value here
+                                maxValue:
+                                    100, // Adjust this based on the M value range
+                                minValue: 0,
+                                text:
+                                    '$updatedKey \n ${entry.value.toStringAsFixed(2)}', // Display label and value
+                              ),
+                            );
+                          }).toList(),
+                        )
                       : Container(),
                 ),
               ],

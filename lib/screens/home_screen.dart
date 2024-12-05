@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
-import 'package:spiroble/screens/testScreen.dart';
 import 'package:spiroble/screens/asistanScreen.dart'; // Asistan ekranını import edin
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 
@@ -80,7 +78,7 @@ class _HomeScreen extends State<HomeScreen> {
                       horizontal: 28, vertical: 14), // Buton boyutu
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                    BorderRadius.circular(30), // Yuvarlatılmış köşeler
+                        BorderRadius.circular(30), // Yuvarlatılmış köşeler
                   ), // Buton metin rengi
                   elevation: 8, // Gölge efekti
                 ),
@@ -106,7 +104,7 @@ class _HomeScreen extends State<HomeScreen> {
         },
         backgroundColor: Colors.white,
         child:
-        const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
+            const Icon(Icons.assistant, color: Colors.blue), // Asistan logosu
       ),
     );
   }

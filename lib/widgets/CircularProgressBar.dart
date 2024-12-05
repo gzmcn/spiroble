@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/percent_indicator.dart';
-
 
 class CustomCircularProgressBar extends StatelessWidget {
   final double progress;
@@ -14,7 +12,6 @@ class CustomCircularProgressBar extends StatelessWidget {
     required this.maxValue,
     required this.text, // Accept the text parameter
   });
-
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +65,8 @@ class CircularProgressBarPainter extends CustomPainter {
 
     // Draw the progress arc
     final double startAngle = -90 * (3.14159 / 180); // Start at the top
-    final double sweepAngle = progress * 360 * (3.14159 / 180); // Sweep proportionally
+    final double sweepAngle =
+        progress * 360 * (3.14159 / 180); // Sweep proportionally
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       startAngle,

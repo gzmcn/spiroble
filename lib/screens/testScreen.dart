@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:spiroble/screens/spiroScreen.dart';
 import 'dart:typed_data';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'AnimationScreen.dart';
@@ -12,7 +11,8 @@ class TestScreen extends StatefulWidget {
   State<TestScreen> createState() => _TestScreen();
 }
 
-class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin {
+class _TestScreen extends State<TestScreen>
+    with SingleTickerProviderStateMixin {
   final BluetoothConnectionManager _bleManager = BluetoothConnectionManager();
 
   late AnimationController _controller;
@@ -36,7 +36,8 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
     // Check the connection status
     if (BluetoothConnectionManager().checkConnection()) {
       // The device is already connected
-      print("Already connected to device: ${BluetoothConnectionManager().connectedDeviceId}");
+      print(
+          "Already connected to device: ${BluetoothConnectionManager().connectedDeviceId}");
     } else {
       // Device is not connected, show "Bağlan" button
       print("No device connected. Show 'Bağlan' button.");
@@ -70,7 +71,7 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
 
           // Find the device with the name "Blank"
           final deviceToConnect = devices.firstWhere(
-                (device) => device.name == "",
+            (device) => device.name == "",
             orElse: () => DiscoveredDevice(
               id: "",
               name: "",
@@ -106,10 +107,12 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
                         } else {
                           // If not connected, attempt to connect to the "Blank" device
                           try {
-                            await _bleManager.connectToDevice(deviceToConnect.id);
+                            await _bleManager
+                                .connectToDevice(deviceToConnect.id);
 
                             // After successful connection, update the UI state
-                            setState(() {});  // This triggers the UI to reflect the connection change
+                            setState(
+                                () {}); // This triggers the UI to reflect the connection change
                             print("BAGLANDI");
 
                             // Now navigate to the SpiroScreen
@@ -121,17 +124,18 @@ class _TestScreen extends State<TestScreen> with SingleTickerProviderStateMixin 
                           }
                         }
                       },
-
-
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                        backgroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
                         foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                         padding: const EdgeInsets.all(70), // Larger button size
                         shape: const CircleBorder(),
                         elevation: 10,
                       ),
                       child: Text(
-                        _bleManager.checkConnection() ? 'Teste Başla' : 'Bağlan',
+                        _bleManager.checkConnection()
+                            ? 'Teste Başla'
+                            : 'Bağlan',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,

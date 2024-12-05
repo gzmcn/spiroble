@@ -1,5 +1,5 @@
 name: spiroble
-description: "A new Flutter project."
+description: 'A new Flutter project.'
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -8,7 +8,6 @@ environment:
   sdk: ^3.5.2
 
 dependencies:
-
   firebase_auth: ^5.2.1
   firebase_core: ^3.4.1
   firebase_storage: ^12.3.0
@@ -21,7 +20,6 @@ dependencies:
   flutter_reactive_ble: ^5.3.1
   get: ^4.6.5
   permission_handler: ^10.0.0
-  flutter_blue_plus: ^1.16.2
   flutter_ble_peripheral: ^1.2.6
   flutter_bloc: ^8.1.6
   google_fonts: ^6.2.1
@@ -42,12 +40,11 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/spiroicons.svg"  # Doğru ikon dosyasını buraya yerleştirin
+  image_path: 'assets/spiroicons.svg' # Doğru ikon dosyasını buraya yerleştirin
 
 flutter_lints: ^4.0.0
 
 flutter:
-
   assets:
     - assets/logo.png
     - assets/lungs.svg

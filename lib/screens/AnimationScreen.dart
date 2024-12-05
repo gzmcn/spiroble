@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +32,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
         Provider.of<BluetoothConnectionManager>(context, listen: false);
 
     // ölçüm sırasında bağlantı kesilirse buraya bi check at ekrana hata çıkar
-
   }
 
   @override
@@ -43,7 +41,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
   }
 
   void _startAnimation() async {
-    if(_bleManager.checkConnection()) {
+    if (_bleManager.checkConnection()) {
       if (_bleManager.connectedDeviceId != null) {
         await _bleManager.sendChar1(
           BleUuids.Uuid3Services,
@@ -77,8 +75,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
           print('Error receiving data: $error');
         });
       }
-    }
-    else {
+    } else {
       print('No device connected.');
     }
   }
@@ -126,8 +123,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
     // Calculate FEV1/FVC ratio
     fev1Fvc = fvc != 0.0 ? (fev1 / fvc) * 100 : 0.0;
 
-
-    
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       print('Kullanıcı giriş yapmamış!');
@@ -150,7 +145,6 @@ class _AnimationScreenState extends State<AnimationScreen> {
     } catch (e) {
       print('Sonuç kaydedilirken bir hata oluştu: $e');
     }
-  
 
     // Debug: Print calculated metrics
     print('Calculating Metrics...');

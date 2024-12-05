@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spiroble/screens/InfoScreen3.dart';
 import 'package:spiroble/screens/appScreen.dart';
-import 'package:spiroble/screens/home_screen.dart';
 
 class InfoScreen2 extends StatelessWidget {
   const InfoScreen2({Key? key}) : super(key: key);

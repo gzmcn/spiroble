@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:spiroble/screens/AnimationScreen.dart';
 
 class HealthMonitorScreen extends StatelessWidget {
   final List<Map<String, dynamic>> measurement;

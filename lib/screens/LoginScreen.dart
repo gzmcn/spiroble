@@ -3,10 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spiroble/Screens/ResetPasswordScreen.dart';
 import 'package:spiroble/Screens/registerScreen.dart';
 import 'package:spiroble/screens/InfoScreen1.dart';
-import 'package:spiroble/screens/StartSplashScreen.dart';
-import 'package:spiroble/screens/appScreen.dart';
-import 'package:spiroble/screens/bluetoothScreen.dart';
-import 'package:spiroble/screens/home_screen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -75,7 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Butonları üst ve alt kısımlara yerleştirir
+            mainAxisAlignment: MainAxisAlignment
+                .spaceBetween, // Butonları üst ve alt kısımlara yerleştirir
             children: <Widget>[
               SizedBox(height: 150), // Email input için üstten boşluk ekledik
               // Email Input Field
@@ -132,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                    BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                        BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
                   ),
                 ),
                 child: Text('Giriş Yap'),
@@ -144,8 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.bottomCenter, // Ekranın altına hizala
                   child: TextButton(
                     onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (ctx) => RegisterScreen()));
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (ctx) => RegisterScreen()));
                     },
                     child: Text(
                       'Hesabınız yok mu?',
