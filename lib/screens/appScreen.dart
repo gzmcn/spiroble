@@ -41,9 +41,6 @@ class _HomeScreenState extends State<AppScreen> {
       case 4:
         return BluetoothScreen();
 
-      case 5:
-          return HealthMonitorScreen();
-
       default:
         return Center(child: Text('Varsayılan Ekran')); // Varsayılan ekran
     }

@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:spiroble/screens/testResultsScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,10 +55,16 @@ class _ResultScreenState extends State<ResultScreen> {
             final value = Map<String, dynamic>.from(e.value);
             return {
               'id': key,
-              'fvc': value['fvc'],
-              'fev1': value['fev1'],
-              'pef': value['pef'],
-              'timestamp': value['timestamp'],
+              'fvc': value['fvc'] ?? '0',
+              'fev1': value['fev1'] ?? '0',
+              'fev6': value['fev6'] ?? '0',
+              'fev1Fvc': value['fev1Fvc'] ?? '0',
+              'fef2575': value['fef2575'] ?? '0',
+              'pef': value['pef'] ?? '0',
+              'timestamp': value['timestamp'] ?? '',
+              'flowRates': List<dynamic>.from(value['flowRates'] ?? []),
+              'times': List<dynamic>.from(value['times'] ?? []),
+              'volumes': List<dynamic>.from(value['volumes'] ?? []),
               'emoji': "🔥", // Varsayılan emoji
             };
           }).toList();
@@ -168,12 +175,18 @@ class _ResultScreenState extends State<ResultScreen> {
                             DateFormat('dd MMM yyyy HH:mm').format(timestamp);
 
                         final measurement = measurements[index];
-                        return ElevatedMeasurementCard(
-                          emoji: measurement['emoji'],
-                          fvc: measurement['fvc'].toString(),
-                          pef: measurement['pef'].toString(),
-                          fev1: measurement['fev1'].toString(),
-                          date: formattedDate,
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => HealthMonitorScreen(measurement: measurements)));
+                          },
+                          child: ElevatedMeasurementCard(
+                            emoji: measurement['emoji'],
+                            fvc: measurement['fvc'].toString(),
+                            pef: measurement['pef'].toString(),
+                            fev1: measurement['fev1'].toString(),
+                            date: formattedDate,
+                          ),
                         );
                       },
                     ),
