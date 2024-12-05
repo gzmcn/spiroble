@@ -37,7 +37,10 @@ class DarkThemeState extends ThemeState {
   @override
   ThemeData get themeData => ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: Color.fromARGB(50, 50, 50, 100),
+      primaryColor: Color.fromARGB(50, 50, 50, 100),
       secondaryHeaderColor: Color(0xFFB7A0FD),
+      cardColor: Color.fromARGB(255, 82, 14, 94),
       colorScheme: ColorScheme.fromSeed(
         brightness: Brightness.dark,
         seedColor: const Color.fromARGB(255, 82, 14, 94),

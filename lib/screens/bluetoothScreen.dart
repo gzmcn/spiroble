@@ -89,7 +89,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     // Header Section
                     Container(
                       padding: EdgeInsets.only(top: 50, bottom: 20),
-                      color: Colors.blueAccent,
+                      color: Theme.of(context).primaryColor,
                       child: Center(
                         child: Column(
                           children: [
@@ -171,7 +171,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                             "Spiromatike cihazı Bluetooth üzerinden bağlamak istiyor.",
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.black87,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                               fontSize: 16,
                             ),
                           ),
@@ -232,7 +232,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent,
+                                backgroundColor: Theme.of(context).secondaryHeaderColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),

@@ -81,84 +81,87 @@ class _ResultScreenState extends State<ResultScreen> {
       body: Column(
         children: [
           // Başlık ve menü butonları
-          Container(
-            color: Colors.grey[850],
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        "Test Sonuçları",
-                        style:
-                            Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black45,
-                              blurRadius: 6,
-                              offset: Offset(2, 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          "Test Sonuçları",
+                          style:
+                              Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black45,
+                                blurRadius: 6,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            print("Spirometre Butonuna Tıklandı");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).cardColor,
+                            shadowColor: Theme.of(context).cardColor,
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ],
+                          ),
+                          child: Text(
+                            "Spirometre",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        ElevatedButton(
+                          onPressed: () {
+                            print("Oksimetre Butonuna Tıklandı");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).cardColor,
+                            shadowColor: Theme.of(context).cardColor,
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            "Oksimetre",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Spirometre Butonuna Tıklandı");
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 197, 151, 0),
-                          shadowColor: Color.fromARGB(255, 182, 148, 0),
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          "Spirometre",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Oksimetre Butonuna Tıklandı");
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 197, 151, 0),
-                          shadowColor: Color.fromARGB(255, 182, 148, 0),
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          "Oksimetre",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           // Ölçüm kartları
