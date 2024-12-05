@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
+import 'package:spiroble/Screens/ResetPasswordScreen.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/widgets/CircularProgressBar.dart';
 import 'package:spiroble/widgets/input_fields.dart';
@@ -406,15 +407,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 16),
-            InputFields(
-              controller: passwordController,
-              placeholder: 'Sifre',
-              icon: Icon(
-                Icons.lock,
-                color: Color(0xFFA0BAFD),
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade100, // Açık mavi arka plan rengi
+                  borderRadius: BorderRadius.circular(12), // Kenar yuvarlatma
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.shade200
+                          .withOpacity(0.5), // Hafif mavi gölge
+                      blurRadius: 8, // Bulanıklık
+                      offset: Offset(0, 4), // Gölgede hafif dikey kayma
+                    ),
+                  ],
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (ctx) => ResetPasswordScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Şifremi Değiştirmek İsterim',
+                    style: TextStyle(
+                      color: Color(0xFFA0BAFD), // Daha koyu mavi yazı rengi
+                      fontSize: 16, // Font boyutu
+                      fontWeight: FontWeight.bold, // Kalın yazı
+                    ),
+                  ),
+                ),
               ),
-              secureTextEntry: true,
             ),
+
             SizedBox(height: 24),
 
             SizedBox(
