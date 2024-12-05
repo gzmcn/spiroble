@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:spiroble/screens/InfoScreen3.dart';
 import 'package:spiroble/screens/appScreen.dart';
+import 'package:spiroble/screens/InfoScreen3.dart';
 
 class InfoScreen2 extends StatelessWidget {
   const InfoScreen2({Key? key}) : super(key: key);
@@ -77,11 +77,22 @@ class InfoScreen2 extends StatelessWidget {
                   const SizedBox(width: 10),
                   ElevatedButton.icon(
                     onPressed: () {
-                      // Geç butonu ile 3. sayfaya geçiş
+                      // Geç butonu ile sağa kayarak 3. sayfaya geçiş
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const InfoScreen3(),
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const InfoScreen3(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            // Sayfa geçişi sırasında sağa kayma animasyonu
+                            const begin = Offset(1.0, 0.0); // Sağdan giriş
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOut;
+
+                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+
+                            return SlideTransition(position: offsetAnimation, child: child);
+                          },
                         ),
                       );
                     },

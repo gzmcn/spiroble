@@ -4,14 +4,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:spiroble/blocs/theme.bloc.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'package:provider/provider.dart';
-import 'package:spiroble/screens/StartSplashScreen.dart'; // Ensure splashScreen.dart is imported
+import 'package:spiroble/screens/StartSplashScreen.dart'; // SplashScreen import ediliyor
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase'i başlatıyoruz
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // MultiProvider kullanarak BluetoothManager'ı sağlıyoruz
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
@@ -32,8 +36,9 @@ class MyApp extends StatelessWidget {
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, themeState) {
           return MaterialApp(
-            home: StartSplashScreen(), // StartSplashScreen will appear first
-            theme: themeState.themeData,
+            debugShowCheckedModeBanner: false, // Debug banner'ı kaldırmak
+            home: StartSplashScreen(), // İlk ekran olarak StartSplashScreen
+            theme: themeState.themeData, // Tema yönetimi
           );
         },
       ),

@@ -1,42 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spiroble/Screens/appScreen.dart';
-import 'package:spiroble/screens/hosgeldiniz.dart'; // Hoşgeldiniz ekranı
-import 'package:spiroble/screens/home_screen.dart'; // HomeScreen ekranı
-import 'package:flutter_svg/flutter_svg.dart'; // SVG desteğini dahil ettik
+import 'package:spiroble/screens/appScreen.dart';
+import 'package:spiroble/screens/InfoScreen1.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class StartSplashScreen extends StatelessWidget {
+class StartSplashScreen extends StatefulWidget {
+  @override
+  _StartSplashScreenState createState() => _StartSplashScreenState();
+}
+
+class _StartSplashScreenState extends State<StartSplashScreen> {
+  bool _isTransitioning = false;
+
   @override
   Widget build(BuildContext context) {
-    // Splash ekran süresi ve geçiş
-    Future.delayed(Duration(seconds: 0), () {
-      // Kullanıcı giriş kontrolü
-      User? user = FirebaseAuth.instance.currentUser;
+    if (!_isTransitioning) {
+      Future.delayed(Duration(seconds: 3), () async {
+        setState(() {
+          _isTransitioning = true;
+        });
 
-      if (user != null) {
-        // Eğer kullanıcı giriş yapmışsa, HomeScreen'e geçiş
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => AppScreen()),
+        User? user = FirebaseAuth.instance.currentUser;
+
+        await Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+            user != null ? AppScreen() : InfoScreen1(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              // Fade (solma) geçişi
+              var fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(animation);
+
+              return FadeTransition(opacity: fadeAnimation, child: child);
+            },
+            transitionDuration: Duration(seconds: 1),
+          ),
         );
-      } else {
-        // Eğer kullanıcı giriş yapmamışsa, WelcomeScreen'e geçiş
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => WelcomeScreen()),
-        );
-      }
-    });
+      });
+    }
 
     return Scaffold(
       body: Center(
         child: ClipOval(
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20), // Köşe yuvarlatma
+              borderRadius: BorderRadius.circular(30),
             ),
             child: SvgPicture.asset(
-              'assets/spiroiconnew.svg', // SVG dosyasının yolu
-              width: 150, // Genişlik
-              height: 150, // Yükseklik
+              'assets/spiroiconnew.svg',
+              width: 180,
+              height: 180,
             ),
           ),
         ),
@@ -44,3 +56,4 @@ class StartSplashScreen extends StatelessWidget {
     );
   }
 }
+

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spiroble/screens/InfoScreen1.dart'; // InfoScreen1 ekranını ekleyin
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/registerScreen.dart';
@@ -8,6 +7,22 @@ import 'package:spiroble/screens/registerScreen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
+<<<<<<< HEAD
+=======
+  void _checkUserSession(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      // Eğer kullanıcı giriş yapmışsa, AppScreen'e geçiş
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => AppScreen()),
+      );
+    }
+    // Eğer kullanıcı giriş yapmamışsa, InfoScreen1 yönlendirmesini kaldırıyoruz
+    // Kullanıcı doğrudan giriş yapabilir ya da kayıt olabilir
+  }
+
+>>>>>>> d26a86ca4a1c82ea3fe272c7352f49ed8bc4369a
   @override
   Widget build(BuildContext context) {
     // Kullanıcı giriş durumunu kontrol etme
@@ -110,12 +125,18 @@ class WelcomeScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
+<<<<<<< HEAD
                             backgroundColor: Color(
                                 0xFFFFFFFF), // Set the background color to white
                             foregroundColor: Color(
                                 0xff51A8FF), // Set the foreground color (text and icon) to blue
                             padding: EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 20),
+=======
+                            backgroundColor: Color(0xFFFFFFFF),
+                            foregroundColor: Color(0xff51A8FF),
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+>>>>>>> d26a86ca4a1c82ea3fe272c7352f49ed8bc4369a
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
