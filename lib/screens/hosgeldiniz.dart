@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spiroble/screens/InfoScreen1.dart'; // InfoScreen1 ekranını ekleyin
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/registerScreen.dart';
@@ -8,6 +7,8 @@ import 'package:spiroble/screens/registerScreen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
+<<<<<<< HEAD
+=======
   void _checkUserSession(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
 
@@ -16,23 +17,15 @@ class WelcomeScreen extends StatelessWidget {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (ctx) => AppScreen()),
       );
-    } else {
-      // Kullanıcı giriş yapmamışsa, InfoScreen1'e geçiş yapacak
-      Future.delayed(Duration(seconds: 3), () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => InfoScreen1()),
-        );
-      });
     }
+    // Eğer kullanıcı giriş yapmamışsa, InfoScreen1 yönlendirmesini kaldırıyoruz
+    // Kullanıcı doğrudan giriş yapabilir ya da kayıt olabilir
   }
 
+>>>>>>> d26a86ca4a1c82ea3fe272c7352f49ed8bc4369a
   @override
   Widget build(BuildContext context) {
     // Kullanıcı giriş durumunu kontrol etme
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkUserSession(context);
-    });
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -102,13 +95,15 @@ class WelcomeScreen extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (ctx) => LoginScreen()),
+                              MaterialPageRoute(
+                                  builder: (ctx) => LoginScreen()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFFFFFFF),
                             foregroundColor: Color(0xff51A8FF),
-                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -125,13 +120,23 @@ class WelcomeScreen extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (ctx) => RegisterScreen()),
+                              MaterialPageRoute(
+                                  builder: (ctx) => RegisterScreen()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFFFFF), // Set the background color to white
-                            foregroundColor: Color(0xff51A8FF), // Set the foreground color (text and icon) to blue
+<<<<<<< HEAD
+                            backgroundColor: Color(
+                                0xFFFFFFFF), // Set the background color to white
+                            foregroundColor: Color(
+                                0xff51A8FF), // Set the foreground color (text and icon) to blue
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 20),
+=======
+                            backgroundColor: Color(0xFFFFFFFF),
+                            foregroundColor: Color(0xff51A8FF),
                             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+>>>>>>> d26a86ca4a1c82ea3fe272c7352f49ed8bc4369a
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -171,7 +176,8 @@ class BouncingHeart extends StatefulWidget {
   _BouncingHeartState createState() => _BouncingHeartState();
 }
 
-class _BouncingHeartState extends State<BouncingHeart> with SingleTickerProviderStateMixin {
+class _BouncingHeartState extends State<BouncingHeart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

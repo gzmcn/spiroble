@@ -55,5 +55,8 @@ flutter:
     - assets/ikincitablo.csv
     - assets/spiroicon.png
     - assets/user-logo.png
+    - assets/spiroiconnew.svg
+    - assets/spirometer.svg
+
 
   uses-material-design: true

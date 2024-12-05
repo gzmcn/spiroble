@@ -225,11 +225,11 @@ class _AnimationScreenState extends State<AnimationScreen> {
                   onPressed: isAnimating ? null : _startAnimation,
                   child: Text('Start Animation'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // Example background color
+                    backgroundColor: Color(0xFF3A2A6B), // Example background color
                     foregroundColor: Colors.white, // Example text color
                   ),
                 ),
-                SizedBox(width: 20),
+                SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: isAnimating ? _stopAnimation : null,
                   child: Text('Stop Animation'),
@@ -255,7 +255,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
     return Center(
       child: Text(
         'Press "Start Animation" to begin.',
-        style: TextStyle(fontSize: 18, color: Colors.grey),
+        style: TextStyle(fontSize: 18, color: Color(0xFF3A2A6B)),
       ),
     );
   }
@@ -372,7 +372,7 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.blueGrey[50],
+      color: Color(0xFFB181FF),
       margin: EdgeInsets.symmetric(vertical: 4.0),
       child: ListTile(
         title: Text(
@@ -385,7 +385,7 @@ class MetricCard extends StatelessWidget {
           value,
           style: TextStyle(
             fontSize: 16,
-            color: Colors.blueAccent,
+            color: Colors.black,
           ),
         ),
       ),

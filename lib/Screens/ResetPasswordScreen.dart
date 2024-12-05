@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spiroble/Screens/LoginScreen.dart';
+import 'package:spiroble/Screens/appScreen.dart';
 import 'package:spiroble/Screens/user_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -77,23 +78,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               child: Text('Şifre Sıfırlama E-postası Gönder'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => {
-                if (_firebaseAuth.currentUser?.uid == null)
-                  {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (ctx) => LoginScreen()),
-                    )
-                  }
-                else
-                  {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (ctx) => ProfileScreen()),
-                    )
-                  }
-              },
-              child: Text("Vazgeç"),
-            )
           ],
         ),
       ),
