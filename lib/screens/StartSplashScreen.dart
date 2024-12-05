@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/Screens/appScreen.dart';
 import 'package:spiroble/screens/hosgeldiniz.dart'; // Hoşgeldiniz ekranı
 import 'package:spiroble/screens/home_screen.dart'; // HomeScreen ekranı
 import 'package:flutter_svg/flutter_svg.dart'; // SVG desteğini dahil ettik
@@ -15,7 +16,7 @@ class StartSplashScreen extends StatelessWidget {
       if (user != null) {
         // Eğer kullanıcı giriş yapmışsa, HomeScreen'e geçiş
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => HomeScreen()),
+          MaterialPageRoute(builder: (ctx) => AppScreen()),
         );
       } else {
         // Eğer kullanıcı giriş yapmamışsa, WelcomeScreen'e geçiş
@@ -34,7 +35,7 @@ class StartSplashScreen extends StatelessWidget {
             ),
             child: SvgPicture.asset(
               'assets/spiroiconnew.svg', // SVG dosyasının yolu
-              width: 150,  // Genişlik
+              width: 150, // Genişlik
               height: 150, // Yükseklik
             ),
           ),
