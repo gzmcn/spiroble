@@ -220,6 +220,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center, // Center the buttons horizontally
               children: [
                 ElevatedButton(
                   onPressed: isAnimating ? null : _startAnimation,
@@ -227,6 +228,11 @@ class _AnimationScreenState extends State<AnimationScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF3A2A6B), // Example background color
                     foregroundColor: Colors.white, // Example text color
+                    minimumSize: Size(120, 60), // Adjusted width and height
+                    padding: EdgeInsets.symmetric(vertical: 18, horizontal: 32), // Increased padding for more space
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Optional: rounded corners
+                    ),
                   ),
                 ),
                 SizedBox(width: 10),
@@ -234,14 +240,19 @@ class _AnimationScreenState extends State<AnimationScreen> {
                   onPressed: isAnimating ? _stopAnimation : null,
                   child: Text('Stop Animation'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors
-                        .redAccent, // Replaced 'primary' with 'backgroundColor'
+                    backgroundColor: Colors.redAccent, // Replaced 'primary' with 'backgroundColor'
                     foregroundColor: Colors.white, // Optional: Set text color
+                    minimumSize: Size(120, 60), // Adjusted width and height
+                    padding: EdgeInsets.symmetric(vertical: 18, horizontal: 32), // Increased padding for more space
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Optional: rounded corners
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+
           Expanded(
             child: isAnimating ? _buildAnimation() : _buildIdleState(),
           ),
