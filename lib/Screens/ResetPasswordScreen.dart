@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spiroble/Screens/LoginScreen.dart';
+import 'package:spiroble/Screens/user_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   @override
@@ -76,8 +78,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Vazgeç'))
+              onPressed: () => {
+                if (_firebaseAuth.currentUser?.uid == null)
+                  {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (ctx) => LoginScreen()),
+                    )
+                  }
+                else
+                  {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (ctx) => ProfileScreen()),
+                    )
+                  }
+              },
+              child: Text("Vazgeç"),
+            )
           ],
         ),
       ),
