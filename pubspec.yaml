@@ -54,5 +54,6 @@ flutter:
     - assets/parameters.csv
     - assets/ikincitablo.csv
     - assets/spiroicon.png
+    - assets/user-logo.png
 
   uses-material-design: true
