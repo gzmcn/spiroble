@@ -1,30 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:spiroble/screens/AnimationScreen.dart';
 
-void main() {
-  runApp(MyApp());
-}
+class HealthMonitorScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> measurement;
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Health Monitor',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        fontFamily: 'Roboto',
-      ),
-      home: HealthMonitorScreen(),
-    );
-  }
-}
+  HealthMonitorScreen({
+    required this.measurement,
+  });
 
-class HealthMonitorScreen extends StatefulWidget {
-  @override
-  _HealthMonitorScreenState createState() => _HealthMonitorScreenState();
-}
-
-class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +43,27 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
                 SizedBox(height: 20),
+                SizedBox(
+                  height: 200, // İsteğe bağlı olarak yüksekliği sınırla
+                  child: ListView.builder(
+                    itemCount: measurement.length,
+                    itemBuilder: (context, index) {
+                      final item = measurement[index];
+                      return Card(
+                        margin: EdgeInsets.all(8.0),
+                        child: ListTile(
+                          title: Text(
+                            'Tarih: ${item['timestamp']}',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            'FVC: ${item['fvc']}, PEF: ${item['pef']}',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 buildMeasurementRow(),
                 SizedBox(height: 30),
                 buildSymptomsSection(),
@@ -69,7 +74,8 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
                       foregroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                     ),
                     child: Text('Add Symptoms'),
                   ),
@@ -112,7 +118,8 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
             percent: percent,
             center: Text(
               value,
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
             ),
             footer: Text(
               title,
@@ -158,7 +165,18 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
 
   Widget buildMonthlySummary() {
     List<double> monthlyData = [
-      0.2, 0.3, 0.8, 0.5, 0.6, 0.4, 0.7, 0.9, 0.3, 0.4, 0.7, 0.6
+      0.2,
+      0.3,
+      0.8,
+      0.5,
+      0.6,
+      0.4,
+      0.7,
+      0.9,
+      0.3,
+      0.4,
+      0.7,
+      0.6
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
