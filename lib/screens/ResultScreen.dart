@@ -4,7 +4,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:spiroble/screens/testResultsScreen.dart';
-import 'package:spiroble/themes/Theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,9 +15,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: TAppTheme.darkTheme,
-      darkTheme: TAppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
       home: ResultScreen(),
       debugShowCheckedModeBanner: false,
     );

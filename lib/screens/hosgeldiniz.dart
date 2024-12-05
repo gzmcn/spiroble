@@ -122,8 +122,6 @@ class WelcomeScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFFFFF),
-                            foregroundColor: Color(0xff51A8FF),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
