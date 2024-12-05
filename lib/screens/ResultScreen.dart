@@ -13,7 +13,6 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -81,7 +80,8 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Koyu tema arka planı
+      backgroundColor:
+          Theme.of(context).scaffoldBackgroundColor, // Koyu tema arka planı
       body: Column(
         children: [
           // Başlık ve menü butonları
@@ -183,8 +183,11 @@ class _ResultScreenState extends State<ResultScreen> {
                         return GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => HealthMonitorScreen(
-                                    measurement: measurements)));
+                              builder: (ctx) => HealthMonitorScreen(
+                                measurement: measurements[
+                                    index], // Liste yerine doğrudan Map göndermek
+                              ),
+                            ));
                           },
                           child: ElevatedMeasurementCard(
                             emoji: measurement['emoji'],

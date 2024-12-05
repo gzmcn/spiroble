@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class HealthMonitorScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> measurement;
+  final Map<String, dynamic> measurement;
 
   HealthMonitorScreen({
     required this.measurement,
@@ -28,7 +28,7 @@ class HealthMonitorScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 40), // Üstten boşluk
+                SizedBox(height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -38,32 +38,11 @@ class HealthMonitorScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  '11 Apr 2020 at 1:09 AM',
+                  'Tarih: ${measurement['timestamp']}',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
                 SizedBox(height: 20),
-                SizedBox(
-                  height: 200, // İsteğe bağlı olarak yüksekliği sınırla
-                  child: ListView.builder(
-                    itemCount: measurement.length,
-                    itemBuilder: (context, index) {
-                      final item = measurement[index];
-                      return Card(
-                        margin: EdgeInsets.all(8.0),
-                        child: ListTile(
-                          title: Text(
-                            'Tarih: ${item['timestamp']}',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            'FVC: ${item['fvc']}, PEF: ${item['pef']}',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                buildMeasurementRow(),
+                buildMeasurementRow(measurement),
                 SizedBox(height: 30),
                 buildSymptomsSection(),
                 SizedBox(height: 30),
@@ -89,18 +68,20 @@ class HealthMonitorScreen extends StatelessWidget {
     );
   }
 
-  Widget buildMeasurementRow() {
+  Widget buildMeasurementRow(Map<String, dynamic> measurement) {
     return Wrap(
       spacing: 16,
       runSpacing: 16,
       alignment: WrapAlignment.center,
       children: [
-        buildMeasurementCard('FVC', '5.56', 0.8),
-        buildMeasurementCard('FEV1', '4.95', 0.9),
-        buildMeasurementCard('PEF', '714', 1.0),
-        buildMeasurementCard('FEV6', '5.56', 0.9),
-        buildMeasurementCard('FEV2575', '6.38', 0.85),
-        buildMeasurementCard('FEV1/FVC', '89.03', 0.95),
+        buildMeasurementCard('FVC', measurement['fvc'].toString(), 0.7),
+        buildMeasurementCard('FEV1', measurement['fev1'].toString(), 0.9),
+        buildMeasurementCard('PEF', measurement['pef'].toString(), 1.0),
+        buildMeasurementCard('FEV6', measurement['fev6'].toString(), 0.9),
+        buildMeasurementCard(
+            'FEV2575', measurement['fef2575'].toString(), 0.85),
+        buildMeasurementCard(
+            'FEV1/FVC', measurement['fev1Fvc'].toString(), 0.95),
       ],
     );
   }
