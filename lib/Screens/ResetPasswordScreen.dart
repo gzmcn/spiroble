@@ -19,8 +19,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Başarılı!'),
-          content: Text(
-              'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'),
+          content:
+              Text('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -35,7 +35,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Hata'),
-          content: Text('Şifre sıfırlama işlemi başarısız. Lütfen tekrar deneyin.'),
+          content:
+              Text('Şifre sıfırlama işlemi başarısız. Lütfen tekrar deneyin.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -73,6 +74,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               onPressed: _sendResetEmail,
               child: Text('Şifre Sıfırlama E-postası Gönder'),
             ),
+            SizedBox(height: 20),
+            ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Vazgeç'))
           ],
         ),
       ),
