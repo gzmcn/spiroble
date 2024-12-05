@@ -140,9 +140,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           double height = double.tryParse(data['boy']?.toString() ?? '') ?? 0.0;
-          int afrAm = data['afrAm'] ?? 0;
-          int neAsia = data['neAsia'] ?? 0;
-          int seAsia = data['seAsia'] ?? 0;
+          int? afrAm;
+          int? neAsia;
+          int? seAsia;
+
+          if (data['uyruk'] == "Afro-Amerikalı") {
+            afrAm = 1;
+          } else if (data['uyruk'] == "Kuzeydoğu-Asyalı") {
+            neAsia = 1;
+          } else if (data['uyruk'] == "Güneydoğu-Asyalı") {
+            seAsia = 1;
+          } else {
+            afrAm = 0;
+            neAsia = 0;
+            seAsia = 0;
+          }
 
           // Mspline interpolasyonu fonksiyonu
           double interpolateMspline(double age, double ageClose, double ageNext,
@@ -197,11 +209,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 a0 +
                     a1 * log(height) +
                     a2 * log(age) +
-                    a3 * afrAm +
-                    a4 * neAsia +
-                    a5 * seAsia +
+                    a3 *
+                        (afrAm ??
+                            0) + // Use null-aware operator to assign 0 if null
+                    a4 * (neAsia ?? 0) + // Same for neAsia
+                    a5 * (seAsia ?? 0) + // Same for seAsia
                     msplineInterpolated,
               );
+
               if (!tempResults.containsKey(label) || tempResults[label] != M) {
                 tempResults[label] =
                     M; // Yalnızca değer farklıysa veya yeni bir etiketse kaydet
@@ -209,6 +224,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
             }
           }
+          final userRef =
+              FirebaseDatabase.instance.ref('users/${currentUser.uid}/results');
+          await userRef.set(tempResults);
 
           // Ekranda güncelleme
           setState(() {
