@@ -18,7 +18,7 @@ class TAppTheme{
     useMaterial3: true,
     brightness:  Brightness.dark,
     primaryColor: Color.fromARGB(255, 197, 151, 0),
-    scaffoldBackgroundColor: Colors.black87,
+    scaffoldBackgroundColor: Colors.grey[900],
     textTheme: TTextTheme.lightTextTheme,
   );
 

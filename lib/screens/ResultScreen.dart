@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:spiroble/screens/testResultsScreen.dart';
+import 'package:spiroble/themes/Theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,9 +13,13 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: TAppTheme.darkTheme,
+      darkTheme: TAppTheme.darkTheme,
+      themeMode: ThemeMode.dark,
       home: ResultScreen(),
       debugShowCheckedModeBanner: false,
     );
@@ -76,7 +81,7 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900], // Koyu tema arka planı
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Koyu tema arka planı
       body: Column(
         children: [
           // Başlık ve menü butonları
