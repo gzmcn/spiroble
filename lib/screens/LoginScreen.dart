@@ -65,8 +65,8 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xff51A8FF), // Üst renk
-              Color(0xff123456), // Alt renk
+              Color(0xFF3A2A6B), // Üst renk
+              Color(0xFF3A2A6B), // Alt renk (tek renk olarak belirledik)
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -75,8 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Butonları üst ve alt kısımlara yerleştirir
             children: <Widget>[
+              SizedBox(height: 150), // Email input için üstten boşluk ekledik
               // Email Input Field
               InputFields(
                 controller: _emailController,
@@ -97,8 +98,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   });
                 },
               ),
-              SizedBox(height: 45),
-              // Sign In Button
+              SizedBox(height: 10), // Şifre ve buton arasındaki boşluk
+              // Şifremi unuttum butonunun konumlandırılması
+              Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (ctx) => ResetPasswordScreen()));
+                  },
+                  child: Text(
+                    'Şifremi unuttum',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 16, // Font boyutunu büyüttük
+                      fontWeight: FontWeight.bold, // Kalın yazı
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              // Giriş Yap Button
               ElevatedButton(
                 onPressed: _handleSignIn,
                 style: ElevatedButton.styleFrom(
@@ -112,30 +132,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                    BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
                   ),
                 ),
                 child: Text('Giriş Yap'),
               ),
 
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (ctx) => RegisterScreen()));
-                },
-                child: Text(
-                  'Hesabınız yok mu?',
-                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (ctx) => ResetPasswordScreen()));
-                },
-                child: Text(
-                  'Sifremi unuttum',
-                  style: TextStyle(color: Colors.white.withOpacity(0.5)),
+              // Diğer butonlar ve bağlantılar
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter, // Ekranın altına hizala
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (ctx) => RegisterScreen()));
+                    },
+                    child: Text(
+                      'Hesabınız yok mu?',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 18, // Font boyutunu büyüttük
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],

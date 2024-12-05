@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spiroble/Screens/appScreen.dart';
-import 'package:spiroble/Screens/registerScreen.dart';
+import 'package:spiroble/screens/InfoScreen1.dart'; // InfoScreen1 ekranını ekleyin
+import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
+import 'package:spiroble/screens/registerScreen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -11,18 +12,23 @@ class WelcomeScreen extends StatelessWidget {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      // Oturum açmış kullanıcı varsa HomeScreen'e yönlendirilir
+      // Eğer kullanıcı giriş yapmışsa, AppScreen'e geçiş
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (ctx) => AppScreen()),
       );
     } else {
-      // Oturum açmamış kullanıcı için bir şey yapmayın veya bilgilendirme yapabilirsiniz.
+      // Kullanıcı giriş yapmamışsa, InfoScreen1'e geçiş yapacak
+      Future.delayed(Duration(seconds: 3), () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => InfoScreen1()),
+        );
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Oturum kontrolü
+    // Kullanıcı giriş durumunu kontrol etme
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkUserSession(context);
     });
@@ -31,13 +37,13 @@ class WelcomeScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Üst alan: Arka plan gradienti
+          // Arka planda gradient
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xff51A8FF),
+                    Color(0xFF3A2A6B),
                     Color(0xff123456),
                   ],
                   begin: Alignment.topCenter,
@@ -46,7 +52,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Alt alan: Beyaz bölge
+          // Alt kısmı beyaz alan, butonlar
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -76,7 +82,7 @@ class WelcomeScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
-                        color: Colors.red[400],
+                        color: Color(0xFF3A2A6B),
                       ),
                     ),
                     SizedBox(height: 15),
@@ -84,7 +90,7 @@ class WelcomeScreen extends StatelessWidget {
                       'Hoşgeldiniz',
                       style: TextStyle(
                         fontSize: 24,
-                        color: Colors.lightBlue[600],
+                        color: Color(0xFF3A2A6B),
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,
@@ -96,23 +102,21 @@ class WelcomeScreen extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (ctx) => LoginScreen()));
+                              MaterialPageRoute(builder: (ctx) => LoginScreen()),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFFFFFFF),
                             foregroundColor: Color(0xff51A8FF),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 20),
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
                           child: Text(
                             'Giriş Yap',
-                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.lightBlue[600],
+                              color: Color(0xFF3A2A6B),
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
@@ -121,23 +125,21 @@ class WelcomeScreen extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (ctx) => RegisterScreen()));
+                              MaterialPageRoute(builder: (ctx) => RegisterScreen()),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFFFFF),
-                            foregroundColor: Color(0xff51A8FF),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 20),
+                            backgroundColor: Color(0xFFFFFFFF), // Set the background color to white
+                            foregroundColor: Color(0xff51A8FF), // Set the foreground color (text and icon) to blue
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
                           ),
                           child: Text(
                             'Kayıt Ol',
-                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.lightBlue[600],
+                              color: Color(0xFF3A2A6B),
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
@@ -169,8 +171,7 @@ class BouncingHeart extends StatefulWidget {
   _BouncingHeartState createState() => _BouncingHeartState();
 }
 
-class _BouncingHeartState extends State<BouncingHeart>
-    with SingleTickerProviderStateMixin {
+class _BouncingHeartState extends State<BouncingHeart> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

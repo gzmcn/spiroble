@@ -178,7 +178,8 @@ class _ResultScreenState extends State<ResultScreen> {
                         return GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => HealthMonitorScreen(measurement: measurements)));
+                                builder: (ctx) => HealthMonitorScreen(
+                                    measurement: measurements)));
                           },
                           child: ElevatedMeasurementCard(
                             emoji: measurement['emoji'],
