@@ -7,8 +7,6 @@ import 'package:spiroble/screens/registerScreen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-<<<<<<< HEAD
-=======
   void _checkUserSession(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
 
@@ -22,7 +20,6 @@ class WelcomeScreen extends StatelessWidget {
     // Kullanıcı doğrudan giriş yapabilir ya da kayıt olabilir
   }
 
->>>>>>> d26a86ca4a1c82ea3fe272c7352f49ed8bc4369a
   @override
   Widget build(BuildContext context) {
     // Kullanıcı giriş durumunu kontrol etme
@@ -125,18 +122,10 @@ class WelcomeScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-<<<<<<< HEAD
-                            backgroundColor: Color(
-                                0xFFFFFFFF), // Set the background color to white
-                            foregroundColor: Color(
-                                0xff51A8FF), // Set the foreground color (text and icon) to blue
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 20),
-=======
                             backgroundColor: Color(0xFFFFFFFF),
                             foregroundColor: Color(0xff51A8FF),
-                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
->>>>>>> d26a86ca4a1c82ea3fe272c7352f49ed8bc4369a
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
