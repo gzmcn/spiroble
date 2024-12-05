@@ -122,10 +122,6 @@ class WelcomeScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(
-                                0xFFFFFFFF), // Set the background color to white
-                            foregroundColor: Color(
-                                0xff51A8FF), // Set the foreground color (text and icon) to blue
                             padding: EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(

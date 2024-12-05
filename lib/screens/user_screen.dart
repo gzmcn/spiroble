@@ -112,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Map<String, Map<String, double>> constants = {};
       for (int i = 1; i < secondTable.length; i++) {
         for (int j = 1; j < secondTable[i].length; j++) {
-          String label = secondTable[0][j]; // The label is in the first row
+          String label = secondTable[0][j]; // Etiketler ilk satırda
           if (!constants.containsKey(label)) {
             constants[label] = {};
           }
@@ -121,83 +121,101 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       }
 
-      // Hasta verileri
-      double age = 26;
-      double height = 184;
-      int afrAm = 0;
-      int neAsia = 0;
-      int seAsia = 0;
+      // Firebase'den kullanıcı verilerini al
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        final snapshot = await FirebaseDatabase.instance
+            .ref('users/${currentUser.uid}')
+            .get();
 
-      // Mspline interpolasyonu fonksiyonu
-      double interpolateMspline(double age, double ageClose, double ageNext,
-          double msplineClose, double msplineNext) {
-        return msplineClose +
-            ((age - ageClose) / 0.25) * (msplineNext - msplineClose);
-      }
+        if (snapshot.exists) {
+          final data = Map<String, dynamic>.from(snapshot.value as Map);
 
-      // Sonuçları sakla
-
-      // Her etiket için hesaplama yap
-      for (var title in constants.keys) {
-        // Cinsiyete göre sabitler
-        var labels = gender == 'Erkek'
-            ? [
-                'FEV1 males',
-                'FVC males',
-                'FEV1FVC males',
-                'FEF2575 males',
-                'FEF75 males'
-              ]
-            : [
-                'FEV1 females',
-                'FVC females',
-                'FEV1FVC females',
-                'FEF2575 females',
-                'FEF75 females'
-              ];
-
-        for (var label in labels) {
-          // Sabitler a0, a1, a2, a3, a4, a5 değerlerini al
-          double a0 = constants[label]?['a0'] ?? 0.0;
-          double a1 = constants[label]?['a1'] ?? 0.0;
-          double a2 = constants[label]?['a2'] ?? 0.0;
-          double a3 = constants[label]?['a3'] ?? 0.0;
-          double a4 = constants[label]?['a4'] ?? 0.0;
-          double a5 = constants[label]?['a5'] ?? 0.0;
-
-          // Yaş aralığını bul
-          var closeRow = parametersTable.lastWhere((row) => row[0] <= age);
-          var nextRow = parametersTable.firstWhere((row) => row[0] > age);
-
-          // Mspline değerini her etiket için farklı kolonlardan al
-          int msplineColumnIndex =
-              labels.indexOf(label) + 1; // Label'a göre kolon indeksini al
-          double msplineClose = closeRow[msplineColumnIndex];
-          double msplineNext = nextRow[msplineColumnIndex];
-
-          double msplineInterpolated = interpolateMspline(
-              age, closeRow[0], nextRow[0], msplineClose, msplineNext);
-
-          // Formülü uygula
-          double M = exp(
-            a0 +
-                a1 * log(height) +
-                a2 * log(age) +
-                a3 * afrAm +
-                a4 * neAsia +
-                a5 * seAsia +
-                msplineInterpolated,
-          );
-          if (!tempResults.containsKey(label) || tempResults[label] != M) {
-            tempResults[label] =
-                M; // Yalnızca değer farklıysa veya yeni bir etiketse kaydet
-            print('$label için hesaplanan M: $M');
+          // Firebase'den alınan veriler
+          double age = 0; // Veritabanındaki 'age' değeri kullan
+          if (data['dogumTarihi'] != null) {
+            DateTime birthDate = DateTime.parse(data['dogumTarihi']);
+            age = DateTime.now().difference(birthDate).inDays /
+                365.25; // Yaş hesaplama
           }
+
+          double height = double.tryParse(data['boy']?.toString() ?? '') ?? 0.0;
+          int afrAm = data['afrAm'] ?? 0;
+          int neAsia = data['neAsia'] ?? 0;
+          int seAsia = data['seAsia'] ?? 0;
+
+          // Mspline interpolasyonu fonksiyonu
+          double interpolateMspline(double age, double ageClose, double ageNext,
+              double msplineClose, double msplineNext) {
+            return msplineClose +
+                ((age - ageClose) / 0.25) * (msplineNext - msplineClose);
+          }
+
+          // Sonuçları sakla
+          for (var title in constants.keys) {
+            // Cinsiyete göre sabitler
+            var labels = gender == 'Erkek'
+                ? [
+                    'FEV1 males',
+                    'FVC males',
+                    'FEV1FVC males',
+                    'FEF2575 males',
+                    'FEF75 males'
+                  ]
+                : [
+                    'FEV1 females',
+                    'FVC females',
+                    'FEV1FVC females',
+                    'FEF2575 females',
+                    'FEF75 females'
+                  ];
+
+            for (var label in labels) {
+              // Sabitler a0, a1, a2, a3, a4, a5 değerlerini al
+              double a0 = constants[label]?['a0'] ?? 0.0;
+              double a1 = constants[label]?['a1'] ?? 0.0;
+              double a2 = constants[label]?['a2'] ?? 0.0;
+              double a3 = constants[label]?['a3'] ?? 0.0;
+              double a4 = constants[label]?['a4'] ?? 0.0;
+              double a5 = constants[label]?['a5'] ?? 0.0;
+
+              // Yaş aralığını bul
+              var closeRow = parametersTable.lastWhere((row) => row[0] <= age);
+              var nextRow = parametersTable.firstWhere((row) => row[0] > age);
+
+              // Mspline değerini her etiket için farklı kolonlardan al
+              int msplineColumnIndex =
+                  labels.indexOf(label) + 1; // Label'a göre kolon indeksini al
+              double msplineClose = closeRow[msplineColumnIndex];
+              double msplineNext = nextRow[msplineColumnIndex];
+
+              double msplineInterpolated = interpolateMspline(
+                  age, closeRow[0], nextRow[0], msplineClose, msplineNext);
+
+              // Formülü uygula
+              double M = exp(
+                a0 +
+                    a1 * log(height) +
+                    a2 * log(age) +
+                    a3 * afrAm +
+                    a4 * neAsia +
+                    a5 * seAsia +
+                    msplineInterpolated,
+              );
+              if (!tempResults.containsKey(label) || tempResults[label] != M) {
+                tempResults[label] =
+                    M; // Yalnızca değer farklıysa veya yeni bir etiketse kaydet
+                print('$label için hesaplanan M: $M');
+              }
+            }
+          }
+
+          // Ekranda güncelleme
+          setState(() {
+            results = tempResults; // Sonuçları ekrana yansıt
+          });
         }
       }
-      setState(() {
-        results = tempResults; // Update the results map in the state
-      });
     } catch (e) {
       print('Bir hata oluştu: $e');
     }

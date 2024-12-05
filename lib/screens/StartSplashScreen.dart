@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:spiroble/screens/appScreen.dart';
-import 'package:spiroble/screens/InfoScreen1.dart';
+import 'package:spiroble/screens/hosgeldiniz.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class StartSplashScreen extends StatefulWidget {
@@ -25,11 +25,9 @@ class _StartSplashScreenState extends State<StartSplashScreen> {
         await Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-            user != null ? AppScreen() : InfoScreen1(),
+            user != null ? AppScreen() : WelcomeScreen(), // Correct class name
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // Fade (solma) geçişi
               var fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(animation);
-
               return FadeTransition(opacity: fadeAnimation, child: child);
             },
             transitionDuration: Duration(seconds: 1),
@@ -56,4 +54,3 @@ class _StartSplashScreenState extends State<StartSplashScreen> {
     );
   }
 }
-

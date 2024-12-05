@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (ctx) => ResetPasswordScreen()));
                   },
                   child: Text(
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
+                    BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
                   ),
                 ),
                 child: Text('Giriş Yap'),

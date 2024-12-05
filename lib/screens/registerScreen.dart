@@ -1,7 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:spiroble/screens/InfoScreen1.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/widgets/input_fields.dart';
@@ -13,7 +12,6 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
   final _database = FirebaseDatabase.instance.ref();
 
   // Controller'lar
@@ -39,13 +37,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       // Firebase Authentication işlemi
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Kullanıcı verilerini Firestore'a kaydetme
-      await _firestore.collection('users').doc(userCredential.user?.uid).set({
+      // Firebase Realtime Database'e kullanıcı verilerini kaydetme
+      await _database.child('users').child(userCredential.user!.uid).set({
         'ad': _adController.text.trim(),
         'soyad': _soyadController.text.trim(),
         'dogumTarihi': _dogumTarihiController.text.trim(),
@@ -58,7 +57,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Başarılı kayıt sonrası yönlendirme
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (ctx) => InfoScreen1()), // İlk bilgilendirme ekranı
+        MaterialPageRoute(
+            builder: (ctx) => InfoScreen1()), // İlk bilgilendirme ekranı
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -158,9 +158,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }),
                           items: ['Cinsiyet Seçin', 'Erkek', 'Kadın']
                               .map((value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(value),
-                          ))
+                                    value: value,
+                                    child: Text(value),
+                                  ))
                               .toList(),
                         ),
                       ),
@@ -185,16 +185,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           }),
                           items: [
                             'Uyruk Seçin',
-                            'Beyaz Tenli',
                             'Afro-Amerikalı',
                             'Kuzeydoğu-Asyalı',
                             'Güneydoğu-Asyalı',
                             'Diğer'
                           ]
                               .map((value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(value),
-                          ))
+                                    value: value,
+                                    child: Text(value),
+                                  ))
                               .toList(),
                         ),
                       ),
@@ -234,9 +233,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : Text(
-                    'Kayıt Ol',
-                    style: TextStyle(color: Colors.black),
-                  ),
+                          'Kayıt Ol',
+                          style: TextStyle(color: Colors.black),
+                        ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -272,4 +271,3 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 }
-
