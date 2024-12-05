@@ -255,13 +255,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor:  Theme.of(context).scaffoldBackgroundColor,
         title: Text(
           'Profilim',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 30,
-            color: Colors.black,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
           ),
         ),
         actions: [
@@ -351,7 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'Ad',
               icon: Icon(
                 Icons.person,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
             SizedBox(height: 16),
@@ -360,7 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'Soyad',
               icon: Icon(
                 Icons.person_outline,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
             SizedBox(height: 16),
@@ -369,7 +369,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'Doğum Tarihi (YYYY-MM-DD)',
               icon: Icon(
                 Icons.calendar_today,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
               keyboardType: TextInputType.datetime,
             ),
@@ -379,7 +379,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'Kilo (kg)',
               icon: Icon(
                 Icons.monitor_weight,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
               keyboardType: TextInputType.number,
             ),
@@ -389,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'Boy (cm)',
               icon: Icon(
                 Icons.height,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
               keyboardType: TextInputType.number,
             ),
@@ -399,7 +399,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'Uyruk',
               icon: Icon(
                 Icons.flag,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
             SizedBox(height: 16),
@@ -408,7 +408,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               placeholder: 'E-posta',
               icon: Icon(
                 Icons.mail,
-                color: Color(0xFFA0BAFD),
+                color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
             SizedBox(height: 16),

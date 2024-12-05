@@ -15,29 +15,43 @@ abstract class ThemeState {
 class LightThemeState extends ThemeState {
   @override
   ThemeData get themeData => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          brightness: Brightness.light,
-          seedColor: const Color.fromARGB(255, 82, 14, 94)!,
-        ),
-        textTheme: GoogleFonts.latoTextTheme(
-          ThemeData(brightness: Brightness.light).textTheme,
-        ),
-      );
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      brightness: Brightness.light,
+      seedColor: const Color.fromARGB(255, 82, 14, 94),
+    ),
+    textTheme: GoogleFonts.latoTextTheme(
+      ThemeData(brightness: Brightness.light).textTheme,
+    ).copyWith(
+      bodyLarge: TextStyle(
+        color: Colors.black, // Light modda siyah metin
+      ),
+      bodyMedium: TextStyle(
+        color: Colors.black, // Light modda siyah metin
+      ),
+    ),
+  );
 }
 
 class DarkThemeState extends ThemeState {
   @override
   ThemeData get themeData => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          brightness: Brightness.dark,
-          seedColor: const Color.fromARGB(255, 82, 14, 94)!,
+      useMaterial3: true,
+      secondaryHeaderColor: Color(0xFFB7A0FD),
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.dark,
+        seedColor: const Color.fromARGB(255, 82, 14, 94),
+      ),
+      textTheme: GoogleFonts.latoTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ).copyWith(
+        bodyLarge: TextStyle(
+          color: Colors.white, // Dark modda beyaz metin
         ),
-        textTheme: GoogleFonts.latoTextTheme(
-          ThemeData(brightness: Brightness.dark).textTheme,
+        bodyMedium: TextStyle(
+          color: Colors.white, // Dark modda beyaz metin
         ),
-      );
+      ));
 }
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {

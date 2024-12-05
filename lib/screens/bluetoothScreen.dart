@@ -61,7 +61,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Consumer<BluetoothConnectionManager>(
             builder: (context, _bleManager, child) {
           return StreamBuilder<List<DiscoveredDevice>>(
@@ -141,7 +141,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                     ? "Bağlantı başarılı!"
                                     : "Bağlantı yok, tekrar deneyiniz",
                                 style: TextStyle(
-                                  color: Colors.black54,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
                                   fontSize: 16,
                                 ),
                               ),

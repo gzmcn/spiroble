@@ -22,7 +22,7 @@ class InputFields extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: Color(0xFFF7F2F9),
+        color: Color(0xFF3D2F4D),
         borderRadius: BorderRadius.circular(30),
       ),
       child: TextField(
@@ -32,7 +32,7 @@ class InputFields extends StatelessWidget {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: Colors.black,
+          color: Colors.white,
         ),
         decoration: InputDecoration(
           prefixIcon: icon,

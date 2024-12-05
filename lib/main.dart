@@ -39,6 +39,8 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false, // Debug banner'ı kaldırmak
             home: StartSplashScreen(), // İlk ekran olarak StartSplashScreen
             theme: themeState.themeData, // Tema yönetimi
+            darkTheme: DarkThemeState().themeData,
+            themeMode: ThemeMode.dark,
           );
         },
       ),

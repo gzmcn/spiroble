@@ -52,7 +52,7 @@ class CircularProgressBarPainter extends CustomPainter {
 
     final Paint progressPaint = Paint()
       ..color = (progress >= minValue && progress <= maxValue)
-          ? Colors.green
+          ? Colors.purple
           : Colors.black
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0
