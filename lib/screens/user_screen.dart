@@ -334,6 +334,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                     ),
                   ),
+                  IconButton(
+                    icon: Icon(Icons.settings),
+                    onPressed: () {},
+                    color: Colors.white,
+                  ),
                 ],
               ),
             ),
