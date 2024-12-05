@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:spiroble/screens/InfoScreen1.dart'; // InfoScreen1 ekranını ekleyin
 import 'package:spiroble/screens/appScreen.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/registerScreen.dart';
@@ -16,14 +15,9 @@ class WelcomeScreen extends StatelessWidget {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (ctx) => AppScreen()),
       );
-    } else {
-      // Kullanıcı giriş yapmamışsa, InfoScreen1'e geçiş yapacak
-      Future.delayed(Duration(seconds: 3), () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (ctx) => InfoScreen1()),
-        );
-      });
     }
+    // Eğer kullanıcı giriş yapmamışsa, InfoScreen1 yönlendirmesini kaldırıyoruz
+    // Kullanıcı doğrudan giriş yapabilir ya da kayıt olabilir
   }
 
   @override
@@ -129,8 +123,8 @@ class WelcomeScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFFFFF), // Set the background color to white
-                            foregroundColor: Color(0xff51A8FF), // Set the foreground color (text and icon) to blue
+                            backgroundColor: Color(0xFFFFFFFF),
+                            foregroundColor: Color(0xff51A8FF),
                             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),

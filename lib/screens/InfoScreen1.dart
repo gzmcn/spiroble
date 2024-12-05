@@ -125,4 +125,3 @@ class InfoScreen1 extends StatelessWidget {
     );
   }
 }
-

@@ -54,6 +54,11 @@ flutter:
     - assets/parameters.csv
     - assets/ikincitablo.csv
     - assets/spiroicon.png
+<<<<<<< Updated upstream
     - assets/user-logo.png
+=======
+    - assets/spiroiconnew.svg
+    - assets/spirometer.svg
+>>>>>>> Stashed changes
 
   uses-material-design: true
