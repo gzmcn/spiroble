@@ -20,6 +20,7 @@ class CustomCircularProgressBar extends StatelessWidget {
       height: 100, // Height of the progress bar
       child: CustomPaint(
         painter: CircularProgressBarPainter(
+          context: context,
           progress: progress,
           minValue: minValue,
           maxValue: maxValue,
@@ -31,12 +32,14 @@ class CustomCircularProgressBar extends StatelessWidget {
 }
 
 class CircularProgressBarPainter extends CustomPainter {
+  final BuildContext context;
   final double progress;
   final double minValue;
   final double maxValue;
   final String text;
 
   CircularProgressBarPainter({
+    required this.context,
     required this.progress,
     required this.minValue,
     required this.maxValue,
@@ -79,8 +82,8 @@ class CircularProgressBarPainter extends CustomPainter {
     final TextSpan textSpan = TextSpan(
       text: text, // Use the passed text
       style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
+        fontSize: 12,
         fontWeight: FontWeight.bold,
       ),
     );

@@ -231,7 +231,7 @@ class ElevatedMeasurementCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.grey[800],
+        color: Theme.of(context).canvasColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

@@ -39,6 +39,7 @@ class DarkThemeState extends ThemeState {
       useMaterial3: true,
       scaffoldBackgroundColor: Color.fromARGB(50, 50, 50, 100),
       primaryColor: Color.fromARGB(50, 50, 50, 100),
+      canvasColor: Color(0x335A4F73),
       secondaryHeaderColor: Color(0xFFB7A0FD),
       cardColor: Color.fromARGB(255, 82, 14, 94),
       colorScheme: ColorScheme.fromSeed(
