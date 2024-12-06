@@ -114,16 +114,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               // Giriş Yap Button
               ElevatedButton(
                 onPressed: _handleSignIn,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 236, 236, 236),
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 32, vertical: 16), // Butonun iç boşlukları
-                  textStyle: const TextStyle(
-                    color: Colors.black,
+                  textStyle: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                     fontSize: 20, // Yazı boyutu
                     fontWeight: FontWeight.bold, // Yazı kalınlığı
                   ),
@@ -132,7 +132,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         BorderRadius.circular(30), // Köşeleri yuvarlak yapmak
                   ),
                 ),
-                child: Text('Giriş Yap'),
+                child: Text('Giriş Yap', style:
+                  TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
               ),
 
               // Diğer butonlar ve bağlantılar

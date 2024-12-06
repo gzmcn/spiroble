@@ -14,40 +14,44 @@ class InputFields extends StatelessWidget {
     required this.icon,
     this.keyboardType = TextInputType.text,
     this.secureTextEntry = false,
-    this.onTapSuffixIcon, 
+    this.onTapSuffixIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      height: 55,
       decoration: BoxDecoration(
         color: Color(0xFF3D2F4D),
         borderRadius: BorderRadius.circular(30),
       ),
-      child: TextField(
-        controller: controller,
-        obscureText: secureTextEntry,
-        keyboardType: keyboardType,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-        decoration: InputDecoration(
-          prefixIcon: icon,
-          hintText: placeholder,
-          hintStyle: TextStyle(color: Colors.grey[600]),
-          suffixIcon: onTapSuffixIcon != null
-              ? IconButton(
-                  icon: Icon(
-                    secureTextEntry ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.black,
-                  ),
-                  onPressed: onTapSuffixIcon,
-                )
-              : null,
-          border: InputBorder.none,
+      child: Center( // Ensures content is vertically centered
+        child: TextField(
+          controller: controller,
+          obscureText: secureTextEntry,
+          keyboardType: keyboardType,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            prefixIcon: icon,
+            hintText: placeholder,
+            hintStyle: TextStyle(color: Colors.grey[600]),
+            suffixIcon: onTapSuffixIcon != null
+                ? IconButton(
+              icon: Icon(
+                secureTextEntry ? Icons.visibility_off : Icons.visibility,
+                color: Colors.black,
+              ),
+              onPressed: onTapSuffixIcon,
+            )
+                : null,
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(vertical: 8), // Adjusts the vertical padding
+          ),
         ),
       ),
     );

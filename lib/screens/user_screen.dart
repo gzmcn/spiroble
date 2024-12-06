@@ -448,47 +448,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 16),
-            Align(
-              alignment: Alignment.center,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade100, // Açık mavi arka plan rengi
-                  borderRadius: BorderRadius.circular(12), // Kenar yuvarlatma
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.shade200
-                          .withOpacity(0.5), // Hafif mavi gölge
-                      blurRadius: 8, // Bulanıklık
-                      offset: Offset(0, 4), // Gölgede hafif dikey kayma
-                    ),
-                  ],
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ResetPasswordScreen(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Şifremi Değiştirmek İsterim',
-                    style: TextStyle(
-                      color: Color(0xFFA0BAFD), // Daha koyu mavi yazı rengi
-                      fontSize: 16, // Font boyutu
-                      fontWeight: FontWeight.bold, // Kalın yazı
-                    ),
-                  ),
+          Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: FancyButton(
+                  onClick: saveUserData, // Action for saving user data
+                  button_text: "Şifremi Değiştir", // Text of the button
+                  button_text_color: Theme.of(context).textTheme.bodyMedium?.color,
+                  button_height: 50, // Height of the button
+                  button_width: 300, // Width of the button
+                  button_radius: 50, // Circular border radius
+                  button_outline_width: 0, // No outline
+                  button_text_size: 22, // Font size of the button text
+                  button_color: Theme.of(context).cardColor, // Button color from theme
                 ),
               ),
-            ),
-
-            SizedBox(height: 24),
-
-            SizedBox(
-                height:
-                    16), // Kaydet butonu ile M Hesapla butonu arasında boşluk
+          SizedBox(height: 16),
 
             // Save Button
             Padding(
@@ -496,13 +470,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: FancyButton(
                 onClick: saveUserData,
                 button_text: "Kaydet",
+                button_text_color: Theme.of(context).textTheme.bodyMedium?.color,
                 button_height: 50,
                 button_width: 300,
                 button_radius: 50,
                 button_outline_width: 0,
-                button_outline_color: Colors.pink[50],
                 button_text_size: 22,
-                button_color: Color(0xFFA0BAFD),
+                button_color: Theme.of(context).cardColor,
               ),
             ),
             SizedBox(height: 12),
@@ -516,6 +490,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyMedium?.color
                       ),
                     ),
                     Container(
