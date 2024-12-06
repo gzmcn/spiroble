@@ -37,9 +37,10 @@ class InfoScreen2 extends StatelessWidget {
                 Text(
                   "Spirometri testi kişinin nefes alıp verme kapasitesini değerlendirir. KOAH gibi hastalıkların teşhisinde önemli rol oynar.",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],
@@ -81,17 +82,22 @@ class InfoScreen2 extends StatelessWidget {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const InfoScreen3(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const InfoScreen3(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
                             // Sayfa geçişi sırasında sağa kayma animasyonu
                             const begin = Offset(1.0, 0.0); // Sağdan giriş
                             const end = Offset.zero;
                             const curve = Curves.easeInOut;
 
-                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            var tween = Tween(begin: begin, end: end)
+                                .chain(CurveTween(curve: curve));
                             var offsetAnimation = animation.drive(tween);
 
-                            return SlideTransition(position: offsetAnimation, child: child);
+                            return SlideTransition(
+                                position: offsetAnimation, child: child);
                           },
                         ),
                       );
