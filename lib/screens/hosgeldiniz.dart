@@ -97,8 +97,6 @@ class WelcomeScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFFFFF),
-                            foregroundColor: Color(0xff51A8FF),
                             padding: EdgeInsets.symmetric(
                                 horizontal: 30, vertical: 20),
                             shape: RoundedRectangleBorder(
@@ -108,7 +106,7 @@ class WelcomeScreen extends StatelessWidget {
                           child: Text(
                             'Giriş Yap',
                             style: TextStyle(
-                              color: Color(0xFF3A2A6B),
+                              color: Color.fromARGB(255, 104, 81, 173),
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
@@ -131,7 +129,7 @@ class WelcomeScreen extends StatelessWidget {
                           child: Text(
                             'Kayıt Ol',
                             style: TextStyle(
-                              color: Color(0xFF3A2A6B),
+                              color: Color.fromARGB(255, 104, 81, 173),
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
