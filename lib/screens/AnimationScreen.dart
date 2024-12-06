@@ -189,6 +189,7 @@ class _AnimationScreenState extends State<AnimationScreen>
               'akisHizi': akisHizi.length > i ? akisHizi[i] : null,
               'toplamVolum': toplamVolum.length > i ? toplamVolum[i] : null,
               'miliSaniye': miliSaniye.length > i ? miliSaniye[i] : null,
+              'timestamp': DateTime.now().toIso8601String(),
             };
           }
 
@@ -196,7 +197,6 @@ class _AnimationScreenState extends State<AnimationScreen>
           await databaseRef
               .child('sonuclar/$userId/metrics/$metricsPushKey')
               .set({
-            'timestamp': DateTime.now().toIso8601String(),
             ...metricsData,
           });
 
