@@ -6,10 +6,13 @@ import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'package:provider/provider.dart';
 import 'package:spiroble/screens/StartSplashScreen.dart'; // SplashScreen import ediliyor
 import 'firebase_options.dart';
+import 'package:flutter/services.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   // Firebase'i başlatıyoruz
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

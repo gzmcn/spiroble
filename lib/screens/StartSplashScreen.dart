@@ -36,21 +36,25 @@ class _StartSplashScreenState extends State<StartSplashScreen> {
       });
     }
 
-    return Scaffold(
-      body: Center(
-        child: ClipOval(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: SvgPicture.asset(
-              'assets/spiroiconnew.svg',
-              width: 180,
-              height: 180,
+    return SafeArea(
+      child:
+        Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Center(
+            child: ClipOval(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: SvgPicture.asset(
+                  'assets/spiroiconnew.svg',
+                  width: 180,
+                  height: 180,
+                ),
+              ),
             ),
           ),
         ),
-      ),
     );
   }
 }
