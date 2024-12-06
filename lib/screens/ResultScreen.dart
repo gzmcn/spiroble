@@ -65,7 +65,7 @@ class _ResultScreenState extends State<ResultScreen> {
               'flowRates': List<dynamic>.from(value['flowRates'] ?? []),
               'times': List<dynamic>.from(value['times'] ?? []),
               'volumes': List<dynamic>.from(value['volumes'] ?? []),
-              'emoji': "🔥", // Varsayılan emoji
+              'emoji': "😮‍💨", // Varsayılan emoji
             };
           }).toList();
         });
@@ -94,8 +94,10 @@ class _ResultScreenState extends State<ResultScreen> {
                       children: [
                         Text(
                           "Test Sonuçları",
-                          style:
-                              Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
                             color: Colors.white,
                             shadows: [
                               Shadow(
@@ -169,7 +171,9 @@ class _ResultScreenState extends State<ResultScreen> {
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: measurements.isEmpty
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: Text("Henüz bir test kaydı bulunmamaktadır",
+                          style: Theme.of(context).textTheme.bodyLarge))
                   : ListView.builder(
                       itemCount: measurements.length,
                       itemBuilder: (context, index) {
