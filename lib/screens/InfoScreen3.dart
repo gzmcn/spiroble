@@ -14,7 +14,10 @@ class InfoScreen3 extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.white, Color(0xFF3A2A6B)],
+                colors: [
+                  Theme.of(context).scaffoldBackgroundColor,
+                  Color(0xFF3A2A6B)
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 stops: [0.1, 1], // Geçiş üstten başlasın
@@ -41,9 +44,10 @@ class InfoScreen3 extends StatelessWidget {
                 Text(
                   "Hadi başlayalım !",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ],
@@ -95,7 +99,8 @@ class InfoScreen3 extends StatelessWidget {
         const end = Offset.zero;
         const curve = Curves.easeInOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
         var offsetAnimation = animation.drive(tween);
 
         return SlideTransition(position: offsetAnimation, child: child);
