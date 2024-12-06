@@ -1,307 +1,19 @@
-import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'dart:math';
+import 'dart:async';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:spiroble/bluetooth/bluetooth_constant.dart';
+import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class AnimationScreen extends StatefulWidget {
   @override
   _AnimationScreenState createState() => _AnimationScreenState();
-}
-
-class _AnimationScreenState extends State<AnimationScreen> {
-  late BluetoothConnectionManager _bleManager;
-  StreamSubscription<List<double>>? _dataSubscription;
-  List<Measurement> measurements = [];
-  bool isAnimating = false;
-
-  // Respiratory Metrics
-  double fvc = 0.0;
-  double fev1 = 0.0;
-  double pef = 0.0;
-  double fev6 = 0.0;
-  double fev2575 = 0.0;
-  double fev1Fvc = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _bleManager =
-        Provider.of<BluetoothConnectionManager>(context, listen: false);
-
-    // ölçüm sırasında bağlantı kesilirse buraya bi check at ekrana hata çıkar
-  }
-
-  @override
-  void dispose() {
-    _dataSubscription?.cancel();
-    super.dispose();
-  }
-
-  void _startAnimation() async {
-    if (_bleManager.checkConnection()) {
-      if (_bleManager.connectedDeviceId != null) {
-        await _bleManager.sendChar1(
-          BleUuids.Uuid3Services,
-          BleUuids.Uuid3Characteristic,
-          _bleManager.connectedDeviceId!,
-        );
-
-        setState(() {
-          isAnimating = true;
-        });
-
-        _dataSubscription = _bleManager
-            .notifyAsDoubles(_bleManager.connectedDeviceId!)
-            .listen((data) {
-          // Debug: Print received data
-          print(
-              'Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
-
-          setState(() {
-            measurements.add(Measurement(
-              flowRate: data[0],
-              volume: data[1],
-              time: data[2],
-            ));
-            if (measurements.length > 10000) {
-              measurements.removeAt(0);
-            }
-            _calculateMetrics();
-          });
-        }, onError: (error) {
-          print('Error receiving data: $error');
-        });
-      }
-    } else {
-      print('No device connected.');
-    }
-  }
-
-  void _stopAnimation() {
-    _dataSubscription?.cancel();
-    _bleManager.stopScan();
-    setState(() {
-      isAnimating = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Bağlantı İptal Edildi')),
-    );
-  }
-
-  Future<void> _calculateMetrics() async {
-    if (measurements.isEmpty) return;
-
-    // Calculate FVC as the last volume measurement
-    fvc = measurements.last.volume;
-
-    // Calculate FEV1 using linear interpolation at 1000 ms
-    fev1 = _interpolateVolume(1000);
-
-    // Calculate FEV6 using linear interpolation at 6000 ms
-    fev6 = _interpolateVolume(6000);
-
-    // Calculate PEF as the maximum flow rate
-    pef = measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
-
-    // Calculate FEF25-75
-    double fef25 = 0.25 * fvc;
-    double fef75 = 0.75 * fvc;
-
-    double t25 = _interpolateTimeForVolume(fef25);
-    double t75 = _interpolateTimeForVolume(fef75);
-
-    // Get flow rates at t25 and t75
-    double flowAt25 = _interpolateFlowRate(t25);
-    double flowAt75 = _interpolateFlowRate(t75);
-
-    // Calculate FEF25-75 as the average of flow rates at 25% and 75% FVC
-    fev2575 = (flowAt25 + flowAt75) / 2;
-
-    // Calculate FEV1/FVC ratio
-    fev1Fvc = fvc != 0.0 ? (fev1 / fvc) * 100 : 0.0;
-
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      print('Kullanıcı giriş yapmamış!');
-      return;
-    }
-    String userId = user.uid; //s
-
-    final databaseRef = FirebaseDatabase.instance.ref();
-
-    try {
-      await databaseRef.child('sonuclar/$userId').push().set({
-        'fef2575': fev2575,
-        'fvc': fvc,
-        'fev1': fev1,
-        'pef': pef,
-        'fev1Fvc': fev1Fvc,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
-      print('Sonuç başarıyla kaydedildi!');
-    } catch (e) {
-      print('Sonuç kaydedilirken bir hata oluştu: $e');
-    }
-
-    // Debug: Print calculated metrics
-    print('Calculating Metrics...');
-    print('FVC: $fvc');
-    print('FEV1: $fev1');
-    print('FEV6: $fev6');
-    print('PEF: $pef');
-    print('FEF25-75: $fev2575');
-    print('FEV1/FVC: $fev1Fvc%');
-  }
-
-  /// Helper method to interpolate volume at a specific time
-  double _interpolateVolume(double targetTime) {
-    for (int i = 0; i < measurements.length - 1; i++) {
-      Measurement current = measurements[i];
-      Measurement next = measurements[i + 1];
-
-      if (current.time <= targetTime && next.time <= targetTime) {
-        double timeDiff = next.time - current.time;
-        if (timeDiff == 0) return current.volume;
-        double volumeDiff = next.volume - current.volume;
-        double fraction = (targetTime - current.time) / timeDiff;
-        return current.volume + (volumeDiff * fraction);
-      }
-    }
-    // If targetTime is beyond the measurements, return the last volume
-    return measurements.last.volume;
-  }
-
-  /// Helper method to interpolate time for a specific volume
-  double _interpolateTimeForVolume(double targetVolume) {
-    for (int i = 0; i < measurements.length - 1; i++) {
-      Measurement current = measurements[i];
-      Measurement next = measurements[i + 1];
-
-      if (current.volume <= targetVolume && next.volume >= targetVolume) {
-        double volumeDiff = next.volume - current.volume;
-        if (volumeDiff == 0) return current.time;
-        double fraction = (targetVolume - current.volume) / volumeDiff;
-        return current.time + ((next.time - current.time) * fraction);
-      }
-    }
-    // If targetVolume is beyond the measurements, return the last time
-    return measurements.last.time;
-  }
-
-  /// Helper method to interpolate flow rate at a specific time
-  double _interpolateFlowRate(double targetTime) {
-    for (int i = 0; i < measurements.length - 1; i++) {
-      Measurement current = measurements[i];
-      Measurement next = measurements[i + 1];
-
-      if (current.time <= targetTime && next.time >= targetTime) {
-        double timeDiff = next.time - current.time;
-        if (timeDiff == 0) return current.flowRate;
-        double flowDiff = next.flowRate - current.flowRate;
-        double fraction = (targetTime - current.time) / timeDiff;
-        return current.flowRate + (flowDiff * fraction);
-      }
-    }
-    // If targetTime is beyond the measurements, return the last flow rate
-    return measurements.last.flowRate;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Animation Screen'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center, // Center the buttons horizontally
-              children: [
-                ElevatedButton(
-                  onPressed: isAnimating ? null : _startAnimation,
-                  child: Text('Start Animation'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF3A2A6B), // Example background color
-                    foregroundColor: Colors.white, // Example text color
-                    minimumSize: Size(120, 60), // Adjusted width and height
-                    padding: EdgeInsets.symmetric(vertical: 18, horizontal: 32), // Increased padding for more space
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Optional: rounded corners
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: isAnimating ? _stopAnimation : null,
-                  child: Text('Stop Animation'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent, // Replaced 'primary' with 'backgroundColor'
-                    foregroundColor: Colors.white, // Optional: Set text color
-                    minimumSize: Size(120, 60), // Adjusted width and height
-                    padding: EdgeInsets.symmetric(vertical: 18, horizontal: 32), // Increased padding for more space
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Optional: rounded corners
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Expanded(
-            child: isAnimating ? _buildAnimation() : _buildIdleState(),
-          ),
-          _buildMetrics(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIdleState() {
-    return Center(
-      child: Text(
-        'Press "Start Animation" to begin.',
-        style: TextStyle(fontSize: 18, color: Color(0xFF3A2A6B)),
-      ),
-    );
-  }
-
-  Widget _buildAnimation() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Center(
-        child: SizedBox(
-          width: double.infinity, // Make the graph take full width
-          height: 300, // Increase the height for better visibility
-          child: CustomPaint(
-            painter: FlowVolumePainter(measurements: measurements),
-            child: Container(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetrics() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          MetricCard(title: 'FVC', value: fvc.toStringAsFixed(2)),
-          MetricCard(title: 'FEV1', value: fev1.toStringAsFixed(2)),
-          MetricCard(title: 'PEF', value: pef.toStringAsFixed(2)),
-          MetricCard(title: 'FEV6', value: fev6.toStringAsFixed(2)),
-          MetricCard(title: 'FEV2575', value: fev2575.toStringAsFixed(2)),
-          MetricCard(title: 'FEV1/FVC', value: fev1Fvc.toStringAsFixed(2)),
-        ],
-      ),
-    );
-  }
 }
 
 class Measurement {
@@ -316,89 +28,569 @@ class Measurement {
   });
 }
 
-class FlowVolumePainter extends CustomPainter {
-  final List<Measurement> measurements;
-  FlowVolumePainter({required this.measurements});
+class _AnimationScreenState extends State<AnimationScreen>
+    with SingleTickerProviderStateMixin {
+  late BluetoothConnectionManager _bleManager;
+  StreamSubscription<List<double>>? _dataSubscription;
+
+  DiscoveredDevice? deviceToConnect;
+
+  // Measurement data
+  List<Measurement> measurements = [];
+  List<double> FVC = [];
+  List<double> FEV1 = [];
+  List<double> PEF = [];
+  List<double> FEV6 = [];
+  List<double> FEV2575 = [];
+  List<double> FEV1FVC = [];
+
+  bool isAnimating = false;
+  bool isGravityActive = false;
+  double gravityDecrement = 0.04;
+  Timer? gravityTimer;
+
+  double fvc = 0.0;
+  double fev1 = 0.0;
+  double pef = 0.0;
+  double fev6 = 0.0;
+  double fev2575 = 0.0;
+  double fev1Fvc = 0.0;
+
+  late AnimationController _controller;
+  late Animation<double> _ballAnimation;
+  int _timerCount = 10;
+  late Timer _timer;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void initState() {
+    super.initState();
+    _bleManager =
+        Provider.of<BluetoothConnectionManager>(context, listen: false);
+
+    _controller = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 500),
+        lowerBound: 0.0,
+        upperBound: 1.0);
+
+    _ballAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _dataSubscription?.cancel();
+    _controller.dispose(); // Dispose AnimationController if initialized
+    _timer.cancel(); // Cancel Timer if initialized
+    gravityTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startAnimation() async {
+    if (_bleManager.connectedDeviceId != null) {
+      await _bleManager.sendChar1(
+        BleUuids.Uuid3Services,
+        BleUuids.Uuid3Characteristic,
+        _bleManager.connectedDeviceId!,
+      );
+
+      setState(() {
+        isAnimating = true;
+      });
+
+      _dataSubscription =
+          _bleManager.notifyAsDoubles(_bleManager.connectedDeviceId!).listen(
+        (data) {
+          // Debug: Print received data
+          print(
+              'Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+          setState(() {
+            measurements.add(Measurement(
+              flowRate: data[0],
+              volume: data[1],
+              time: data[2],
+            ));
+            if (measurements.length > 10000) {
+              measurements.removeAt(0);
+            }
+            _calculateMetrics();
+          });
+        },
+        onError: (error) {
+          print('Error receiving data $error');
+        },
+      );
+
+      _startTimer();
+    } else {
+      print('No device connected');
+    }
+  }
+
+  void _stopAnimation() {
+    _dataSubscription?.cancel();
+    _bleManager.stopScan();
+
+    setState(() {
+      isAnimating = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Bağlantı iptal edildi')),
+    );
+  }
+
+  void _startTimer() async {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (_timerCount == 0) {
+        _timer.cancel();
+        _controller.stop();
+        //_bleManager.connectToDevice(deviceToConnect!.id);
+
+        List<double> akisHizi = measurements.map((m) => m.flowRate).toList();
+        List<double> toplamVolum = measurements.map((m) => m.volume).toList();
+        List<double> miliSaniye = measurements.map((m) => m.time).toList();
+
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          print('Kullanıcı giriş yapmamış!');
+          return;
+        }
+        String userId = user.uid;
+        print('User ID: $userId');
+
+        final databaseRef = FirebaseDatabase.instance.ref();
+
+        try {
+          print('Attempting to generate a push key for metrics...');
+          String? metricsPushKey =
+              databaseRef.child('sonuclar/$userId/metrics').push().key;
+
+          if (metricsPushKey == null) {
+            print('Failed to generate a push key for metrics.');
+            return;
+          } else {
+            print('Generated metricsPushKey: $metricsPushKey');
+          }
+
+          // Prepare the metrics map
+          Map<String, dynamic> metricsData = {};
+
+          for (int i = 0; i < measurements.length; i++) {
+            metricsData['measurement_$i'] = {
+              'fvc': FVC.length > i ? FVC[i] : null,
+              'fev1': FEV1.length > i ? FEV1[i] : null,
+              'pef': PEF.length > i ? PEF[i] : null,
+              'fev6': FEV6.length > i ? FEV6[i] : null,
+              'fef2575': FEV2575.length > i ? FEV2575[i] : null,
+              'fev1Fvc': FEV1FVC.length > i ? FEV1FVC[i] : null,
+              'akisHizi': akisHizi.length > i ? akisHizi[i] : null,
+              'toplamVolum': toplamVolum.length > i ? toplamVolum[i] : null,
+              'miliSaniye': miliSaniye.length > i ? miliSaniye[i] : null,
+            };
+          }
+
+          // Set the metrics data
+          await databaseRef
+              .child('sonuclar/$userId/metrics/$metricsPushKey')
+              .set({
+            'timestamp': DateTime.now().toIso8601String(),
+            ...metricsData,
+          });
+
+          print('Sonuç başarıyla kaydedildi!');
+        } catch (e) {
+          print('Sonuç kaydedilirken bir hata oluştu: $e');
+        }
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _timerCount--;
+        });
+      }
+    });
+  }
+
+  void _calculateMetrics() {
     if (measurements.isEmpty) return;
 
-    double maxFlow =
-        measurements.map((m) => m.flowRate).reduce((a, b) => a > b ? a : b);
-    double maxVolume =
-        measurements.map((m) => m.volume.abs()).reduce((a, b) => a > b ? a : b);
-    double maxTime =
-        measurements.map((m) => m.time).reduce((a, b) => a > b ? a : b);
+    // Extract flow rates, volumes, and times from measurements
+    List<double> akisHizi = measurements.map((m) => m.flowRate).toList();
+    List<double> toplamVolum = measurements.map((m) => m.volume).toList();
+    List<double> miliSaniye = measurements.map((m) => m.time).toList();
 
-    // Adjust scaling factors if necessary
-    double flowScale = maxFlow != 0 ? size.height / maxFlow : 1;
-    double volumeScale = maxVolume != 0 ? size.height / maxVolume : 1;
+    double latestFlowRate = akisHizi.last;
 
-    Paint flowPaint = Paint()
-      ..color = Colors.blue
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+    const double threshold = 0.01;
 
-    Paint volumePaint = Paint()
-      ..color = Colors.red
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    Path flowPath = Path();
-    Path volumePath = Path();
-
-    for (int i = 0; i < measurements.length; i++) {
-      double x = (measurements[i].time / maxTime) * size.width;
-      double yFlow = size.height -
-          (measurements[i].flowRate * flowScale); // Adjusted for scaling
-      double yVolume = size.height -
-          (measurements[i].volume.abs() * volumeScale); // Adjusted for scaling
-
-      if (i == 0) {
-        flowPath.moveTo(x, yFlow);
-        volumePath.moveTo(x, yVolume);
-      } else {
-        flowPath.lineTo(x, yFlow);
-        volumePath.lineTo(x, yVolume);
+    if (latestFlowRate <= threshold) {
+      if (!isGravityActive) {
+        _startGravity();
+      }
+    } else {
+      if (isGravityActive) {
+        _stopGravity();
       }
     }
 
-    canvas.drawPath(flowPath, flowPaint);
-    canvas.drawPath(volumePath, volumePaint);
+    // Calculate FVC
+    fvc = _hesaplaFVC(toplamVolum);
+
+    if (mounted) {
+      setState(() {
+        FVC.add(fvc);
+        if (FVC.length > 10000) {
+          FVC.removeAt(0); // Keep only the latest 100 measurements
+        }
+      });
+    }
+
+    // Calculate FEV1
+    fev1 = _hesaplaFEV1(akisHizi, miliSaniye);
+
+    if (mounted) {
+      setState(() {
+        FEV1.add(fev1);
+        if (FEV1.length > 10000) {
+          FEV1.removeAt(0); // Keep only the latest 100 measurements
+        }
+      });
+    }
+
+    // Calculate PEF
+    pef = _hesaplaPEF(akisHizi);
+
+    if (mounted) {
+      setState(() {
+        PEF.add(pef);
+        if (PEF.length > 10000) {
+          PEF.removeAt(0); // Keep only the latest 100 measurements
+        }
+      });
+    }
+
+    // Calculate FEV6
+    fev6 = _hesaplaFEV6(akisHizi, miliSaniye);
+
+    if (mounted) {
+      setState(() {
+        FEV6.add(fev6);
+        if (FEV6.length > 10000) {
+          FEV6.removeAt(0); // Keep only the latest 100 measurements
+        }
+      });
+    }
+
+    // Calculate FEF25-75
+    fev2575 = _hesaplaFEF2575(akisHizi, toplamVolum);
+
+    if (mounted) {
+      setState(() {
+        FEV2575.add(fev2575);
+        if (FEV2575.length > 10000) {
+          FEV2575.removeAt(0); // Keep only the latest 100 measurements
+        }
+      });
+    }
+
+    // Calculate FEV1/FVC ratio
+    fev1Fvc = fvc != 0.0 ? (fev1 / fvc) * 100 : 0.0;
+
+    if (mounted) {
+      setState(() {
+        FEV1FVC.add(fev1Fvc);
+        if (FEV1FVC.length > 10000) {
+          FEV1FVC.removeAt(0); // Keep only the latest 100 measurements
+        }
+      });
+    }
+
+    double fvcPercentage = (fvc / 10.0).clamp(0.0, 1.0);
+    _controller.animateTo(
+      fvcPercentage,
+      duration: Duration(milliseconds: 300), //this was 300
+      curve: Curves.easeInOut,
+    );
+
+    // Debug: Print calculated metrics
+    print('Calculating Metrics...');
+    print('FVC: $fvc');
+    print('FEV1: $fev1');
+    print('PEF: $pef');
+    print('FEV6: $fev6');
+    print('FEF25-75: $fev2575');
+    print('FEV1/FVC: $fev1Fvc%');
   }
 
-  @override
-  bool shouldRepaint(covariant FlowVolumePainter oldDelegate) {
-    return oldDelegate.measurements != measurements;
+  void _startGravity() {
+    if (isGravityActive) return; // Prevent multiple timers
+    isGravityActive = true;
+    gravityDecrement = 0.01; // Reset decrement
+
+    // Start the gravity simulation
+    gravityTimer = Timer.periodic(Duration(milliseconds: 16), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      setState(() {
+        double newValue = _controller.value - gravityDecrement;
+        if (newValue <= 0.0) {
+          newValue = 0.0;
+          timer.cancel();
+          isGravityActive = false;
+        }
+        _controller.value = newValue.clamp(0.0, 1.0);
+
+        // Gradually increase the decrement to simulate acceleration
+        gravityDecrement +=
+            0.005; // Adjust the increment for desired acceleration
+      });
+    });
   }
-}
 
-class MetricCard extends StatelessWidget {
-  final String title;
-  final String value;
+  void _stopGravity() {
+    if (gravityTimer != null && gravityTimer!.isActive) {
+      gravityTimer!.cancel();
+    }
+    setState(() {
+      isGravityActive = false;
+      gravityDecrement = 0.04; // Reset decrement
+    });
+  }
 
-  MetricCard({required this.title, required this.value});
+  /// Calculates Forced Vital Capacity (FVC)
+  double _hesaplaFVC(List<double> toplamVolum) {
+    if (toplamVolum.isEmpty) return 0.0;
+    double maxVolume = toplamVolum.reduce(max);
+    double minVolume = toplamVolum.reduce(min);
+    return maxVolume - minVolume;
+  }
+
+  /// Calculates Forced Expiratory Volume in 1 Second (FEV1)
+  double _hesaplaFEV1(List<double> akisHizi, List<double> zaman) {
+    if (akisHizi.isEmpty || zaman.isEmpty || akisHizi.length != zaman.length)
+      return 0.0;
+
+    double startTime = zaman.first;
+    double endTime = startTime + 1000.0; // 1 second in milliseconds
+    double totalVolume = 0.0;
+
+    for (int i = 0; i < akisHizi.length - 1; i++) {
+      double currentTime = zaman[i];
+      double nextTime = zaman[i + 1];
+
+      if (currentTime >= endTime) break;
+
+      double deltaTime =
+          (nextTime - currentTime) / 1000.0; // Convert ms to seconds
+
+      if (nextTime > endTime) {
+        deltaTime = (endTime - currentTime) / 1000.0;
+      }
+
+      totalVolume += akisHizi[i] * deltaTime;
+    }
+
+    return totalVolume;
+  }
+
+  /// Calculates Forced Expiratory Volume in 6 Seconds (FEV6)
+  double _hesaplaFEV6(List<double> akisHizi, List<double> zaman) {
+    if (akisHizi.isEmpty || zaman.isEmpty || akisHizi.length != zaman.length)
+      return 0.0;
+
+    double startTime = zaman.first;
+    double endTime = startTime + 6000.0; // 6 seconds in milliseconds
+    double totalVolume = 0.0;
+
+    for (int i = 0; i < akisHizi.length - 1; i++) {
+      double currentTime = zaman[i];
+      double nextTime = zaman[i + 1];
+
+      if (currentTime >= endTime) break;
+
+      double deltaTime =
+          (nextTime - currentTime) / 1000.0; // Convert ms to seconds
+
+      if (nextTime > endTime) {
+        deltaTime = (endTime - currentTime) / 1000.0;
+      }
+
+      totalVolume += akisHizi[i] * deltaTime;
+    }
+
+    return totalVolume;
+  }
+
+  /// Calculates Peak Expiratory Flow (PEF)
+  double _hesaplaPEF(List<double> akisHizi) {
+    return akisHizi.isNotEmpty
+        ? akisHizi.reduce((value, element) => value > element ? value : element)
+        : 0.0;
+  }
+
+  /// Calculates Forced Expiratory Flow at 25–75% (FEF25-75)
+  double _hesaplaFEF2575(List<double> akisHizi, List<double> toplamVolum) {
+    double fvc = _hesaplaFVC(toplamVolum);
+    if (fvc == 0.0) return 0.0;
+
+    double fef25 = 0.0;
+    double fef75 = 0.0;
+    double volume25 = fvc * 0.25;
+    double volume75 = fvc * 0.75;
+
+    for (int i = 0; i < toplamVolum.length; i++) {
+      if (toplamVolum[i] >= volume25 && fef25 == 0.0) {
+        fef25 = akisHizi[i];
+      }
+      if (toplamVolum[i] >= volume75 && fef75 == 0.0) {
+        fef75 = akisHizi[i];
+        break;
+      }
+    }
+
+    if (fef25 == 0.0 || fef75 == 0.0) return 0.0;
+
+    return (fef25 + fef75) / 2;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Color(0xFFB181FF),
-      margin: EdgeInsets.symmetric(vertical: 4.0),
-      child: ListTile(
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
+    return Scaffold(
+      backgroundColor: Colors.purple[900],
+      body: Column(
+        children: [
+          // Timer and Title
+          Expanded(
+            flex: 2,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Timer Display
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.green, width: 3),
+                  ),
+                  padding: EdgeInsets.all(15),
+                  child: Text(
+                    '$_timerCount\nSEC',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                // Title
+                Text(
+                  'Daha Hızlı Daha Kuvvetli!!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        trailing: Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black,
+
+          // Animated Ball within Tube
+          Expanded(
+            flex: 3,
+            child: Center(
+              child: Container(
+                width: 80,
+                height: 450,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple[700]!, Colors.purple[900]!],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    // Animated Ball
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return Positioned(
+                          bottom: _controller.value *
+                              250, // Adjust multiplier as needed
+                          child: child!,
+                        );
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orangeAccent,
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+
+          // Control Buttons
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: isAnimating ? null : _startAnimation,
+                    child: Text('Animasyonu Başlat'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  ElevatedButton(
+                    onPressed: isAnimating ? _stopAnimation : null,
+                    child: Text('Animasyonu Durdur'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Additional Widgets (e.g., Metrics Display) can be added here
+        ],
       ),
     );
   }
