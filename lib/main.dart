@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:spiroble/screens/StartSplashScreen.dart'; // SplashScreen import ediliyor
 import 'firebase_options.dart';
 import 'package:flutter/services.dart';
-
+import 'package:spiroble/screens/AnimationScreen.dart'; // Import MetricsPushKeyProvider
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,12 +18,15 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // MultiProvider kullanarak BluetoothManager'ı sağlıyoruz
+  // MultiProvider kullanarak BluetoothManager ve MetricsPushKeyProvider'ı sağlıyoruz
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
         create: (context) => BluetoothConnectionManager(),
-      )
+      ),
+      ChangeNotifierProvider(
+        create: (context) => MetricsPushKeyProvider(), // Add MetricsPushKeyProvider
+      ),
     ],
     child: MyApp(),
   ));

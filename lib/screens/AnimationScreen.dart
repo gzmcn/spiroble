@@ -6,6 +6,7 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spiroble/bluetooth/bluetooth_constant.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,8 +29,18 @@ class Measurement {
   });
 }
 
-class _AnimationScreenState extends State<AnimationScreen>
-    with SingleTickerProviderStateMixin {
+class MetricsPushKeyProvider with ChangeNotifier {
+  String? _metricsPushKey;
+
+  String? get metricsPushKey => _metricsPushKey;
+
+  void setMetricsPushKey(String? key) {
+    _metricsPushKey = key;
+    notifyListeners();
+  }
+}
+
+class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProviderStateMixin {
   late BluetoothConnectionManager _bleManager;
   StreamSubscription<List<double>>? _dataSubscription;
 
@@ -88,6 +99,17 @@ class _AnimationScreenState extends State<AnimationScreen>
     super.dispose();
   }
 
+  // Save metricsPushKey to SharedPreferences
+  Future<void> saveMetricsPushKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('metricsPushKey', key);
+  }
+  // Load metricsPushKey from SharedPreferences
+  Future<String?> loadMetricsPushKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('metricsPushKey');
+  }
+
   void _startAnimation() async {
     if (_bleManager.connectedDeviceId != null) {
       await _bleManager.sendChar1(
@@ -142,6 +164,10 @@ class _AnimationScreenState extends State<AnimationScreen>
     );
   }
 
+  String getMeasurementKey(int index) {
+    return 'measurement_${index.toString().padLeft(5, '0')}';
+  }
+
   void _startTimer() async {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (_timerCount == 0) {
@@ -173,23 +199,20 @@ class _AnimationScreenState extends State<AnimationScreen>
             return;
           } else {
             print('Generated metricsPushKey: $metricsPushKey');
+            Provider.of<MetricsPushKeyProvider>(context, listen: false).setMetricsPushKey(metricsPushKey);
+
+
           }
 
-          // Prepare the metrics map
+
+
           Map<String, dynamic> metricsData = {};
 
           for (int i = 0; i < measurements.length; i++) {
-            metricsData['measurement_$i'] = {
-              'fvc': FVC.length > i ? FVC[i] : null,
-              'fev1': FEV1.length > i ? FEV1[i] : null,
-              'pef': PEF.length > i ? PEF[i] : null,
-              'fev6': FEV6.length > i ? FEV6[i] : null,
-              'fef2575': FEV2575.length > i ? FEV2575[i] : null,
-              'fev1Fvc': FEV1FVC.length > i ? FEV1FVC[i] : null,
+            metricsData[getMeasurementKey(i)] = {
               'akisHizi': akisHizi.length > i ? akisHizi[i] : null,
               'toplamVolum': toplamVolum.length > i ? toplamVolum[i] : null,
               'miliSaniye': miliSaniye.length > i ? miliSaniye[i] : null,
-              'timestamp': DateTime.now().toIso8601String(),
             };
           }
 

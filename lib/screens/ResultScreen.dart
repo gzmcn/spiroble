@@ -3,7 +3,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spiroble/screens/testResultsScreen.dart';
+import 'package:provider/provider.dart';
+import 'package:spiroble/screens/AnimationScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,11 +34,25 @@ class _ResultScreenState extends State<ResultScreen> {
       FirebaseDatabase.instance.ref("sonuclar");
   List<Map<String, dynamic>> measurements = []; // Firebase'den alınan veriler
 
+  final AnimationScreen animationScreen = AnimationScreen();
+
+  String? metricsPushKey;
+
   @override
   void initState() {
     super.initState();
+    _loadMetricsPushKey();
     fetchMeasurements(); // Firebase'den veri çekme
   }
+
+  Future<void> _loadMetricsPushKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    metricsPushKey = prefs.getString('metricsPushKey');
+    setState(() {
+      // Trigger a rebuild if the key changes
+    });
+  }
+
 
   Future<void> deleteMeasurements() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -65,6 +82,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // Firebase'den verileri çekme
   Future<void> fetchMeasurements() async {
+    // Kullanıcının giriş yapıp yapmadığını kontrol et
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       print('Kullanıcı giriş yapmamış!');
@@ -72,13 +90,18 @@ class _ResultScreenState extends State<ResultScreen> {
     }
     String userId = user.uid;
 
-    final DatabaseReference DatabaseRef = FirebaseDatabase.instance.ref("sonuclar/$userId/metrics/");
+    // Veritabanı referansını al
+    final DatabaseReference databaseRef = FirebaseDatabase.instance.ref("sonuclar/$userId/metrics");
 
-    DatabaseRef.child(userId).onValue.listen((event) {
+    // Verileri dinleyin
+    databaseRef.onValue.listen((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
       if (data != null) {
+        // Yeni ölçümleri eski verilerle birleştir
         setState(() {
-          measurements = data.entries.map((e) {
+          measurements.clear(); // Mevcut listeyi temizleyin
+          measurements.addAll(data.entries.map((e) {
             final key = e.key;
             final value = Map<String, dynamic>.from(e.value);
 
@@ -91,10 +114,8 @@ class _ResultScreenState extends State<ResultScreen> {
                   : DateTime.now();
             } catch (e) {
               print('Tarih parse hatası: $e');
-              parsedTimestamp = DateTime.now(); // Varsayılan tarih
+              parsedTimestamp = DateTime.now(); // Hata durumunda mevcut zamanı kullan
             }
-
-
 
             return {
               'id': key,
@@ -110,11 +131,16 @@ class _ResultScreenState extends State<ResultScreen> {
               'volumes': List<dynamic>.from(value['volumes'] ?? []),
               'emoji': "😮‍💨", // Varsayılan emoji
             };
-          }).toList();
+          }).toList());
         });
+      } else {
+        print("Bu kullanıcı için veri bulunamadı.");
       }
     });
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -278,6 +304,7 @@ class ElevatedMeasurementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metricsPushKey = Provider.of<MetricsPushKeyProvider>(context).metricsPushKey;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
