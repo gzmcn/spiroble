@@ -72,22 +72,39 @@ class _ResultScreenState extends State<ResultScreen> {
     }
     String userId = user.uid;
 
-    _databaseRef.child(userId).onValue.listen((event) {
+    final DatabaseReference DatabaseRef = FirebaseDatabase.instance.ref("sonuclar/$userId/metrics/");
+
+    DatabaseRef.child(userId).onValue.listen((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
       if (data != null) {
         setState(() {
           measurements = data.entries.map((e) {
             final key = e.key;
             final value = Map<String, dynamic>.from(e.value);
+
+            final String rawTimestamp = value['timestamp'] ?? '';
+            DateTime parsedTimestamp;
+
+            try {
+              parsedTimestamp = rawTimestamp.isNotEmpty
+                  ? DateTime.parse(rawTimestamp)
+                  : DateTime.now();
+            } catch (e) {
+              print('Tarih parse hatası: $e');
+              parsedTimestamp = DateTime.now(); // Varsayılan tarih
+            }
+
+
+
             return {
               'id': key,
-              'fvc': value['fvc'] ?? '0',
-              'fev1': value['fev1'] ?? '0',
-              'fev6': value['fev6'] ?? '0',
+              'fvc': value['fvc'] ?? '220',
+              'fev1': value['fev1'] ?? '10',
+              'fev6': value['fev6'] ?? '20',
               'fev1Fvc': value['fev1Fvc'] ?? '0',
               'fef2575': value['fef2575'] ?? '0',
               'pef': value['pef'] ?? '0',
-              'timestamp': value['timestamp'] ?? '',
+              'timestamp': parsedTimestamp,
               'flowRates': List<dynamic>.from(value['flowRates'] ?? []),
               'times': List<dynamic>.from(value['times'] ?? []),
               'volumes': List<dynamic>.from(value['volumes'] ?? []),
@@ -212,7 +229,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       itemCount: measurements.length,
                       itemBuilder: (context, index) {
                         final DateTime timestamp =
-                            DateTime.parse(measurements[index]['timestamp']);
+                            measurements[index]['timestamp'];
                         final String formattedDate =
                             DateFormat('dd MMM yyyy HH:mm').format(timestamp);
 
