@@ -37,6 +37,32 @@ class _ResultScreenState extends State<ResultScreen> {
     fetchMeasurements(); // Firebase'den veri çekme
   }
 
+  Future<void> deleteMeasurements() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('Kullanıcı giriş yapmamış!');
+      return;
+    }
+    String userId = user.uid;
+
+    // Veritabanı referansı oluşturuluyor
+    final databaseRef = FirebaseDatabase.instance.ref('sonuclar/$userId');
+
+    try {
+      // Tüm veriyi siliyoruz
+      await databaseRef.remove(); // Bu, 'sonuclar/{userId}' altındaki tüm veriyi siler
+
+      print('Veri başarıyla silindi!');
+    } catch (e) {
+      print('Veri silme hatası: $e');
+    }
+
+    setState(() {
+      // state'i yeniden oluşturmak için setState() kullanabilirsiniz, eğer widget'ta bir değişiklik yapılması gerekliyse
+    });
+  }
+
+
   // Firebase'den verileri çekme
   Future<void> fetchMeasurements() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -165,6 +191,14 @@ class _ResultScreenState extends State<ResultScreen> {
                 ],
               ),
             ),
+
+          ),
+          Container(
+            child: IconButton(onPressed: (){
+
+                deleteMeasurements();
+
+            }, icon: Icon(Icons.delete_sweep)),
           ),
           // Ölçüm kartları
           Expanded(

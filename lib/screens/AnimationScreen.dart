@@ -35,6 +35,7 @@ class _AnimationScreenState extends State<AnimationScreen>
 
   DiscoveredDevice? deviceToConnect;
 
+
   // Measurement data
   List<Measurement> measurements = [];
   List<double> FVC = [];

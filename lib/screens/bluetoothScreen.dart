@@ -37,6 +37,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       Permission.bluetoothConnect,
       Permission.location,
     ].request();
+
+    setState(() {
+
+    });
   }
 
   // Bluetooth bağlantı durumunu yükle
