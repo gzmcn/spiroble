@@ -320,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Updated Profile Section
             Container(
               padding: EdgeInsets.all(16),
-              height: 130,
+              height: 120,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Theme.of(context).primaryColorDark, Color.fromARGB(255, 82, 14, 94),],
@@ -380,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 20),
 
             // Input Fields
             InputFields(
@@ -391,7 +391,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
             InputFields(
               controller: soyadController,
               placeholder: 'Soyad',
@@ -400,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
             InputFields(
               controller: dogumTarihiController,
               placeholder: 'Doğum Tarihi (YYYY-MM-DD)',
@@ -410,7 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               keyboardType: TextInputType.datetime,
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
             InputFields(
               controller: kiloController,
               placeholder: 'Kilo (kg)',
@@ -420,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
             InputFields(
               controller: boyController,
               placeholder: 'Boy (cm)',
@@ -430,7 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
             InputFields(
               controller: uyrukController,
               placeholder: 'Uyruk',
@@ -439,7 +439,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
             InputFields(
               controller: emailController,
               placeholder: 'E-posta',
@@ -448,7 +448,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Theme.of(context).secondaryHeaderColor,
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 14),
           Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: FancyButton(
@@ -462,7 +462,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   button_color: Theme.of(context).cardColor, // Button color from theme
                 ),
               ),
-          SizedBox(height: 9),
+          SizedBox(height: 0),
 
             // Save Button
             Padding(
@@ -471,8 +471,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onClick: saveUserData,
                 button_text: "Kaydet",
                 button_text_color: Colors.white,
-                button_height: 50,
-                button_width: 200,
+                button_height: 45,
+                button_width: 180,
                 button_radius: 50,
                 button_text_size: 20,
                 button_color: Theme.of(context).cardColor,

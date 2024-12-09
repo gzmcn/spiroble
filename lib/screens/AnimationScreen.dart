@@ -649,17 +649,20 @@ class _AnimationScreenState extends State<AnimationScreen>
                   SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: isAnimating ? _stopAnimation : null,
-                    child: Text('Animasyonu Durdur'),
+                    child: Text(
+                      'Animasyonu Durdur',
+                      style: TextStyle(color: Colors.orange),  // Yazı rengini turuncu yap
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
+
+
                 ],
               ),
             ),
