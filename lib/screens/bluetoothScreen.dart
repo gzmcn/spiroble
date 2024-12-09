@@ -17,9 +17,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   void initState() {
     super.initState();
     _requestPermissions();
-    setState(() {
-
-    });
+    setState(() {});
 
     _bleManager =
         Provider.of<BluetoothConnectionManager>(context, listen: false);
@@ -41,7 +39,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       Permission.bluetoothConnect,
       Permission.location,
     ].request();
-
   }
 
   // Bluetooth bağlantı durumunu yükle
@@ -54,7 +51,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
   void _denyConnection() {
     // Implement deny functionality, e.g., stop scanning or navigate back
-
     _bleManager.stopScan();
     _bleManager.disconnectToDevice(_bleManager.connectedDeviceId!);
     print("BAGLANTIYI KOPARDIK");
@@ -73,7 +69,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   stream: _bleManager.DiscoveredDeviceStream,
                   builder: (context, snapshot) {
                     // sıkıntı çıkarsa bi bak
-
                     final devices = snapshot.data ?? [];
 
                     final deviceToConnect = devices.firstWhere(
@@ -155,7 +150,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                   ),
                                 ],
                               ),
-
+                              
 
                               SizedBox(height: 40),
 
@@ -174,16 +169,13 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
                         // Bottom Buttons
                         Padding(
-                          padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,  // Dikey hizalama için SpaceBetween kullanın
                             children: [
                               // Deny Button
                               OutlinedButton(
-                                onPressed: _bleManager.checkConnection()
-                                    ? _denyConnection
-                                    : null,
+                                onPressed: _bleManager.checkConnection() ? _denyConnection : null,
                                 style: OutlinedButton.styleFrom(
                                   side: BorderSide(color: Colors.grey),
                                   shape: RoundedRectangleBorder(
@@ -191,12 +183,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 12),
                                   child: Text(
                                     "Bağlantıyı durdur",
                                     style: TextStyle(
-                                      color: Colors.grey,
+                                      color: Colors.black,
                                       fontSize: 16,
                                     ),
                                   ),
@@ -205,8 +196,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
                               // ElevatedButton durumuna bağlı olarak göster/gizle
                               Visibility(
-                                visible: !_bleManager
-                                    .checkConnection(), // Bağlı değilse buton görünür
+                                visible: !_bleManager.checkConnection(), // Bağlı değilse buton görünür
                                 child: ElevatedButton(
                                   onPressed: () async {
                                     if (_bleManager.checkConnection()) {
@@ -218,8 +208,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                         _bleManager.isLoading.value = false;
                                         print("Cihaz bulunamadı");
                                       } else {
-                                        await _bleManager
-                                            .connectToDevice(deviceToConnect.id);
+                                        await _bleManager.connectToDevice(deviceToConnect.id);
                                         _bleManager.isLoading.value = false;
                                       }
                                     }
@@ -231,8 +220,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                     ),
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 12),
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                     child: Text(
                                       _bleManager.checkConnection()
                                           ? "Bağlantı başarılı!"
