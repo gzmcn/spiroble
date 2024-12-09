@@ -89,6 +89,16 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                       ),
                     ),
                     SizedBox(height: 30),
+                    Text(
+                      'Test Grafiğiniz',
+                      textAlign: TextAlign.center, // Metni ortala
+                      style: TextStyle(
+                        color: Colors.white, // Sayfanın temasına uygun renk
+                        fontSize: 18, // Font boyutu
+                        fontWeight: FontWeight.bold, // Font ağırlığı
+                      ),
+                    ),
+                    SizedBox(height: 15), // Başlık ve grafik arasına boşluk
                     FutureBuilder<Map<String, List<double>>>(
                       future: flowRateAndVolumeData,
                       builder: (context, snapshot) {
@@ -109,6 +119,7 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                         }
                       },
                     ),
+                    SizedBox(height: 15),
                     buildMonthlySummary(),
                   ],
                 ),
@@ -237,7 +248,7 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: Colors.purple.withOpacity(0.8),
             blurRadius: 10,
             offset: Offset(0, 5),
           ),
