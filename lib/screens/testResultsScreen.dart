@@ -90,7 +90,6 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                     ),
                     SizedBox(height: 30),
                     FutureBuilder<Map<String, List<double>>>(
-                      // Flowrate ve Volume verilerini getiren FutureBuilder
                       future: flowRateAndVolumeData,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
@@ -104,61 +103,9 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                         } else {
                           Map<String, List<double>> data = snapshot.data!;
                           List<double> flowRates = data['flowRates'] ?? [];
-                          List<double> volumes = data['volumes'] ?? [];
 
-                          // Flow rate ve volume arasındaki oranı hesapla
-                          List<double> ratioData = [];
-                          for (int i = 0;
-                              i < flowRates.length && i < volumes.length;
-                              i++) {
-                            if (volumes[i] != 0) {
-                              ratioData.add(flowRates[i] / volumes[i]);
-                            }
-                          }
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Flow Rate / Volume Ratio',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                              ),
-                              SizedBox(height: 20),
-                              Container(
-                                height: 200,
-                                child: LineChart(
-                                  LineChartData(
-                                    gridData: FlGridData(show: true),
-                                    titlesData: FlTitlesData(show: true),
-                                    borderData: FlBorderData(show: true),
-                                    minX: 0,
-                                    maxX: flowRates.length.toDouble(),
-                                    minY: 0,
-                                    maxY: flowRates.isNotEmpty
-                                        ? flowRates.reduce(
-                                                (a, b) => a > b ? a : b) *
-                                            1.2 // Yüksek değeri %20 fazla al
-                                        : 1, // Eğer veri yoksa, 1'i limit olarak kullan
-                                    lineBarsData: [
-                                      LineChartBarData(
-                                        spots: flowRates
-                                            .asMap()
-                                            .entries
-                                            .map((entry) => FlSpot(
-                                                entry.key.toDouble(),
-                                                entry.value))
-                                            .toList(),
-                                        isCurved: true,
-                                        color: Colors.green,
-                                        belowBarData: BarAreaData(show: false),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
+                          // Grafiği çağır
+                          return buildModernFlowRateChart(flowRates);
                         }
                       },
                     ),
@@ -223,7 +170,6 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
     return {'flowRates': flowRates, 'volumes': volumes};
   }
 
-
   Widget buildMeasurementRow(Map<String, dynamic> measurement) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -267,6 +213,122 @@ class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
                   .toStringAsFixed(3), // Assuming it's a numeric value
               0.95),
         ],
+      ),
+    );
+  }
+
+  Widget buildModernFlowRateChart(List<double> flowRates) {
+    double minValue = flowRates.isNotEmpty
+        ? flowRates.reduce((a, b) => a < b ? a : b) * 8
+        : -1;
+    double maxValue = flowRates.isNotEmpty
+        ? flowRates.reduce((a, b) => a > b ? a : b) * 1.3
+        : 1;
+    double intervalY =
+        ((maxValue - minValue).abs() / 5).ceilToDouble(); // Y ekseni aralığı
+    double intervalX =
+        (flowRates.length / 5).ceilToDouble(); // X ekseni aralığı
+
+    return Container(
+      height: 350,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 57, 29, 92),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.3),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: LineChart(
+        LineChartData(
+          backgroundColor: Colors.transparent,
+          gridData: FlGridData(
+            show: false,
+            getDrawingHorizontalLine: (value) {
+              return FlLine(
+                color: Colors.grey.shade700,
+                strokeWidth: 1,
+              );
+            },
+            getDrawingVerticalLine: (value) {
+              return FlLine(
+                color: Colors.grey.shade700,
+                strokeWidth: 1,
+              );
+            },
+          ),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                interval: intervalY, // Y ekseni aralığını ayarladık
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toStringAsFixed(1),
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  );
+                },
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 22,
+                interval: intervalX, // X ekseni aralığını ayarladık
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toStringAsFixed(0),
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  );
+                },
+              ),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+          ),
+          borderData: FlBorderData(
+            show: true,
+            border: Border.all(color: Colors.grey.shade700, width: 1),
+          ),
+          minX: 0,
+          maxX: flowRates.length.toDouble(),
+          minY: minValue,
+          maxY: maxValue,
+          lineBarsData: [
+            LineChartBarData(
+              spots: flowRates
+                  .asMap()
+                  .entries
+                  .map((entry) => FlSpot(entry.key.toDouble(), entry.value))
+                  .toList(),
+              isCurved: true,
+              barWidth: 4,
+              isStrokeCapRound: true,
+              color: Colors.orange.shade400,
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.orange.shade400.withOpacity(0.3),
+                    Colors.orange.shade800.withOpacity(0.1),
+                  ],
+                ),
+              ),
+              dotData: FlDotData(
+                show: false,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
