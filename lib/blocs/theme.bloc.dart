@@ -24,7 +24,7 @@ class LightThemeState extends ThemeState {
     scaffoldBackgroundColor: Color(0xFF503A93),
     primaryColorDark: Color(0xFF916BBD),
     tabBarTheme: TabBarTheme(
-        dividerColor: Colors.white
+        dividerColor: Colors.purple[900],
     ),
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
