@@ -42,7 +42,9 @@ class DarkThemeState extends ThemeState {
       canvasColor: Color(0x335A4F73),
       secondaryHeaderColor: Color(0xFFB7A0FD),
       cardColor: Color.fromARGB(255, 82, 14, 94),
+      primaryColorDark: Color(0xFF222250), // darkmode switch color
       colorScheme: ColorScheme.fromSeed(
+
         brightness: Brightness.dark,
         seedColor: const Color.fromARGB(255, 82, 14, 94),
       ),

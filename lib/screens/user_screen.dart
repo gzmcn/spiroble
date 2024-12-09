@@ -9,6 +9,7 @@ import 'package:spiroble/widgets/input_fields.dart';
 import 'package:fancy_button_flutter/fancy_button_flutter.dart';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
 
 class ProfileScreen extends StatefulWidget {
   ProfileScreen({super.key});
@@ -46,6 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController uyrukController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  // dark-light mode switch controller
+  final _modeController = ValueNotifier<bool>(false);
 
   @override
   void initState() {
@@ -455,14 +459,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   button_text: "Şifremi Değiştir", // Text of the button
                   button_text_color: Theme.of(context).textTheme.bodyMedium?.color,
                   button_height: 50, // Height of the button
-                  button_width: 300, // Width of the button
+                  button_width: 200, // Width of the button
                   button_radius: 50, // Circular border radius
                   button_outline_width: 0, // No outline
-                  button_text_size: 22, // Font size of the button text
+                  button_text_size: 20, // Font size of the button text
                   button_color: Theme.of(context).cardColor, // Button color from theme
                 ),
               ),
-          SizedBox(height: 16),
+          SizedBox(height: 9),
 
             // Save Button
             Padding(
@@ -472,13 +476,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_text: "Kaydet",
                 button_text_color: Theme.of(context).textTheme.bodyMedium?.color,
                 button_height: 50,
-                button_width: 300,
+                button_width: 200,
                 button_radius: 50,
                 button_outline_width: 0,
-                button_text_size: 22,
+                button_text_size: 20,
                 button_color: Theme.of(context).cardColor,
               ),
             ),
+
+            // light mode switch
+            AdvancedSwitch(
+              controller: _modeController,
+              activeColor: Theme.of(context).primaryColorDark,
+              inactiveColor: Colors.grey,
+              activeChild: Text('Dark'),
+              inactiveChild: Text('Light'),
+              activeImage: AssetImage('assets/dark2.png'),
+              inactiveImage: AssetImage('assets/light2.png'),
+              borderRadius: BorderRadius.all(const Radius.circular(15)),
+              width: 150.0,
+              height: 40.0,
+              enabled: true,
+              disabledOpacity: 0.5,
+            ),
+
             SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -498,7 +519,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           top: 8), // Adds space between the text and the line
                       height: 4, // Height of the line
                       width: 280, // Width of the line (you can adjust this)
-                      color: Colors.black, // Line color
+                      color: Theme.of(context).textTheme.bodyMedium?.color, // Line color
                     ),
                   ],
                 ),
