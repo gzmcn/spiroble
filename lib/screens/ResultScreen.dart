@@ -169,13 +169,7 @@ class _ResultScreenState extends State<ResultScreen> {
                               .headlineLarge
                               ?.copyWith(
                             color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black45,
-                                blurRadius: 6,
-                                offset: Offset(2, 2),
-                              ),
-                            ],
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ],
@@ -237,11 +231,15 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ),
           Container(
+             alignment: Alignment.topRight,
+            height: 5,
             child: IconButton(
                 onPressed: () {
                   deleteMeasurements();
                 },
-                icon: Icon(Icons.delete_sweep)),
+                icon: Icon(
+                    Icons.delete_sweep), color: Colors.white,
+            ),
           ),
           // Ölçüm kartları
           Expanded(
