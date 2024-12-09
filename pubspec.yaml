@@ -62,6 +62,7 @@ flutter:
     - assets/dark2.png
     - assets/light1.png
     - assets/light2.png
+    - assets/bluetooth.png
 
 
   uses-material-design: true

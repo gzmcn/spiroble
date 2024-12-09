@@ -107,7 +107,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       return const Text(
                                         "👋 Merhaba!",
                                         style: TextStyle(
-                                          fontSize: 24,
+                                          fontSize: 26,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
@@ -116,7 +116,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       return Text(
                                         "👋 Merhaba! ${snapshot.data}",
                                         style: const TextStyle(
-                                          fontSize: 24,
+                                          fontSize: 26,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
@@ -125,7 +125,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       return const Text(
                                         "👋 Merhaba!",
                                         style: TextStyle(
-                                          fontSize: 24,
+                                          fontSize: 26,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
@@ -205,7 +205,7 @@ class _HomeScreen extends State<HomeScreen> {
                                         Text(
                                           "Hastaneye gitmeye gerek kalmadan en kaliteli tıbbi hizmetleri sunuyoruz.",
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 14,
                                             color: Colors.white70,
                                           ),
                                         ),
@@ -254,7 +254,7 @@ class _HomeScreen extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 25),
+                            const SizedBox(height: 45),
                             AdvancedSwitch(
                               controller: _modeController,
                               height: 50,
