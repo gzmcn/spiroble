@@ -17,6 +17,9 @@ class LightThemeState extends ThemeState {
   @override
   ThemeData get themeData => ThemeData(
     useMaterial3: true,
+    focusColor: Color(0xFF6F5191),
+    cardColor: Color(0xFF6F5191),
+    primaryColorDark: Color(0xFF916BBD),
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
       seedColor: const Color.fromARGB(255, 82, 14, 94),
@@ -41,11 +44,11 @@ class DarkThemeState extends ThemeState {
       scaffoldBackgroundColor: Color.fromARGB(50, 50, 50, 100),
       primaryColor: Color.fromARGB(50, 50, 50, 100),
       canvasColor: Color(0x335A4F73),
+      focusColor: Color(0xFF3D2F4D),
       secondaryHeaderColor: Color(0xFFB7A0FD),
       cardColor: Color.fromARGB(255, 82, 14, 94),
       primaryColorDark: Color(0xFF222250), // darkmode switch color
       colorScheme: ColorScheme.fromSeed(
-
         brightness: Brightness.dark,
         seedColor: const Color.fromARGB(255, 82, 14, 94),
       ),
