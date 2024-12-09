@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
 import 'package:flutter_provider/flutter_provider.dart';
@@ -15,6 +17,27 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreen extends State<HomeScreen> {
+
+  Future<String> fetchUserName() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null) {
+      final database = FirebaseDatabase.instance.ref();
+      final snapshot = await database.child('users/${currentUser.uid}').get();
+
+      if (snapshot.exists) {
+        final userName = snapshot.child('ad').value;
+        return userName != null ? userName.toString() : "No name available";
+      } else {
+        print("No user data available");
+        return "No name available";
+      }
+    } else {
+      print("No current user found.");
+      return "No name available";
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,13 +90,49 @@ class _HomeScreen extends State<HomeScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  "👋 Hello!\nJohn Doe",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
+                                FutureBuilder<String>(
+                                  future:
+                                  fetchUserName(), // Fetch the username asynchronously
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Text(
+                                        "👋 Hello!",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      return const Text(
+                                        "👋 Hello!",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      );
+                                    } else if (snapshot.hasData) {
+                                      return Text(
+                                        "👋 Hello! ${snapshot.data}",
+                                        style: const TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      );
+                                    } else {
+                                      return const Text(
+                                        "👋 Hello!",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      );
+                                    }
+                                  },
                                 ),
                                 CircleAvatar(
                                   radius: 25,
