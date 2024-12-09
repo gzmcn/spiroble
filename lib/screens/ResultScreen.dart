@@ -272,14 +272,15 @@ class _ResultScreenState extends State<ResultScreen> {
                               ),
                             ));
                           },
-                          child: ElevatedMeasurementCard(
-                            emoji: measurement['emoji'],
-                            fvc: measurement['fvc'].toString(),
-                            pef: measurement['pef'].toString(),
-                            fev1: measurement['fev1'].toString(),
-                            // Add other metrics as needed
-                            date: formattedDate,
-                          ),
+                            child: ElevatedMeasurementCard(
+                              emoji: measurement['emoji'],
+                              fvc: double.tryParse(measurement['fvc'].toString())?.toStringAsFixed(3) ?? '0.000',
+                              pef: double.tryParse(measurement['pef'].toString())?.toStringAsFixed(3) ?? '0.000',
+                              fev1: double.tryParse(measurement['fev1'].toString())?.toStringAsFixed(3) ?? '0.000',
+                              // Add other metrics as needed
+                              date: formattedDate,
+                            )
+
                         );
                       },
                     ),
