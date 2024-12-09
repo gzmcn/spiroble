@@ -49,14 +49,14 @@ class CircularProgressBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Paint backgroundPaint = Paint()
-      ..color = Colors.grey.shade300
+      ..color = Colors.orange
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0;
 
     final Paint progressPaint = Paint()
       ..color = (progress >= minValue && progress <= maxValue)
-          ? Colors.purple
-          : Colors.black
+          ? Colors.orange
+          : Colors.orange
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.0
       ..strokeCap = StrokeCap.round;
@@ -82,7 +82,7 @@ class CircularProgressBarPainter extends CustomPainter {
     final TextSpan textSpan = TextSpan(
       text: text, // Use the passed text
       style: TextStyle(
-        color: Theme.of(context).textTheme.bodyMedium?.color,
+        color: Colors.white,
         fontSize: 12,
         fontWeight: FontWeight.bold,
       ),

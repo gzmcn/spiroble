@@ -293,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).tabBarTheme.dividerColor,
       appBar: AppBar(
-        backgroundColor:  Theme.of(context).tabBarTheme.dividerColor,
+        backgroundColor: Theme.of(context).tabBarTheme.dividerColor,
         title: Text(
           'Profilim',
           style: TextStyle(
@@ -317,7 +317,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
-
           children: [
             // Updated Profile Section
             Container(
@@ -325,7 +324,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 120,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Theme.of(context).primaryColorDark, Color.fromARGB(255, 82, 14, 94),],
+                  colors: [
+                    Theme.of(context).primaryColorDark,
+                    Color.fromARGB(255, 82, 14, 94),
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -451,20 +453,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 14),
-          Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: FancyButton(
-                  onClick: saveUserData, // Action for saving user data
-                  button_text: "Şifremi Değiştir", // Text of the button
-                  button_text_color: Colors.white,
-                  button_height: 50, // Height of the button
-                  button_width: 200, // Width of the button
-                  button_radius: 50, // Circular border radius
-                  button_text_size: 20, // Font size of the button text
-                  button_color: Theme.of(context).cardColor, // Button color from theme
-                ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: FancyButton(
+                onClick: saveUserData, // Action for saving user data
+                button_text: "Şifremi Değiştir", // Text of the button
+                button_text_color: Colors.white,
+                button_height: 50, // Height of the button
+                button_width: 200, // Width of the button
+                button_radius: 50, // Circular border radius
+                button_text_size: 20, // Font size of the button text
+                button_color:
+                    Theme.of(context).cardColor, // Button color from theme
               ),
-          SizedBox(height: 0),
+            ),
+            SizedBox(height: 0),
 
             // Save Button
             Padding(
@@ -490,18 +493,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       'Beklenen Değerler',
                       style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyMedium?.color
-                      ),
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     Container(
-                      margin: EdgeInsets.only(
-                          top: 8), // Adds space between the text and the line
-                      height: 4, // Height of the line
-                      width: 280, // Width of the line (you can adjust this)
-                      color: Theme.of(context).textTheme.bodyMedium?.color, // Line color
-                    ),
+                        margin: EdgeInsets.only(
+                            top: 8), // Adds space between the text and the line
+                        height: 4, // Height of the line
+                        width: 280, // Width of the line (you can adjust this)
+                        color: Colors.white // Line color
+                        ),
                   ],
                 ),
               ],
