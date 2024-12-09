@@ -31,6 +31,7 @@ dependencies:
   shared_preferences: ^2.3.3
   csv: ^6.0.0
   intl: ^0.20.1
+  flutter_advanced_switch:
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +58,10 @@ flutter:
     - assets/user-logo.png
     - assets/spiroiconnew.svg
     - assets/spirometer.svg
+    - assets/dark.png
+    - assets/dark2.png
+    - assets/light1.png
+    - assets/light2.png
 
 
   uses-material-design: true
