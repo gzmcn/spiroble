@@ -86,7 +86,6 @@ class _AnimationScreenState extends State<AnimationScreen>
     _ballAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-
   }
 
   @override
@@ -549,7 +548,7 @@ class _AnimationScreenState extends State<AnimationScreen>
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.green, width: 3),
+                    border: Border.all(color: Colors.orange, width: 3),
                   ),
                   padding: EdgeInsets.all(15),
                   child: Text(
@@ -635,9 +634,9 @@ class _AnimationScreenState extends State<AnimationScreen>
                 children: [
                   ElevatedButton(
                     onPressed: isAnimating ? null : _startAnimation,
-                    child: Text('Animasyonu Başlat'),
+                    child: Text('Teste Başla'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
                       padding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -650,19 +649,19 @@ class _AnimationScreenState extends State<AnimationScreen>
                   ElevatedButton(
                     onPressed: isAnimating ? _stopAnimation : null,
                     child: Text(
-                      'Animasyonu Durdur',
-                      style: TextStyle(color: Colors.orange),  // Yazı rengini turuncu yap
+                      'Testi Bitir',
+                      style: TextStyle(
+                          color: Colors.orange), // Yazı rengini turuncu yap
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-
-
                 ],
               ),
             ),
