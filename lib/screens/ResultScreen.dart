@@ -53,7 +53,6 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-
   Future<void> deleteMeasurements() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -67,7 +66,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
     try {
       // Tüm veriyi siliyoruz
-      await databaseRef.remove(); // Bu, 'sonuclar/{userId}' altındaki tüm veriyi siler
+      await databaseRef
+          .remove(); // Bu, 'sonuclar/{userId}' altındaki tüm veriyi siler
 
       print('Veri başarıyla silindi!');
     } catch (e) {
@@ -78,7 +78,6 @@ class _ResultScreenState extends State<ResultScreen> {
       // state'i yeniden oluşturmak için setState() kullanabilirsiniz, eğer widget'ta bir değişiklik yapılması gerekliyse
     });
   }
-
 
   // Firebase'den verileri çekme
   Future<void> fetchMeasurements() async {
@@ -91,7 +90,8 @@ class _ResultScreenState extends State<ResultScreen> {
     String userId = user.uid;
 
     // Veritabanı referansını al
-    final DatabaseReference databaseRef = FirebaseDatabase.instance.ref("sonuclar/$userId/metrics");
+    final DatabaseReference databaseRef =
+        FirebaseDatabase.instance.ref("sonuclar/$userId/tests");
 
     // Verileri dinleyin
     databaseRef.onValue.listen((event) {
@@ -114,21 +114,25 @@ class _ResultScreenState extends State<ResultScreen> {
                   : DateTime.now();
             } catch (e) {
               print('Tarih parse hatası: $e');
-              parsedTimestamp = DateTime.now(); // Hata durumunda mevcut zamanı kullan
+              parsedTimestamp =
+                  DateTime.now(); // Hata durumunda mevcut zamanı kullan
             }
+
+            List<dynamic> rawMeasurements = value['measurements'] ?? [];
+            List<Map<String, dynamic>> processedMeasurements = rawMeasurements
+                .map((m) => Map<String, dynamic>.from(m))
+                .toList();
 
             return {
               'id': key,
+              'timestamp': parsedTimestamp,
               'fvc': value['fvc'] ?? '220',
               'fev1': value['fev1'] ?? '10',
               'fev6': value['fev6'] ?? '20',
               'fev1Fvc': value['fev1Fvc'] ?? '0',
               'fef2575': value['fef2575'] ?? '0',
               'pef': value['pef'] ?? '0',
-              'timestamp': parsedTimestamp,
-              'flowRates': List<dynamic>.from(value['flowRates'] ?? []),
-              'times': List<dynamic>.from(value['times'] ?? []),
-              'volumes': List<dynamic>.from(value['volumes'] ?? []),
+              'measurements': processedMeasurements,
               'emoji': "😮‍💨", // Varsayılan emoji
             };
           }).toList());
@@ -138,9 +142,6 @@ class _ResultScreenState extends State<ResultScreen> {
       }
     });
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -234,14 +235,13 @@ class _ResultScreenState extends State<ResultScreen> {
                 ],
               ),
             ),
-
           ),
           Container(
-            child: IconButton(onPressed: (){
-
-                deleteMeasurements();
-
-            }, icon: Icon(Icons.delete_sweep)),
+            child: IconButton(
+                onPressed: () {
+                  deleteMeasurements();
+                },
+                icon: Icon(Icons.delete_sweep)),
           ),
           // Ölçüm kartları
           Expanded(
@@ -249,8 +249,14 @@ class _ResultScreenState extends State<ResultScreen> {
               padding: const EdgeInsets.all(12.0),
               child: measurements.isEmpty
                   ? Center(
-                      child: Text("Henüz bir test kaydı bulunmamaktadır",
-                          style: Theme.of(context).textTheme.bodyLarge))
+                      child: Text(
+                        "Henüz bir sonuç kaydedilmemiş",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(color: Colors.white),
+                      ),
+                    )
                   : ListView.builder(
                       itemCount: measurements.length,
                       itemBuilder: (context, index) {
@@ -264,8 +270,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => HealthMonitorScreen(
-                                measurement: measurements[
-                                    index], // Liste yerine doğrudan Map göndermek
+                                measurement: measurement, // Pass the entire map
                               ),
                             ));
                           },
@@ -274,6 +279,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             fvc: measurement['fvc'].toString(),
                             pef: measurement['pef'].toString(),
                             fev1: measurement['fev1'].toString(),
+                            // Add other metrics as needed
                             date: formattedDate,
                           ),
                         );
@@ -304,7 +310,8 @@ class ElevatedMeasurementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final metricsPushKey = Provider.of<MetricsPushKeyProvider>(context).metricsPushKey;
+    final metricsPushKey =
+        Provider.of<MetricsPushKeyProvider>(context).metricsPushKey;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       padding: const EdgeInsets.all(16.0),

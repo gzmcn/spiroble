@@ -11,6 +11,7 @@ import 'package:spiroble/bluetooth/bluetooth_constant.dart';
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'dart:collection';
 
 class AnimationScreen extends StatefulWidget {
   @override
@@ -40,26 +41,23 @@ class MetricsPushKeyProvider with ChangeNotifier {
   }
 }
 
-class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProviderStateMixin {
+class _AnimationScreenState extends State<AnimationScreen>
+    with SingleTickerProviderStateMixin {
   late BluetoothConnectionManager _bleManager;
   StreamSubscription<List<double>>? _dataSubscription;
 
   DiscoveredDevice? deviceToConnect;
 
-
   // Measurement data
-  List<Measurement> measurements = [];
-  List<double> FVC = [];
-  List<double> FEV1 = [];
-  List<double> PEF = [];
-  List<double> FEV6 = [];
-  List<double> FEV2575 = [];
-  List<double> FEV1FVC = [];
+  Queue<Measurement> measurements = Queue<Measurement>();
+  Queue<Measurement> measurementsToStore = Queue<Measurement>();
+  Queue<Measurement> buffer = Queue<Measurement>();
 
   bool isAnimating = false;
   bool isGravityActive = false;
   double gravityDecrement = 0.04;
   Timer? gravityTimer;
+  Timer? _bufferTimer;
 
   double fvc = 0.0;
   double fev1 = 0.0;
@@ -71,7 +69,7 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
   late AnimationController _controller;
   late Animation<double> _ballAnimation;
   int _timerCount = 10;
-  late Timer _timer;
+  late Timer? _timer;
 
   @override
   void initState() {
@@ -88,14 +86,17 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
     _ballAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+
+    addDummyData();
   }
 
   @override
   void dispose() {
     _dataSubscription?.cancel();
     _controller.dispose(); // Dispose AnimationController if initialized
-    _timer.cancel(); // Cancel Timer if initialized
+    _timer?.cancel(); // Cancel Timer if initialized
     gravityTimer?.cancel();
+    _bufferTimer?.cancel();
     super.dispose();
   }
 
@@ -104,6 +105,66 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('metricsPushKey', key);
   }
+
+  Future<void> addDummyData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      print('User is not logged in!!');
+      return;
+    }
+
+    String userId = user.uid;
+
+    final DatabaseReference databaseRef =
+        FirebaseDatabase.instance.ref("sonuclar/$userId/tests");
+
+    String testId = databaseRef.push().key!;
+
+    double fvc = 3.5;
+    double fev1 = 2.8;
+    double pef = 6.0;
+    double fev6 = 3.2;
+    double fef2575 = 4.5;
+    double fev1Fvc = 80.0;
+
+    List<Map<String, dynamic>> measurementsDummy = [];
+
+    for (int i = 0; i < 100; i++) {
+      measurementsDummy.add({
+        "flowRate":
+            (3.0 + Random().nextDouble()), // Random value between 3.0 and 4.0
+        "volume":
+            (1.0 + Random().nextDouble()), // Random value between 1.0 and 2.0
+        "time": (i),
+      });
+    }
+
+    Map<String, dynamic> metricsData = {
+      'timestamp': DateTime.now().toIso8601String(),
+      'fvc': fvc,
+      'fev1': fev1,
+      'pef': pef,
+      'fev6': fev6,
+      'fef2575': fef2575,
+      'fev1Fvc': fev1Fvc,
+      'measurements': measurementsDummy,
+    };
+
+    try {
+      await databaseRef.child(testId).set(metricsData);
+      print('Dummy data successfully saved!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Dummy data added successfully!')),
+      );
+    } catch (e) {
+      print('Error saving dummy data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding dummy data: $e')),
+      );
+    }
+  }
+
   // Load metricsPushKey from SharedPreferences
   Future<String?> loadMetricsPushKey() async {
     final prefs = await SharedPreferences.getInstance();
@@ -120,25 +181,72 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
 
       setState(() {
         isAnimating = true;
+        _timerCount = 10;
       });
 
+      _bufferTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+        if (!isAnimating) {
+          timer.cancel();
+          return;
+        }
+
+        if (buffer.isNotEmpty) {
+          // Calculate average values from the buffer
+          double avgFlowRate =
+              buffer.map((m) => m.flowRate).reduce((a, b) => a + b) /
+                  buffer.length;
+          double avgVolume =
+              buffer.map((m) => m.volume).reduce((a, b) => a + b) /
+                  buffer.length;
+          double avgTime =
+              buffer.map((m) => m.time).reduce((a, b) => a + b) / buffer.length;
+
+          setState(() {
+            measurementsToStore.addLast(
+              Measurement(
+                flowRate: avgFlowRate,
+                volume: avgVolume,
+                time: avgTime,
+              ),
+            );
+
+            if (measurementsToStore.length > 100) {
+              measurementsToStore.removeFirst();
+            }
+          });
+
+          buffer.clear();
+        }
+      });
+
+      // Listen to incoming data streams
       _dataSubscription =
           _bleManager.notifyAsDoubles(_bleManager.connectedDeviceId!).listen(
         (data) {
-          // Debug: Print received data
           print(
-              'Received Data - Flow Rate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+              'Received Data - flowRate: ${data[0]}, Volume: ${data[1]}, Time: ${data[2]}');
+          final newMeasurement = Measurement(
+            flowRate: data[0],
+            volume: data[1],
+            time: data[2],
+          );
+
           setState(() {
-            measurements.add(Measurement(
-              flowRate: data[0],
-              volume: data[1],
-              time: data[2],
-            ));
+            measurements.addLast(newMeasurement);
+            buffer.addLast(newMeasurement);
+
             if (measurements.length > 10000) {
-              measurements.removeAt(0);
+              measurements.removeFirst();
             }
+
+            if (buffer.length > 10000) {
+              buffer.removeFirst();
+            }
+
             _calculateMetrics();
           });
+          // Optionally, you can call _calculateMetrics() here if needed
+          // However, since metrics are calculated in the Timer, it's not necessary
         },
         onError: (error) {
           print('Error receiving data $error');
@@ -159,6 +267,10 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
       isAnimating = false;
     });
 
+    _timer?.cancel();
+    gravityTimer?.cancel();
+    _bufferTimer?.cancel();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Bağlantı iptal edildi')),
     );
@@ -171,13 +283,20 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
   void _startTimer() async {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (_timerCount == 0) {
-        _timer.cancel();
+        _timer?.cancel();
+        gravityTimer?.cancel();
+        _bufferTimer?.cancel();
         _controller.stop();
         //_bleManager.connectToDevice(deviceToConnect!.id);
 
-        List<double> akisHizi = measurements.map((m) => m.flowRate).toList();
-        List<double> toplamVolum = measurements.map((m) => m.volume).toList();
-        List<double> miliSaniye = measurements.map((m) => m.time).toList();
+        // Sıkıştırılmış measurement datasını kullanalım :)
+        List<Map<String, dynamic>> serializedMeasurements = measurementsToStore
+            .map((m) => {
+                  'flowRate': m.flowRate,
+                  'volume': m.volume,
+                  'time': m.time,
+                })
+            .toList();
 
         User? user = FirebaseAuth.instance.currentUser;
         if (user == null) {
@@ -191,37 +310,24 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
 
         try {
           print('Attempting to generate a push key for metrics...');
-          String? metricsPushKey =
-              databaseRef.child('sonuclar/$userId/metrics').push().key;
+          String testId =
+              databaseRef.child('sonuclar/$userId/tests').push().key!;
 
-          if (metricsPushKey == null) {
-            print('Failed to generate a push key for metrics.');
-            return;
-          } else {
-            print('Generated metricsPushKey: $metricsPushKey');
-            Provider.of<MetricsPushKeyProvider>(context, listen: false).setMetricsPushKey(metricsPushKey);
-
-
-          }
-
-
-
-          Map<String, dynamic> metricsData = {};
-
-          for (int i = 0; i < measurements.length; i++) {
-            metricsData[getMeasurementKey(i)] = {
-              'akisHizi': akisHizi.length > i ? akisHizi[i] : null,
-              'toplamVolum': toplamVolum.length > i ? toplamVolum[i] : null,
-              'miliSaniye': miliSaniye.length > i ? miliSaniye[i] : null,
-            };
-          }
+          Map<String, dynamic> metricsData = {
+            'timestamp': DateTime.now().toIso8601String(),
+            'fvc': fvc,
+            'fev1': fev1,
+            'pef': pef,
+            'fev6': fev6,
+            'fef2575': fev2575,
+            'fev1Fvc': fev1Fvc,
+            'measurements': serializedMeasurements
+          };
 
           // Set the metrics data
           await databaseRef
-              .child('sonuclar/$userId/metrics/$metricsPushKey')
-              .set({
-            ...metricsData,
-          });
+              .child('sonuclar/$userId/tests/$testId')
+              .set(metricsData);
 
           print('Sonuç başarıyla kaydedildi!');
         } catch (e) {
@@ -244,7 +350,8 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
     List<double> toplamVolum = measurements.map((m) => m.volume).toList();
     List<double> miliSaniye = measurements.map((m) => m.time).toList();
 
-    double latestFlowRate = akisHizi.last;
+    // Access the latest flow rate directly from the Queue
+    double latestFlowRate = measurements.last.flowRate;
 
     const double threshold = 0.01;
 
@@ -261,79 +368,25 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
     // Calculate FVC
     fvc = _hesaplaFVC(toplamVolum);
 
-    if (mounted) {
-      setState(() {
-        FVC.add(fvc);
-        if (FVC.length > 10000) {
-          FVC.removeAt(0); // Keep only the latest 100 measurements
-        }
-      });
-    }
-
     // Calculate FEV1
     fev1 = _hesaplaFEV1(akisHizi, miliSaniye);
-
-    if (mounted) {
-      setState(() {
-        FEV1.add(fev1);
-        if (FEV1.length > 10000) {
-          FEV1.removeAt(0); // Keep only the latest 100 measurements
-        }
-      });
-    }
 
     // Calculate PEF
     pef = _hesaplaPEF(akisHizi);
 
-    if (mounted) {
-      setState(() {
-        PEF.add(pef);
-        if (PEF.length > 10000) {
-          PEF.removeAt(0); // Keep only the latest 100 measurements
-        }
-      });
-    }
-
     // Calculate FEV6
     fev6 = _hesaplaFEV6(akisHizi, miliSaniye);
-
-    if (mounted) {
-      setState(() {
-        FEV6.add(fev6);
-        if (FEV6.length > 10000) {
-          FEV6.removeAt(0); // Keep only the latest 100 measurements
-        }
-      });
-    }
 
     // Calculate FEF25-75
     fev2575 = _hesaplaFEF2575(akisHizi, toplamVolum);
 
-    if (mounted) {
-      setState(() {
-        FEV2575.add(fev2575);
-        if (FEV2575.length > 10000) {
-          FEV2575.removeAt(0); // Keep only the latest 100 measurements
-        }
-      });
-    }
-
     // Calculate FEV1/FVC ratio
     fev1Fvc = fvc != 0.0 ? (fev1 / fvc) * 100 : 0.0;
-
-    if (mounted) {
-      setState(() {
-        FEV1FVC.add(fev1Fvc);
-        if (FEV1FVC.length > 10000) {
-          FEV1FVC.removeAt(0); // Keep only the latest 100 measurements
-        }
-      });
-    }
 
     double fvcPercentage = (fvc / 10.0).clamp(0.0, 1.0);
     _controller.animateTo(
       fvcPercentage,
-      duration: Duration(milliseconds: 300), //this was 300
+      duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
 
