@@ -23,7 +23,7 @@ class InputFields extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16),
       height: 55,
       decoration: BoxDecoration(
-        color: Theme.of(context).focusColor,
+        color: Theme.of(context).primaryColorDark,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Center( // Ensures content is vertically centered

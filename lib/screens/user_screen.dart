@@ -299,12 +299,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 30,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+            color: Colors.white,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: Icon(Icons.logout, color: Colors.white,),
             onPressed: () async {
               await auth.signOut();
               Navigator.of(context).pushReplacement(
@@ -326,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 gradient: LinearGradient(
                   colors: [
                     Theme.of(context).primaryColorDark,
-                    Color.fromARGB(255, 82, 14, 94),
+                    Theme.of(context).primaryColorDark,
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -464,7 +464,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_radius: 50, // Circular border radius
                 button_text_size: 20, // Font size of the button text
                 button_color:
-                    Theme.of(context).cardColor, // Button color from theme
+                    Colors.orange, // Button color from theme
               ),
             ),
             SizedBox(height: 0),
@@ -480,7 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_width: 180,
                 button_radius: 50,
                 button_text_size: 20,
-                button_color: Theme.of(context).cardColor,
+                button_color: Colors.orange,
               ),
             ),
             SizedBox(height: 12),
