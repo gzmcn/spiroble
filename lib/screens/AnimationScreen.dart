@@ -536,7 +536,7 @@ class _AnimationScreenState extends State<AnimationScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple[900],
+      backgroundColor: Theme.of(context).primaryColor,
       body: Column(
         children: [
           // Timer and Title

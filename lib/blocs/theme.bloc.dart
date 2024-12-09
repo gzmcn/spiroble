@@ -19,6 +19,9 @@ class LightThemeState extends ThemeState {
     useMaterial3: true,
     focusColor: Color(0xFF6F5191),
     cardColor: Color(0xFF6F5191),
+    primaryColor: Colors.purple[900],
+    canvasColor: Color(0xC5C7B9F1),
+    scaffoldBackgroundColor: Color(0xFF503A93),
     primaryColorDark: Color(0xFF916BBD),
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,

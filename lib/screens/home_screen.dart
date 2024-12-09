@@ -59,11 +59,11 @@ class _HomeScreen extends State<HomeScreen> {
       body: SafeArea(
         // Ensures content is displayed within safe areas
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(0xFF3A2A6B),
-                Color(0xFF3A2A6B),
+                Theme.of(context).scaffoldBackgroundColor,
+                Theme.of(context).scaffoldBackgroundColor,
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

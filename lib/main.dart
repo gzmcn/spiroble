@@ -51,9 +51,9 @@ class MyApp extends StatelessWidget {
           home: StartSplashScreen(),
           theme: themeState.themeData, // Light theme
           darkTheme: DarkThemeState().themeData, // Dark theme
-          themeMode: themeState is LightThemeState
-              ? ThemeMode.light
-              : ThemeMode.dark, // Dynamically set the theme mode
+          themeMode: themeState is DarkThemeState
+              ? ThemeMode.dark
+              : ThemeMode.light, // Dynamically set the theme mode
         );
       },
     );
