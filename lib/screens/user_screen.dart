@@ -48,9 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // dark-light mode switch controller
-  final _modeController = ValueNotifier<bool>(false);
-
   @override
   void initState() {
     super.initState();
@@ -483,24 +480,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 button_color: Theme.of(context).cardColor,
               ),
             ),
-
-            // light mode switch
-            AdvancedSwitch(
-              controller: _modeController,
-              activeColor: Theme.of(context).primaryColorDark,
-              inactiveColor: Colors.grey,
-              activeChild: Text('Dark'),
-              inactiveChild: Text('Light'),
-              activeImage: AssetImage('assets/dark2.png'),
-              inactiveImage: AssetImage('assets/light2.png'),
-              borderRadius: BorderRadius.all(const Radius.circular(15)),
-              width: 150.0,
-              height: 40.0,
-              enabled: true,
-              disabledOpacity: 0.5,
-            ),
-
             SizedBox(height: 12),
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

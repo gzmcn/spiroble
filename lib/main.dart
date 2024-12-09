@@ -13,23 +13,30 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   // Firebase'i başlatıyoruz
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
   // MultiProvider kullanarak BluetoothManager ve MetricsPushKeyProvider'ı sağlıyoruz
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(
-        create: (context) => BluetoothConnectionManager(),
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => BluetoothConnectionManager(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MetricsPushKeyProvider(), // Add MetricsPushKeyProvider
+        ),
+
+      ],
+      child: BlocProvider(
+        create: (context) => ThemeBloc(),
+        child: const MyApp(),
       ),
-      ChangeNotifierProvider(
-        create: (context) => MetricsPushKeyProvider(), // Add MetricsPushKeyProvider
-      ),
-    ],
-    child: MyApp(),
-  ));
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -37,19 +44,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ThemeBloc(),
-      child: BlocBuilder<ThemeBloc, ThemeState>(
-        builder: (context, themeState) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false, // Debug banner'ı kaldırmak
-            home: StartSplashScreen(), // İlk ekran olarak StartSplashScreen
-            theme: themeState.themeData, // Tema yönetimi
-            darkTheme: DarkThemeState().themeData,
-            themeMode: ThemeMode.dark,
-          );
-        },
-      ),
+    return BlocBuilder<ThemeBloc, ThemeState>(
+      builder: (context, themeState) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: StartSplashScreen(),
+          theme: themeState.themeData, // Light theme
+          darkTheme: DarkThemeState().themeData, // Dark theme
+          themeMode: themeState is LightThemeState
+              ? ThemeMode.light
+              : ThemeMode.dark, // Dynamically set the theme mode
+        );
+      },
     );
   }
 }
