@@ -48,9 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // dark-light mode switch controller
-  final _modeController = ValueNotifier<bool>(false);
-
   @override
   void initState() {
     super.initState();
@@ -326,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 130,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFFA0BAFD), Color(0xFF3A2A6B)],
+                  colors: [Theme.of(context).primaryColorDark, Color.fromARGB(255, 82, 14, 94),],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -457,11 +454,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: FancyButton(
                   onClick: saveUserData, // Action for saving user data
                   button_text: "Şifremi Değiştir", // Text of the button
-                  button_text_color: Theme.of(context).textTheme.bodyMedium?.color,
+                  button_text_color: Colors.white,
                   button_height: 50, // Height of the button
                   button_width: 200, // Width of the button
                   button_radius: 50, // Circular border radius
-                  button_outline_width: 0, // No outline
                   button_text_size: 20, // Font size of the button text
                   button_color: Theme.of(context).cardColor, // Button color from theme
                 ),
@@ -474,33 +470,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: FancyButton(
                 onClick: saveUserData,
                 button_text: "Kaydet",
-                button_text_color: Theme.of(context).textTheme.bodyMedium?.color,
+                button_text_color: Colors.white,
                 button_height: 50,
                 button_width: 200,
                 button_radius: 50,
-                button_outline_width: 0,
                 button_text_size: 20,
                 button_color: Theme.of(context).cardColor,
               ),
             ),
-
-            // light mode switch
-            AdvancedSwitch(
-              controller: _modeController,
-              activeColor: Theme.of(context).primaryColorDark,
-              inactiveColor: Colors.grey,
-              activeChild: Text('Dark'),
-              inactiveChild: Text('Light'),
-              activeImage: AssetImage('assets/dark2.png'),
-              inactiveImage: AssetImage('assets/light2.png'),
-              borderRadius: BorderRadius.all(const Radius.circular(15)),
-              width: 150.0,
-              height: 40.0,
-              enabled: true,
-              disabledOpacity: 0.5,
-            ),
-
             SizedBox(height: 12),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

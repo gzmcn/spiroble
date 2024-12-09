@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
+import 'package:flutter_provider/flutter_provider.dart';
 import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/asistanScreen.dart'; // Asistan ekranını import edin
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
+import 'package:spiroble/blocs/theme.bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,8 +26,16 @@ class _HomeScreen extends State<HomeScreen> {
     }
   }
 
+  // dark-light mode switch controller
+  final _modeController = ValueNotifier<bool>(false);
+
+
   @override
   Widget build(BuildContext context) {
+    final themeBloc = context.read<ThemeBloc>();
+
+    _modeController.value = themeBloc.state is DarkThemeState;
+
     return Scaffold(
       body: SafeArea( // Ensures content is displayed within safe areas
         child: Container(
@@ -71,6 +83,7 @@ class _HomeScreen extends State<HomeScreen> {
                                 ),
                               ],
                             ),
+
                             const SizedBox(height: 20),
                             TextField(
                               decoration: InputDecoration(
@@ -158,7 +171,7 @@ class _HomeScreen extends State<HomeScreen> {
                             const SizedBox(height: 10),
                             Row(
                               children: [
-                                Flexible( // Changed from Expanded to Flexible
+                                Expanded( // Changed from Expanded to Flexible
                                   child: _buildAppointmentCard(
                                     date: "12\nTue",
                                     time: "9:30 AM",
@@ -167,7 +180,7 @@ class _HomeScreen extends State<HomeScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                Flexible( // Changed from Expanded to Flexible
+                                Expanded( // Changed from Expanded to Flexible
                                   child: _buildAppointmentCard(
                                     date: "13\nWed",
                                     time: "10:00 AM",
@@ -177,6 +190,32 @@ class _HomeScreen extends State<HomeScreen> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 25),
+                            AdvancedSwitch(
+                              controller: _modeController,
+                              height: 50,
+                              width: 150,
+                              thumb: ValueListenableBuilder<bool>(
+                                valueListenable: _modeController,
+                                builder: (_, isDarkMode, __) {
+                                  return Icon(
+                                    isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                                    color: Colors.white,
+                                  );
+                                },
+                              ),
+                              activeImage: const AssetImage('assets/dark.png'),
+                              inactiveImage: const AssetImage('assets/light1.png'),
+                              onChanged: (isDarkMode) {
+                                _modeController.value = isDarkMode;
+                                if (isDarkMode) {
+                                  themeBloc.add(SetDarkTheme());
+                                } else {
+                                  themeBloc.add(SetLightTheme());
+                                }
+                              },
+                            ),
+
                             const Spacer(), // Fills the remaining space to push content up
                           ],
                         ),
@@ -202,6 +241,7 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   Widget _buildServiceIcon(IconData icon, String label) {
+
     return Column(
       children: [
         CircleAvatar(
@@ -222,11 +262,13 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   Widget _buildAppointmentCard({
+
     required String date,
     required String time,
     required String doctor,
     required String type,
   }) {
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -270,7 +312,10 @@ class _HomeScreen extends State<HomeScreen> {
             ),
           ),
         ],
+
       ),
+
     );
+
   }
 }
