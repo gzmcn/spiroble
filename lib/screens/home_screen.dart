@@ -2,8 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
-import 'package:flutter_provider/flutter_provider.dart';
-import 'package:spiroble/screens/LoginScreen.dart';
 import 'package:spiroble/screens/asistanScreen.dart'; // Asistan ekranını import edin
 import 'package:spiroble/bluetooth/BluetoothConnectionManager.dart';
 import 'package:spiroble/blocs/theme.bloc.dart';
@@ -17,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreen extends State<HomeScreen> {
-
   Future<String> fetchUserName() async {
     final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -52,7 +49,6 @@ class _HomeScreen extends State<HomeScreen> {
   // dark-light mode switch controller
   final _modeController = ValueNotifier<bool>(false);
 
-
   @override
   Widget build(BuildContext context) {
     final themeBloc = context.read<ThemeBloc>();
@@ -60,7 +56,8 @@ class _HomeScreen extends State<HomeScreen> {
     _modeController.value = themeBloc.state is DarkThemeState;
 
     return Scaffold(
-      body: SafeArea( // Ensures content is displayed within safe areas
+      body: SafeArea(
+        // Ensures content is displayed within safe areas
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -77,10 +74,12 @@ class _HomeScreen extends State<HomeScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        minHeight: MediaQuery.of(context).size.height - 80, // Adjusted to account for padding and FAB
+                        minHeight: MediaQuery.of(context).size.height -
+                            80, // Adjusted to account for padding and FAB
                       ),
                       child: IntrinsicHeight(
                         child: Column(
@@ -92,12 +91,12 @@ class _HomeScreen extends State<HomeScreen> {
                               children: [
                                 FutureBuilder<String>(
                                   future:
-                                  fetchUserName(), // Fetch the username asynchronously
+                                      fetchUserName(), // Fetch the username asynchronously
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return const Text(
-                                        "👋 Hello!",
+                                        "👋 Merhaba!",
                                         style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
@@ -106,7 +105,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       );
                                     } else if (snapshot.hasError) {
                                       return const Text(
-                                        "👋 Hello!",
+                                        "👋 Merhaba!",
                                         style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
@@ -115,7 +114,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       );
                                     } else if (snapshot.hasData) {
                                       return Text(
-                                        "👋 Hello! ${snapshot.data}",
+                                        "👋 Merhaba! ${snapshot.data}",
                                         style: const TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
@@ -124,7 +123,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       );
                                     } else {
                                       return const Text(
-                                        "👋 Hello!",
+                                        "👋 Merhaba!",
                                         style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.bold,
@@ -135,10 +134,9 @@ class _HomeScreen extends State<HomeScreen> {
                                   },
                                 ),
                                 CircleAvatar(
-                                  radius: 25,
-                                  backgroundImage: NetworkImage(
-                                    "https://via.placeholder.com/150", // Profil resmi için placeholder
-                                  ),
+                                  backgroundImage:
+                                      AssetImage("assets/user-logo.png"),
+                                  radius: 35,
                                 ),
                               ],
                             ),
@@ -146,20 +144,22 @@ class _HomeScreen extends State<HomeScreen> {
                             const SizedBox(height: 20),
                             TextField(
                               decoration: InputDecoration(
-                                hintText: "Search medical...",
-                                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                                hintText: "Doktor Arama...",
+                                prefixIcon: const Icon(Icons.search,
+                                    color: Colors.white70),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 filled: true,
                                 fillColor: Colors.white24,
-                                hintStyle: const TextStyle(color: Colors.white70),
+                                hintStyle:
+                                    const TextStyle(color: Colors.white70),
                               ),
                               style: const TextStyle(color: Colors.white),
                             ),
                             const SizedBox(height: 20),
                             const Text(
-                              "Services",
+                              "Hizmetler",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -170,10 +170,12 @@ class _HomeScreen extends State<HomeScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                _buildServiceIcon(Icons.people, "Community"),
-                                _buildServiceIcon(Icons.medical_services, "Health"),
-                                _buildServiceIcon(Icons.shopping_cart, "Shop"),
-                                _buildServiceIcon(Icons.settings, "Settings"),
+                                _buildServiceIcon(Icons.people, "Topluluk"),
+                                _buildServiceIcon(
+                                    Icons.medical_services, "Sağlık"),
+                                _buildServiceIcon(
+                                    Icons.shopping_cart, "Dükkan"),
+                                _buildServiceIcon(Icons.settings, "Ayarlar"),
                               ],
                             ),
                             const SizedBox(height: 20),
@@ -188,7 +190,8 @@ class _HomeScreen extends State<HomeScreen> {
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: const [
                                         Text(
                                           "Get the Best\nMedical Services",
@@ -230,7 +233,8 @@ class _HomeScreen extends State<HomeScreen> {
                             const SizedBox(height: 10),
                             Row(
                               children: [
-                                Expanded( // Changed from Expanded to Flexible
+                                Expanded(
+                                  // Changed from Expanded to Flexible
                                   child: _buildAppointmentCard(
                                     date: "12\nTue",
                                     time: "9:30 AM",
@@ -239,7 +243,8 @@ class _HomeScreen extends State<HomeScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                Expanded( // Changed from Expanded to Flexible
+                                Expanded(
+                                  // Changed from Expanded to Flexible
                                   child: _buildAppointmentCard(
                                     date: "13\nWed",
                                     time: "10:00 AM",
@@ -258,13 +263,16 @@ class _HomeScreen extends State<HomeScreen> {
                                 valueListenable: _modeController,
                                 builder: (_, isDarkMode, __) {
                                   return Icon(
-                                    isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                                    isDarkMode
+                                        ? Icons.dark_mode
+                                        : Icons.light_mode,
                                     color: Colors.white,
                                   );
                                 },
                               ),
                               activeImage: const AssetImage('assets/dark.png'),
-                              inactiveImage: const AssetImage('assets/light1.png'),
+                              inactiveImage:
+                                  const AssetImage('assets/light1.png'),
                               onChanged: (isDarkMode) {
                                 _modeController.value = isDarkMode;
                                 if (isDarkMode) {
@@ -290,7 +298,8 @@ class _HomeScreen extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => AsistanScreen(), // Asistan ekranına yönlendirme
+            builder: (context) =>
+                AsistanScreen(), // Asistan ekranına yönlendirme
           ));
         },
         backgroundColor: Colors.orangeAccent,
@@ -300,7 +309,6 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   Widget _buildServiceIcon(IconData icon, String label) {
-
     return Column(
       children: [
         CircleAvatar(
@@ -321,13 +329,11 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   Widget _buildAppointmentCard({
-
     required String date,
     required String time,
     required String doctor,
     required String type,
   }) {
-
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -371,10 +377,7 @@ class _HomeScreen extends State<HomeScreen> {
             ),
           ),
         ],
-
       ),
-
     );
-
   }
 }
