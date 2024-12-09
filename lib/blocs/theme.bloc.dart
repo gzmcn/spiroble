@@ -23,6 +23,9 @@ class LightThemeState extends ThemeState {
     canvasColor: Color(0xC5C7B9F1),
     scaffoldBackgroundColor: Color(0xFF503A93),
     primaryColorDark: Color(0xFF916BBD),
+    tabBarTheme: TabBarTheme(
+        dividerColor: Colors.white
+    ),
     colorScheme: ColorScheme.fromSeed(
       brightness: Brightness.light,
       seedColor: const Color.fromARGB(255, 82, 14, 94),
@@ -51,6 +54,9 @@ class DarkThemeState extends ThemeState {
       secondaryHeaderColor: Color(0xFFB7A0FD),
       cardColor: Color.fromARGB(255, 82, 14, 94),
       primaryColorDark: Color(0xFF222250), // darkmode switch color
+      tabBarTheme: TabBarTheme(
+        dividerColor: Color.fromARGB(50, 50, 50, 100),
+      ),
       colorScheme: ColorScheme.fromSeed(
         brightness: Brightness.dark,
         seedColor: const Color.fromARGB(255, 82, 14, 94),
@@ -64,7 +70,10 @@ class DarkThemeState extends ThemeState {
         bodyMedium: TextStyle(
           color: Colors.white, // Dark modda beyaz metin
         ),
+
       ));
+
+
 }
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {

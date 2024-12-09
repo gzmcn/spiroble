@@ -133,6 +133,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                 // Ensure this asset is added in pubspec.yaml
                                 width: 180,
                                 height: 180,
+                                color: Colors.orange,
                               ),
 
                               SizedBox(height: 20),
@@ -146,37 +147,24 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                         ? "Bağlantı başarılı!"
                                         : "Bağlantı yok, tekrar deneyiniz",
                                     style: TextStyle(
-                                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                                      fontSize: 16,
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+
                                     ),
                                   ),
                                 ],
                               ),
 
-                              SizedBox(height: 20),
-
-                              // Loading Animation (Circular Progress Indicator)
-                              ValueListenableBuilder<bool>(
-                                valueListenable: _bleManager
-                                    .isLoading, // isLoading burada ValueNotifier olmalı
-                                builder: (context, isLoading, child) {
-                                  return isLoading
-                                      ? CircularProgressIndicator(
-                                    color: Colors.blueAccent,
-                                    strokeWidth: 3,
-                                  )
-                                      : Container(); // Yükleme tamamlanınca boş bir container
-                                },
-                              ),
 
                               SizedBox(height: 40),
 
                               // Connection Permission Request
                               Text(
-                                "Spiromatike cihazı Bluetooth üzerinden bağlamak istiyor.",
+                                "Spiroble cihazı bluetooth light energy teknolojisi kullanır",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                                  color: Colors.white,
                                   fontSize: 16,
                                 ),
                               ),

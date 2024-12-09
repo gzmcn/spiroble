@@ -291,8 +291,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
+      backgroundColor: Theme.of(context).tabBarTheme.dividerColor,
       appBar: AppBar(
-        backgroundColor:  Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor:  Theme.of(context).tabBarTheme.dividerColor,
         title: Text(
           'Profilim',
           style: TextStyle(
@@ -316,6 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
+
           children: [
             // Updated Profile Section
             Container(
