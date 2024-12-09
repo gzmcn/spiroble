@@ -35,6 +35,7 @@ class InfoScreen2 extends StatelessWidget {
                   'assets/lungs.svg', // SVG dosyasının yolu
                   width: 130.0,
                   height: 130.0,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
                 SizedBox(height: 100), // İkon ile yazı arası
                 Text(

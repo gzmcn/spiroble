@@ -33,6 +33,7 @@ class InfoScreen3 extends StatelessWidget {
                 'assets/entry.svg', // İkon dosyasının yolu
                 width: 80,
                 height: 80,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
           ),

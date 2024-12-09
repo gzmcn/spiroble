@@ -35,6 +35,7 @@ class InfoScreen1 extends StatelessWidget {
               'assets/spirometer.svg', // breath.svg dosyasının yolu
               width: 125.0,
               height: 125.0,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Padding(
