@@ -194,7 +194,7 @@ class _HomeScreen extends State<HomeScreen> {
                                           CrossAxisAlignment.start,
                                       children: const [
                                         Text(
-                                          "Get the Best\nMedical Services",
+                                          "Medikal Hizmetlerin\nEn İyisinden Yararlanın",
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -203,7 +203,7 @@ class _HomeScreen extends State<HomeScreen> {
                                         ),
                                         SizedBox(height: 5),
                                         Text(
-                                          "We provide the best quality medical services without further cost.",
+                                          "Hastaneye gitmeye gerek kalmadan en kaliteli tıbbi hizmetleri sunuyoruz.",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.white70,
@@ -223,7 +223,7 @@ class _HomeScreen extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 20),
                             const Text(
-                              "Upcoming Appointments",
+                              "Yaklaşan Randevu",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -236,20 +236,20 @@ class _HomeScreen extends State<HomeScreen> {
                                 Expanded(
                                   // Changed from Expanded to Flexible
                                   child: _buildAppointmentCard(
-                                    date: "12\nTue",
-                                    time: "9:30 AM",
-                                    doctor: "DR. SAMUEL",
-                                    type: "Depression",
+                                    date: "12/08\nSalı",
+                                    time: "9:30",
+                                    doctor: "DR. Sezai",
+                                    type: "Göğüs Hastalıkları",
                                   ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   // Changed from Expanded to Flexible
                                   child: _buildAppointmentCard(
-                                    date: "13\nWed",
-                                    time: "10:00 AM",
-                                    doctor: "DR. JANE",
-                                    type: "General",
+                                    date: "13/11\nCmt",
+                                    time: "10:00",
+                                    doctor: "DR. Sıla",
+                                    type: "Dahiliye",
                                   ),
                                 ),
                               ],
