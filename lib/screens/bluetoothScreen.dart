@@ -17,6 +17,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   void initState() {
     super.initState();
     _requestPermissions();
+    setState(() {
+
+    });
+
     _bleManager =
         Provider.of<BluetoothConnectionManager>(context, listen: false);
     _bleManager.connectedDeviceId;
@@ -38,9 +42,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       Permission.location,
     ].request();
 
-    setState(() {
-
-    });
   }
 
   // Bluetooth bağlantı durumunu yükle

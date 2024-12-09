@@ -87,7 +87,6 @@ class _AnimationScreenState extends State<AnimationScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    addDummyData();
   }
 
   @override
