@@ -1,13 +1,31 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class HealthMonitorScreen extends StatelessWidget {
+class HealthMonitorScreen extends StatefulWidget {
   final Map<String, dynamic> measurement;
+  final String TestId;
 
   HealthMonitorScreen({
     required this.measurement,
+    required this.TestId,
   });
+
+  @override
+  _HealthMonitorScreenState createState() => _HealthMonitorScreenState();
+}
+
+class _HealthMonitorScreenState extends State<HealthMonitorScreen> {
+  late Future<Map<String, List<double>>> flowRateAndVolumeData;
+
+  @override
+  void initState() {
+    super.initState();
+    flowRateAndVolumeData = fetchFlowRatesAndVolumes(); // Initialize the future
+  }
 
   String _formatDate(DateTime timestamp) {
     return DateFormat('yyyy-MM-dd').format(timestamp); // Format to 'yyyy-MM-dd'
@@ -22,31 +40,30 @@ class HealthMonitorScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.white,
       ),
-
       body: Container(
-
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).scaffoldBackgroundColor, // Üstteki koyu mor
-              Theme.of(context).scaffoldBackgroundColor, // Alttaki daha koyu ton
+              Theme.of(context)
+                  .scaffoldBackgroundColor, // Alttaki daha koyu ton
             ],
           ),
         ),
-
         child: SingleChildScrollView(
-
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
                 Text(
-                    _formatDate(measurement['timestamp']),
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-
+                  _formatDate(widget.measurement['timestamp']),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold),
+                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -55,8 +72,7 @@ class HealthMonitorScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     ),
                     SizedBox(height: 20),
-
-                    buildMeasurementRow(measurement),
+                    buildMeasurementRow(widget.measurement),
                     SizedBox(height: 30),
                     buildSymptomsSection(),
                     SizedBox(height: 30),
@@ -66,13 +82,86 @@ class HealthMonitorScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.amber,
                           foregroundColor: Colors.black,
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 15),
                         ),
                         child: Text('Add Symptoms'),
                       ),
                     ),
                     SizedBox(height: 30),
+                    FutureBuilder<Map<String, List<double>>>(
+                      // Flowrate ve Volume verilerini getiren FutureBuilder
+                      future: flowRateAndVolumeData,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error loading data'));
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return Center(child: Text('No data available'));
+                        } else {
+                          Map<String, List<double>> data = snapshot.data!;
+                          List<double> flowRates = data['flowRates'] ?? [];
+                          List<double> volumes = data['volumes'] ?? [];
+
+                          // Flow rate ve volume arasındaki oranı hesapla
+                          List<double> ratioData = [];
+                          for (int i = 0;
+                              i < flowRates.length && i < volumes.length;
+                              i++) {
+                            if (volumes[i] != 0) {
+                              ratioData.add(flowRates[i] / volumes[i]);
+                            }
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Flow Rate / Volume Ratio',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                              SizedBox(height: 20),
+                              Container(
+                                height: 200,
+                                child: LineChart(
+                                  LineChartData(
+                                    gridData: FlGridData(show: true),
+                                    titlesData: FlTitlesData(show: true),
+                                    borderData: FlBorderData(show: true),
+                                    minX: 0,
+                                    maxX: flowRates.length.toDouble(),
+                                    minY: 0,
+                                    maxY: flowRates.isNotEmpty
+                                        ? flowRates.reduce(
+                                                (a, b) => a > b ? a : b) *
+                                            1.2 // Yüksek değeri %20 fazla al
+                                        : 1, // Eğer veri yoksa, 1'i limit olarak kullan
+                                    lineBarsData: [
+                                      LineChartBarData(
+                                        spots: flowRates
+                                            .asMap()
+                                            .entries
+                                            .map((entry) => FlSpot(
+                                                entry.key.toDouble(),
+                                                entry.value))
+                                            .toList(),
+                                        isCurved: true,
+                                        color: Colors.green,
+                                        belowBarData: BarAreaData(show: false),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      },
+                    ),
                     buildMonthlySummary(),
                   ],
                 ),
@@ -84,6 +173,57 @@ class HealthMonitorScreen extends StatelessWidget {
     );
   }
 
+  Future<Map<String, List<double>>> fetchFlowRatesAndVolumes() async {
+    List<double> flowRates = [];
+    List<double> volumes = [];
+
+    // Get the current user ID from Firebase Authentication
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      print('User is not logged in');
+      return {'flowRates': flowRates, 'volumes': volumes};
+    }
+
+    String userId = currentUser.uid; // Get the user ID
+
+    // Reference the correct path using the user ID
+    DatabaseReference ref = FirebaseDatabase.instance
+        .ref('sonuclar/$userId/tests/${widget.TestId}');
+
+    DataSnapshot snapshot = await ref.get();
+    print(snapshot.exists);
+
+    if (snapshot.exists) {
+      // Since it's a Map, we cast it to Map<dynamic, dynamic>
+      Map<dynamic, dynamic> testData = snapshot.value as Map<dynamic, dynamic>;
+
+      // Check if measurements exist and are not null
+      if (testData['measurements'] != null) {
+        // Get the list of measurements
+        List<dynamic> measurements = testData['measurements'];
+
+        // Iterate over the list of measurements and process flowRates and volumes
+        for (var measurementData in measurements) {
+          // Only process the flowRate and volume for this specific test
+          if (measurementData['flowRate'] != null) {
+            flowRates.add(measurementData['flowRate'].toDouble());
+          }
+          if (measurementData['volume'] != null) {
+            volumes.add(measurementData['volume'].toDouble());
+          }
+        }
+      }
+    } else {
+      print('Veri bulunamadı');
+    }
+
+    print(flowRates);
+    print(volumes);
+
+    return {'flowRates': flowRates, 'volumes': volumes};
+  }
+
+
   Widget buildMeasurementRow(Map<String, dynamic> measurement) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -91,19 +231,41 @@ class HealthMonitorScreen extends StatelessWidget {
         spacing: 16,
         runSpacing: 16,
         alignment: WrapAlignment.center,
-          children: [
-            buildMeasurementCard('FVC', (double.tryParse(measurement['fvc'].toString())?.toStringAsFixed(3) ?? '0.000'), 0.7),
-            buildMeasurementCard('FEV1', (double.tryParse(measurement['fev1'].toString())?.toStringAsFixed(3) ?? '0.000'), 0.9),
-            buildMeasurementCard('PEF', (double.tryParse(measurement['pef'].toString())?.toStringAsFixed(3) ?? '0.000'), 1.0),
-            buildMeasurementCard('FEV6', (double.tryParse(measurement['fev6'].toString())?.toStringAsFixed(3) ?? '0.000'), 0.9),
-
+        children: [
           buildMeasurementCard(
-              'FEV2575', (double.tryParse(['fef2575'].toString())?.toStringAsFixed(3) ?? '0.000'), 0.85),
-            buildMeasurementCard(
-                'FEV1/FVC',
-                measurement['fev1Fvc'].toStringAsFixed(3), // Assuming it's a numeric value
-                0.95
-            ),
+              'FVC',
+              (double.tryParse(measurement['fvc'].toString())
+                      ?.toStringAsFixed(3) ??
+                  '0.000'),
+              0.7),
+          buildMeasurementCard(
+              'FEV1',
+              (double.tryParse(measurement['fev1'].toString())
+                      ?.toStringAsFixed(3) ??
+                  '0.000'),
+              0.9),
+          buildMeasurementCard(
+              'PEF',
+              (double.tryParse(measurement['pef'].toString())
+                      ?.toStringAsFixed(3) ??
+                  '0.000'),
+              1.0),
+          buildMeasurementCard(
+              'FEV6',
+              (double.tryParse(measurement['fev6'].toString())
+                      ?.toStringAsFixed(3) ??
+                  '0.000'),
+              0.9),
+          buildMeasurementCard(
+              'FEV2575',
+              (double.tryParse(['fef2575'].toString())?.toStringAsFixed(3) ??
+                  '0.000'),
+              0.85),
+          buildMeasurementCard(
+              'FEV1/FVC',
+              measurement['fev1Fvc']
+                  .toStringAsFixed(3), // Assuming it's a numeric value
+              0.95),
         ],
       ),
     );
@@ -121,12 +283,17 @@ class HealthMonitorScreen extends StatelessWidget {
             percent: percent,
             center: Text(
               value,
-              style:
-                  TextStyle(fontSize: 18, fontWeight:  FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
             footer: Text(
               title,
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold),
             ),
             circularStrokeCap: CircularStrokeCap.round,
             backgroundColor: Colors.grey.shade800,
