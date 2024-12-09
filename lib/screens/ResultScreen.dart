@@ -268,7 +268,8 @@ class _ResultScreenState extends State<ResultScreen> {
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => HealthMonitorScreen(
-                                measurement: measurement, // Pass the entire map
+                                measurement: measurement,
+                                TestId: measurement['id'] // Pass the entire map
                               ),
                             ));
                           },
