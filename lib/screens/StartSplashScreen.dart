@@ -47,7 +47,7 @@ class _StartSplashScreenState extends State<StartSplashScreen> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: SvgPicture.asset(
-                  'assets/spiroiconnew.svg',
+                  'assets/splashlogo.png',
                   width: 180,
                   height: 180,
                 ),

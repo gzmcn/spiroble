@@ -64,6 +64,7 @@ flutter:
     - assets/light1.png
     - assets/light2.png
     - assets/bluetooth.png
+    - assets/splashlogo.png
 
 
   uses-material-design: true
